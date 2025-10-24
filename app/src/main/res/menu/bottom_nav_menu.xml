@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_home"
+        android:enabled="true"
+        android:icon="@drawable/ic_home_black_24dp"
+        android:title="@string/title_home" />
+    <item
+        android:id="@+id/navigation_calendar"
+        android:enabled="true"
+        android:icon="@drawable/baseline_edit_calendar_24"
+        android:title="@string/title_dashboard" />
+    <item
+        android:id="@+id/navigation_note"
+        android:enabled="true"
+        android:icon="@drawable/ic_note"
+        android:title="@string/title_notifications" />
+    <item
+        android:id="@+id/navigation_money"
+        android:enabled="true"
+        android:icon="@drawable/ic_money"
+        android:title="@string/title_money" />
+
+
+</menu>

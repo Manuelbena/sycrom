@@ -1,0 +1,64 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.Synkrón" parent="Theme.Material3.DynamicColors.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/background_primary</item>
+        <item name="android:statusBarColor">@color/background_primary</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:fontFamily">@font/inter</item>
+
+
+
+    </style>
+
+    <style name="CalendarDayHeader">
+        <item name="android:layout_width">36dp</item>
+        <item name="android:layout_height">36dp</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:textSize">14sp</item>
+
+    </style>
+
+    <style name="rounde">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+
+    <style name="CalendarDay">
+        <item name="android:layout_width">48dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:textAppearance">?attr/textAppearanceBodyLarge</item>
+    </style>
+
+    <style name="CalendarDaySelected" parent="CalendarDay">
+        <item name="android:background">@drawable/bg_selected_day</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+        <style name="Widget.App.Chip.Priority" parent="Widget.Material3.Chip.Filter">
+            <item name="android:textColor">@color/priority_high_text</item>
+            <item name="chipBackgroundColor">@color/priority_high_bg</item>
+            <item name="chipStrokeWidth">0dp</item> </style>
+
+        <style name="Widget.App.Chip.Priority.Alta">
+            <item name="android:textColor">@color/priority_high_text</item>
+            <item name="chipBackgroundColor">@color/priority_high_bg</item>
+        </style>
+
+        <style name="Widget.App.Chip.Priority.Media">
+            <item name="android:textColor">@color/priority_medium_text</item>
+            <item name="chipBackgroundColor">@color/priority_medium_bg</item>
+        </style>
+
+        <style name="Widget.App.Chip.Priority.Baja">
+            <item name="android:textColor">@color/priority_low_text</item>
+            <item name="chipBackgroundColor">@color/priority_low_bg</item>
+        </style>
+
+
+</resources>

@@ -1,0 +1,24 @@
+<resources>
+    <string name="app_name">Synkrón</string>
+    <string name="title_home">Inicio</string>
+    <string name="title_dashboard">Calendario</string>
+    <string name="title_notifications">Notas</string>
+    <string name="title_money">Ahorros</string>
+    <string name="tvAddSugestion">Añadir</string>
+
+
+    <string name="event_type_reunion">Reunión</string>
+    <string name="event_title_marketing">Revisión mensual Marketing</string>
+    <string name="event_location_cordoba">Córdoba · Sala 3</string>
+    <string name="event_attendees_more">+2 más</string>
+    <string name="event_progress_60">60%</string>
+    <string name="event_subtasks_3_5">Subtareas 3/5</string>
+    <string name="event_expand_details">Ver detalles y checklist... (Toca para expandir)</string>
+
+    <string name="tvModificarPorcentajes"><u>Modificar Porcentajes</u></string>
+    <string name="tvHistoric"><u>Ver Historial</u></string>
+
+    <string name="currency_format">500</string>
+    <string name="currency_format_negative">1500</string>
+
+</resources>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="color_primary">#223042</color>
+    <color name="color_surface">#223042</color>
+
+    <color name="black">#111111</color>
+    <color name="white">#F3F6F7</color>
+    <color name="red">#B0422C</color>
+
+    <color name="background_primary">@color/color_primary</color>
+    <color name="secondary_text">@color/color_primary</color>
+    <color name="ivory">#F3F6F7</color>
+
+    <color name="color_tree">#F1D198</color>
+
+
+    <color name="navy">#0F2744</color>
+    <color name="teal">#2E9C8B</color>
+    <color name="teal_ligh">#692E9C8B</color>
+    <color name="amber">#E6B93B</color>
+    <color name="amber_ligh">#70D4AF37</color>
+    <color name="gray">#C0C8CA</color>
+    <color name="trackGray">#D8DBDF</color>
+
+
+
+        <color name="gold">#FFE5B867</color>
+        <color name="gold_alpha_30">#4DE5B867</color>
+        <color name="gold_dark">#8F6E2F</color>
+        <color name="emerald">#FF3D9970</color>
+        <color name="emerald_alpha_20">#333D9970</color>
+        <color name="slate">#FF4A4E5A</color>
+        <color name="slate_alpha_70">#B34A4E5A</color>
+
+
+        <color name="priority_high_bg">#FFCDD2</color>
+    <color name="priority_high_text">#B71C1C</color>
+    <color name="priority_medium_bg">#FFECB3</color>
+    <color name="priority_medium_text">#E65100</color>
+    <color name="priority_low_bg">#C8E6C9</color>
+    <color name="priority_low_text">#1B5E20</color>
+
+        <color name="light_gray">#D3D3D3</color>
+    </resources>
+

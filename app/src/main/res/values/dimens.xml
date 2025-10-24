@@ -1,0 +1,21 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="activity_horizontal_XL_margin">24dp</dimen>
+    <dimen name="activity_horizontal_XXL_margin">32dp</dimen>
+
+    <dimen name="txt_dimen_s">8dp</dimen>
+    <dimen name="txt_dimen_l">12dp</dimen>
+    <dimen name="txt_dimen_xl">14dp</dimen>
+    <dimen name="txt_dimen_xxl">18dp</dimen>
+    <dimen name="txt_dimen_extra">24dp</dimen>
+
+
+
+    <dimen name="card_margin_horizontal">16dp</dimen>
+    <dimen name="card_margin_vertical">8dp</dimen>
+    <dimen name="card_corner_radius">20dp</dimen>
+    <dimen name="card_elevation">4dp</dimen>
+    <dimen name="card_padding_large">16dp</dimen>
+</resources>

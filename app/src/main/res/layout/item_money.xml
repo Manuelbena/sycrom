@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:background="@color/ivory"
+   >
+
+    <ImageView
+        android:id="@+id/ic_money"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_margin="8dp"
+        android:src="@drawable/ic_dashboard_black_24dp"
+        app:layout_constraintBottom_toTopOf="@+id/divider"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingTop="@dimen/txt_dimen_xl"
+        android:layout_marginStart="@dimen/activity_vertical_margin"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/divider"
+        app:layout_constraintStart_toEndOf="@+id/ic_money"
+        >
+        <TextView
+            android:id="@+id/tv_concept"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:ellipsize="end"
+
+            android:text="Gasto"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+            android:textSize="@dimen/txt_dimen_xl"
+            tools:ignore="SpUsage" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:layout_marginBottom="@dimen/txt_dimen_l"
+            android:text="Gasto Fijo"
+            android:textColor="@color/amber"
+            android:textSize="@dimen/txt_dimen_xl"
+            app:chipBackgroundColor="@color/amber_ligh"
+            app:chipStrokeColor="@color/amber"
+            app:layout_constraintBottom_toTopOf="@+id/divider"
+
+            app:layout_constraintTop_toBottomOf="@id/tv_concept"
+            tools:ignore="SpUsage" />
+    </LinearLayout>
+
+
+
+
+    <TextView
+        android:id="@+id/tv_import"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/txt_dimen_xl"
+        android:text="-200€"
+        android:textColor="@color/red"
+        android:textSize="@dimen/txt_dimen_xxl"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="SpUsage" />
+
+
+    <com.google.android.material.divider.MaterialDivider
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

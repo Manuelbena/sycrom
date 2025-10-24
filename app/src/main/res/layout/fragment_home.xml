@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_primary">
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/ly_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="@dimen/activity_horizontal_XL_margin"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints">
+
+        <!-- Saludo -->
+        <TextView
+            android:id="@+id/textGreeting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="32dp"
+            android:text="Hola, Manuel"
+            android:textColor="@color/white"
+            android:textSize="@dimen/txt_dimen_extra"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="SpUsage" />
+
+        <!-- Fecha -->
+        <TextView
+            android:id="@+id/textDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="12 de mayo de 2025"
+            android:textColor="@color/white"
+            android:textSize="@dimen/txt_dimen_l"
+            app:layout_constraintStart_toStartOf="@id/textGreeting"
+            app:layout_constraintTop_toBottomOf="@id/textGreeting"
+            tools:ignore="SpUsage" />
+
+        <!-- Clima -->
+        <ImageView
+            android:id="@+id/iconWeather"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_margin="24dp"
+            android:contentDescription="TODO"
+            android:src="@drawable/ic_sol"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textTemperature"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="17°C"
+            android:textColor="@color/white"
+            android:textSize="@dimen/txt_dimen_l"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@id/iconWeather"
+            app:layout_constraintStart_toStartOf="@+id/iconWeather"
+            app:layout_constraintTop_toBottomOf="@+id/iconWeather"
+            tools:ignore="SpUsage" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ly_header">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/ly_body_home"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginBottom="100dp">
+            <!-- Bloque de tareas -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardTasks"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="24dp"
+                app:cardBackgroundColor="@color/ivory"
+                app:cardCornerRadius="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingBottom="@dimen/activity_horizontal_XL_margin">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/txt_dimen_xl"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Tareas programadas"
+                            android:textColor="@color/background_primary"
+                            android:textSize="@dimen/txt_dimen_xxl"
+                            android:textStyle="bold"
+                            tools:ignore="SpUsage" />
+
+                        <Button
+                            android:id="@+id/buttonAddTask"
+                            style="@style/Widget.Material3.Button.Icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:elevation="@dimen/activity_horizontal_XXL_margin"
+                            android:text="@string/tvAddSugestion"
+                            android:textColor="@color/ivory"
+                            android:textStyle="bold"
+                            app:backgroundTint="@color/color_primary"
+                            app:icon="@drawable/ic_plus"
+                            app:iconTint="@color/ivory" />
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:id="@+id/weekDaysContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="10dp" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewTasks"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clipToPadding="false"
+                        android:orientation="horizontal"
+                        android:paddingStart="40dp"
+                        android:paddingEnd="40dp"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:listitem="@layout/item_task_today" />
+
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+
+            <!-- Bloque de resumen de cartera -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardSuggestion"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="24dp"
+                app:cardBackgroundColor="@color/ivory"
+                app:cardCornerRadius="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cardTasks">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="@dimen/txt_dimen_xl">
+
+                    <LinearLayout
+                        android:id="@+id/ly_header_suggestion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="0.3"
+                            android:text="Te sugiero..."
+                            android:textColor="@color/background_primary"
+                            android:textSize="@dimen/txt_dimen_xxl"
+                            android:textStyle="bold"
+                            tools:ignore="SpUsage" />
+
+                        <Button
+                            android:id="@+id/buttonAddTaskSuggestion"
+                            style="@style/Widget.Material3.Button.Icon"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:elevation="@dimen/activity_horizontal_XXL_margin"
+                            android:text="@string/tvAddSugestion"
+                            android:textColor="@color/ivory"
+                            android:textStyle="bold"
+                            app:backgroundTint="@color/color_primary"
+                            app:icon="@drawable/ic_plus"
+                            app:iconTint="@color/ivory" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ly_body_suggestion"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/ly_header_suggestion">
+
+                        <TextView
+                            android:id="@+id/textSugerencia"
+                            android:layout_width="210dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="12dp"
+                            android:text="Tienes una hora libre a las 17:00. ¿Por qué no dar un paseo por el Parque del Retiro?"
+                            android:textColor="@color/secondary_text"
+                            android:textSize="@dimen/txt_dimen_xl"
+                            tools:ignore="SpUsage" />
+
+                        <ImageView
+                            android:layout_width="80dp"
+                            android:layout_height="150dp"
+                            android:layout_marginStart="@dimen/txt_dimen_xl"
+                            android:src="@drawable/ic_suggestion" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="start"
+                        android:orientation="horizontal"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/ly_body_suggestion">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clock" />
+
+                        <TextView
+                            android:id="@+id/textHora"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="17:00"
+                            android:textColor="@color/secondary_text"
+                            android:textSize="@dimen/txt_dimen_xl"
+                            tools:ignore="SpUsage" />
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="16dp"
+                            android:src="@drawable/ic_location" />
+
+                        <TextView
+                            android:id="@+id/textLugar"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="Parque del Retiro"
+                            android:textColor="@color/secondary_text"
+                            android:textSize="@dimen/txt_dimen_xl"
+                            tools:ignore="SpUsage" />
+
+                    </LinearLayout>
+
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Bloque de resumen de cartera -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardResumenMoney"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="24dp"
+                app:cardBackgroundColor="@color/ivory"
+                app:cardCornerRadius="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cardSuggestion">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tv_wallet"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp"
+                        android:text="Resumen Cartera"
+                        android:textColor="@color/background_primary"
+                        android:textSize="@dimen/txt_dimen_xxl"
+                        android:textStyle="bold"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        tools:ignore="SpUsage" />
+
+                    <com.manuelbena.synkron.presentation.components.FinancePieView
+                        android:id="@+id/financePie"
+                        android:layout_width="120dp"
+                        android:layout_height="150dp"
+                        android:layout_gravity="top"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/tv_wallet" />
+                    <!-- Gastos -->
+                    <LinearLayout
+                        android:id="@+id/ly_gastos"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="18dp"
+                        android:gravity="top"
+                        android:orientation="horizontal"
+                        android:paddingTop="20dp"
+                        app:layout_constraintStart_toEndOf="@+id/financePie"
+                        app:layout_constraintTop_toBottomOf="@+id/tv_wallet">
+
+                        <View
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/circle_legend"
+                            android:backgroundTint="@color/red" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:text="Gastos"
+                            android:textColor="@color/secondary_text"
+                            android:textSize="@dimen/txt_dimen_xl"
+                            tools:ignore="SpUsage" />
+
+                        <TextView
+                            android:id="@+id/textGastos"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="-500€"
+                            android:textColor="@color/secondary_text"
+                            android:textSize="@dimen/txt_dimen_xl"
+
+                            tools:ignore="SpUsage" />
+                    </LinearLayout>
+
+                    <!-- Ingresos -->
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="18dp"
+                        android:gravity="center_horizontal"
+                        android:orientation="horizontal"
+                        app:layout_constraintStart_toEndOf="@+id/financePie"
+                        app:layout_constraintTop_toBottomOf="@+id/ly_gastos">
+
+                        <View
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginEnd="8dp"
+                            android:background="@drawable/circle_legend"
+                            android:backgroundTint="@color/teal" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:text="Ingresos"
+                            android:textColor="@color/secondary_text"
+                            android:textSize="@dimen/txt_dimen_xl"
+                            tools:ignore="SpUsage" />
+
+                        <TextView
+                            android:id="@+id/textIngresos"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:text="500€"
+                            android:textColor="@color/secondary_text"
+                            android:textSize="@dimen/txt_dimen_xl"
+                            tools:ignore="SpUsage" />
+                    </LinearLayout>
+
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
