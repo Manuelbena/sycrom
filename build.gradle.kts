@@ -8,6 +8,6 @@ plugins {
 
     // ## AÑADE ESTA LÍNEA ##
     id("androidx.navigation.safeargs.kotlin") version "2.8.9" apply false
-
-
+    id("com.google.devtools.ksp") version "1.9.24-1.0.20" apply false // <-- Clave: Define KSP aquí también
 }
+

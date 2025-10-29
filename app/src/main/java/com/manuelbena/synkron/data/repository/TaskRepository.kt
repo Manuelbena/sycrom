@@ -1,86 +1,54 @@
 package com.manuelbena.synkron.data.repository
 
-
+import com.manuelbena.synkron.data.local.models.EventDao
+import com.manuelbena.synkron.data.local.models.TaskDao
+import com.manuelbena.synkron.data.mappers.toData
+import com.manuelbena.synkron.data.mappers.toDomain
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
-import com.manuelbena.synkron.presentation.models.SubTaskPresentation
-import com.manuelbena.synkron.presentation.models.TaskPresentation
+import com.manuelbena.synkron.domain.models.TaskDomain
+import kotlinx.coroutines.flow.first // <-- 1. IMPORTA la función 'first'
 import javax.inject.Inject
+import javax.inject.Singleton
 
-
+@Singleton
 class TasksRepository @Inject constructor(
-
+    private val eventDao: EventDao
 ) : ITaskRepository {
 
-    override suspend fun getTaskToday(): List<TaskPresentation> {
-        return listOf(
-            TaskPresentation(
-                hour = "10:00 AM",
-                date = 20251008, // Formato AAAA MM DD
-                title = "Sincronización Semanal del Proyecto",
-                description = "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas.Revisar los avances del sprint actual y planificar las próximas tareas.Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "" +
-                        "vRevisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "Revisar los avances del sprint actual y planificar las próximas tareas." +
-                        "",
-                typeTask = "Trabajo",
-                place = "Oficina, Sala de Juntas 3",
-                subTasks = listOf(
-                    SubTaskPresentation(title = "Preparar métricas de rendimiento", isDone = true),
-                    SubTaskPresentation(title = "Revisar bloqueos del equipo", isDone = false),
-                    SubTaskPresentation(title = "Definir próximos pasos", isDone = false)
-                ),
-                isActive = true, // La tarea está en curso o es la siguiente
-                isDone = false   // Aún no ha sido completada
-            ),
-            TaskPresentation(
-                hour = "17:30",
-                date = 20251010,
-                title = "Cita con el Dentista",
-                description = "Revisión y limpieza anual.",
-                typeTask = "Salud",
-                place = "Clínica Dental 'Sonrisa Sana'",
-                subTasks = emptyList(), // No tiene subtareas
-                isActive = false,
-                isDone = false
-            ),
-            TaskPresentation(
-                hour = "16:00",
-                date = 20251006, // Una fecha pasada
-                title = "Estudiar para el examen de Álgebra",
-                description = "Repasar los capítulos 4 y 5.",
-                typeTask = "Estudio",
-                place = "Biblioteca Central",
-                subTasks = listOf(
-                    SubTaskPresentation(title = "Resumir capítulo 4", isDone = true),
-                    SubTaskPresentation(title = "Hacer ejercicios del capítulo 5", isDone = true)
-                ),
-                isActive = false, // Ya no está activa porque pasó la fecha
-                isDone = true     // La marcamos como completada
-            )
-        )
+    /**
+     * Obtiene la lista de tareas de forma asíncrona.
+     * Utiliza .first() para recolectar el primer valor emitido por el Flow de Room.
+     */
+    override suspend fun getTaskToday(): List<TaskDomain> {
+        // 2. RECOLECTA el primer valor del Flow (que es la lista)
+        val taskDaoList: List<TaskDao> = eventDao.getAllEvents().first()
 
+        // 3. MAPEA la lista de DAOs a una lista de objetos de Dominio y la devuelve
+        return taskDaoList.map { taskDao ->
+            taskDao.toDomain()
+        }
     }
 
+    /**
+     * Inserta una nueva tarea en la base de datos.
+     */
+    override suspend fun insertEvent(taskDomain: TaskDomain) {
+        eventDao.insertEvent(taskDomain.toData())
+    }
 
+    /**
+     * Actualiza una tarea existente.
+     * TODO: Implementar la lógica de actualización.
+     */
+    override suspend fun updateEvent(taskDao: TaskDomain) {
+        // Lógica futura: eventDao.updateEvent(taskDao.toData())
+        TODO("Not yet implemented")
+    }
+
+    /**
+     * Elimina una tarea de la base de datos.
+     */
+    override suspend fun deleteEvent(taskDomain: TaskDomain) {
+        eventDao.deleteEvent(taskDomain.toData())
+    }
 }

@@ -3,9 +3,11 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.devtools.ksp") version "1.9.24-1.0.20"
     id("kotlin-parcelize")
+    id("com.google.dagger.hilt.android") // Mantén solo una declaración
     id("kotlin-kapt")
-    id("com.google.dagger.hilt.android")
+    // La línea duplicada 'id("com.google.dagger.hilt.android")' ha sido eliminada
     id("androidx.navigation.safeargs.kotlin")
 }
 
@@ -46,6 +48,11 @@ android {
 }
 
 dependencies {
+    val room_version = "2.6.1" // Última versión estable de Room
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version") // Para usar Coroutines con Room
+    ksp("androidx.room:room-compiler:$room_version") // Usamos ksp para el procesador de anotaciones
+
     // --- DEPENDENCIAS DE HILT ---
     // 3. Añadir la librería principal de Hilt
     implementation("com.google.dagger:hilt-android:2.50")

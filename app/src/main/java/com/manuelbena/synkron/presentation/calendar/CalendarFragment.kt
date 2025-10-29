@@ -18,7 +18,7 @@ import com.manuelbena.synkron.databinding.FragmentCalendarBinding
 import com.manuelbena.synkron.presentation.models.CalendarDayPresentation
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
 import com.manuelbena.synkron.presentation.models.SubTaskPresentation
-import com.manuelbena.synkron.presentation.models.TaskPresentation
+import com.manuelbena.synkron.domain.models.TaskDomain
 
 class CalendarFragment : Fragment() {
 
@@ -45,8 +45,8 @@ class CalendarFragment : Fragment() {
         }
 
         val tasks = listOf(
-            TaskPresentation(
-                hour = "10:00 AM",
+            TaskDomain(
+                hour = 20251008,
                 date = 20251008, // Formato AAAA MM DD
                 title = "Sincronización Semanal del Proyecto",
                 description = "Revisar los avances del sprint actual y planificar las próximas tareas.",
@@ -60,8 +60,8 @@ class CalendarFragment : Fragment() {
                 isActive = true, // La tarea está en curso o es la siguiente
                 isDone = false   // Aún no ha sido completada
             ),
-            TaskPresentation(
-                hour = "17:30",
+            TaskDomain(
+                hour = 20251008,
                 date = 20251010,
                 title = "Cita con el Dentista",
                 description = "Revisión y limpieza anual.",
@@ -71,8 +71,8 @@ class CalendarFragment : Fragment() {
                 isActive = false,
                 isDone = false
             ),
-            TaskPresentation(
-                hour = "16:00",
+            TaskDomain(
+                hour = 20251008,
                 date = 20251006, // Una fecha pasada
                 title = "Estudiar para el examen de Álgebra",
                 description = "Repasar los capítulos 4 y 5.",

@@ -1,14 +1,11 @@
 package com.manuelbena.synkron.presentation.home
 
-import com.manuelbena.synkron.base.BaseViewModel // TU CLASE BASE
-import com.manuelbena.synkron.data.repository.TasksRepository
+import com.manuelbena.synkron.base.BaseViewModel
+import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.domain.usecase.GetTaskTodayUseCase
-import com.manuelbena.synkron.presentation.models.TaskPresentation
+
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -41,7 +38,7 @@ class HomeViewModel @Inject constructor(
         // Lógica para cargar datos de una nueva fecha
     }
 
-    fun onTaskClicked(task: TaskPresentation) {
+    fun onTaskClicked(task: TaskDomain) {
         // Ejemplo de cómo usar el evento para navegar
         // _event.value = HomeEvent.NavigateToTaskDetail(task.id)
     }

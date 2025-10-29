@@ -5,15 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import dagger.hilt.android.AndroidEntryPoint
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.manuelbena.synkron.databinding.BotoomSheetTaskDetailBinding
-import com.manuelbena.synkron.presentation.models.TaskPresentation
+import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.util.adapters.SubtaskAdapter
-import dagger.hilt.android.R
 
 // ... otras importaciones
 
@@ -21,7 +18,7 @@ private const val ARG_TASK = "arg_task"
 
 @AndroidEntryPoint
 class TaskDetailBottomSheet (
-    val task: TaskPresentation,
+    val task: TaskDomain,
 ) : BottomSheetDialogFragment() {
 
     private var _binding: BotoomSheetTaskDetailBinding? = null
@@ -46,7 +43,7 @@ class TaskDetailBottomSheet (
         binding.subtasksRecyclerView.adapter = subtaskAdapter
     }
 
-    private fun bindTaskData(task: TaskPresentation) {
+    private fun bindTaskData(task: TaskDomain) {
         binding.titleTextView.text = task.title
         binding.typeChip.text = task.typeTask
         binding.descriptionTextView.text = task.description
@@ -86,7 +83,7 @@ class TaskDetailBottomSheet (
         const val TAG = "TaskDetailBottomSheet"
 
         // Patrón de Fábrica: La forma correcta de crear fragmentos con argumentos
-        fun newInstance(task: TaskPresentation): TaskDetailBottomSheet {
+        fun newInstance(task: TaskDomain): TaskDetailBottomSheet {
             val args = Bundle().apply {
                 putParcelable(ARG_TASK, task)
             }

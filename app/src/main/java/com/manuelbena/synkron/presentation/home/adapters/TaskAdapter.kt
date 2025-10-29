@@ -10,12 +10,12 @@ import androidx.recyclerview.widget.DiffUtil
 import com.manuelbena.synkron.databinding.ItemTaskTodayBinding
 import com.manuelbena.synkron.base.BaseAdapter
 import com.manuelbena.synkron.base.BaseViewHolder
-import com.manuelbena.synkron.presentation.models.TaskPresentation
+import com.manuelbena.synkron.domain.models.TaskDomain
 
 class TaskAdapter(
-    private val onItemClicked: (TaskPresentation) -> Unit
+    private val onItemClicked: (TaskDomain) -> Unit
 ) :
-    BaseAdapter<TaskPresentation, TaskAdapter.TaskViewHolder>(
+    BaseAdapter<TaskDomain, TaskAdapter.TaskViewHolder>(
         diffCallback
     ) {
 
@@ -30,13 +30,13 @@ class TaskAdapter(
 
 
     inner class TaskViewHolder(private val binding: ItemTaskTodayBinding) :
-        BaseViewHolder<TaskPresentation>(binding) {
+        BaseViewHolder<TaskDomain>(binding) {
         @SuppressLint("SetTextI18n")
-        override fun bind(data: TaskPresentation) {
+        override fun bind(data: TaskDomain) {
             binding.tvEventTitle.text = data.title
             binding.tvEventType.text = data.typeTask
             binding.tvEventLocation.text = data.place
-            binding.tvAttendees.text = data.hour
+            binding.tvAttendees.text = data.hour.toString()
             binding.tvProgressPercentage.text = "${calcularPorcentajeSubtareasCompletadas(listOf(data)).toInt()}%"
             binding.pbCircularProgress.progress = calcularPorcentajeSubtareasCompletadas(listOf(data)).toInt()
             binding.pbLinearProgress.progress = calcularPorcentajeSubtareasCompletadas(listOf(data)).toInt()
@@ -56,7 +56,7 @@ class TaskAdapter(
             }
         }
     }
-    fun calcularPorcentajeSubtareasCompletadas(tareas: List<TaskPresentation>): Double {
+    fun calcularPorcentajeSubtareasCompletadas(tareas: List<TaskDomain>): Double {
         // 1. Contar el número total de subtareas en todas las tareas.
         // Usamos flatMap para unir todas las listas de subtareas en una sola.
         val todasLasSubtareas = tareas.flatMap { it.subTasks }
@@ -76,17 +76,17 @@ class TaskAdapter(
     }
 
     companion object {
-        private val diffCallback = object : DiffUtil.ItemCallback<TaskPresentation>() {
+        private val diffCallback = object : DiffUtil.ItemCallback<TaskDomain>() {
             override fun areItemsTheSame(
-                oldItem: TaskPresentation,
-                newItem: TaskPresentation
+                oldItem: TaskDomain,
+                newItem: TaskDomain
             ): Boolean {
                 return oldItem.title == newItem.title
             }
 
             override fun areContentsTheSame(
-                oldItem: TaskPresentation,
-                newItem: TaskPresentation
+                oldItem: TaskDomain,
+                newItem: TaskDomain
             ): Boolean {
                 TODO("Not yet implemented")
             }

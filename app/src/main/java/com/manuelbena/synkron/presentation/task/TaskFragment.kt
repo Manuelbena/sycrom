@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -26,7 +27,10 @@ import com.google.android.material.timepicker.TimeFormat
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentNewTaskBinding
+import com.manuelbena.synkron.domain.models.TaskDomain
+import com.manuelbena.synkron.presentation.home.HomeEvent
 import com.manuelbena.synkron.presentation.home.HomeViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Collections
@@ -34,7 +38,7 @@ import java.util.Locale
 import java.util.TimeZone
 import kotlin.getValue
 
-
+@AndroidEntryPoint // <-- 2. ANOTA LA CLASE
 class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     override val viewModel: TaskViewModel by viewModels()
@@ -48,7 +52,22 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
     }
 
     override fun observe() {
-     
+
+        viewModel.event.observe(viewLifecycleOwner) { event ->
+            when (event) {
+                is TaskEvent.InsertTask -> {
+                   requireActivity().finish()
+                }
+
+                is TaskEvent.ErrorSavingTask -> {
+
+                }
+
+                TaskEvent.DeleteTask -> TODO()
+                TaskEvent.UpdateTask -> TODO()
+            }
+        }
+
     }
 
     override fun setListener() {
@@ -70,6 +89,21 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
                     // Restablecer el texto del botón de duración a su estado original
                     btnDuracion.text = "Duracion"
                 }
+            }
+            binding.btnGuardar.setOnClickListener {
+                viewModel.onSaveTask(
+                    TaskDomain(
+                        hour = 0,
+                        date = 0,
+                        title = binding.tvSubTask.text.toString(),
+                        description = binding.tvSubTask.text.toString(),
+                        typeTask = "binding.chipGroupTypeTask.checkedChipId",
+                        place = "binding.tvLocation.text.toString()",
+                        subTasks = listOf(),
+                        isActive = true,
+                        isDone = false
+                    )
+                )
             }
             setupSubtaskManager()
         }

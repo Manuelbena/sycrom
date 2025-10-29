@@ -4,9 +4,9 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -17,7 +17,7 @@ import com.manuelbena.synkron.databinding.FragmentHomeBinding
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
 import com.manuelbena.synkron.presentation.models.SubTaskPresentation
-import com.manuelbena.synkron.presentation.models.TaskPresentation
+import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.util.ADD_TASK
 import com.manuelbena.synkron.presentation.util.CarouselScrollListener
 import com.manuelbena.synkron.presentation.util.TaskDetailBottomSheet
@@ -33,7 +33,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        viewModel.getTaskToday()
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentHomeBinding {
@@ -42,6 +41,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override fun setUI() {
         super.setUI()
+        viewModel.getTaskToday()
         setupRecyclerView()
         setupWeekCalendar()
     }
@@ -59,7 +59,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 }
 
                 is HomeEvent.ListTasksToday -> {
-                    taskAdapter.submitList(event.list)
+                    if (event.list.isNotEmpty()){
+                        taskAdapter.submitList(event.list)
+                    }else{
+                        binding.recyclerViewTasks.visibility = View.INVISIBLE
+                    }
+
                 }
             }
         }
@@ -67,26 +72,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override fun setListener() {
         binding.apply {
-            recyclerViewTasks.setOnClickListener {
-                val miTarea = TaskPresentation(
-                    hour = "10:00 AM",
-                    date = 20251008,
-                    title = "Reunión de Sincronización",
-                    description = "Discutir los avances del sprint.",
-                    typeTask = "Trabajo",
-                    place = "Oficina",
-                    subTasks = listOf(SubTaskPresentation("Preparar slides", true)),
-                    isActive = true,
-                    isDone = false
-                )
-
-                // 2. Muestra el Bottom Sheet
-                TaskDetailBottomSheet.newInstance(miTarea).show(
-                    parentFragmentManager,
-                    TaskDetailBottomSheet.TAG
-                )
-
-            }
             buttonAddTask.setOnClickListener {
                 val intent = Intent(requireContext(), ContainerActivity::class.java)
                 intent.putExtra(ADD_TASK, "true")
