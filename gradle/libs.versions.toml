@@ -20,11 +20,12 @@ google-calendar-api       = "v3-rev20250404-2.0.0"
 coroutines                = "1.8.1"
 lifecycle                 = "2.8.1"
 google-fonts = "1.6.7"
+gson = "2.10.1" # <-- AÑADE ESTA LÍNEA
 
 
 
 [libraries]
-
+google-gson = { module = "com.google.code.gson:gson", version.ref = "gson" } # <-- AÑADE ESTA LÍNEA
 compose-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "google-fonts" }
 credentials               = { module = "androidx.credentials:credentials",                version.ref = "credentials" }
 play-services-auth        = { module = "com.google.android.gms:play-services-auth",       version.ref = "play-services-auth" }

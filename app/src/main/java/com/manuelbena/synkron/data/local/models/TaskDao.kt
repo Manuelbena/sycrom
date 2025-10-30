@@ -4,6 +4,7 @@ package com.manuelbena.synkron.data.local.models
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.manuelbena.synkron.domain.models.SubTaskDomain
 
 /**
  * Esta es la entidad (tabla) para tu evento.
@@ -23,11 +24,14 @@ data class TaskDao(
     @ColumnInfo(name = "description")
     var description: String?,
 
-    @ColumnInfo(name = "start_time")
+    @ColumnInfo(name = "start_time") // 'date' en TaskDomain
     var date: Long,
 
-    @ColumnInfo(name = "hour")
+    @ColumnInfo(name = "hour") // 'hour' en TaskDomain (minutos)
     var hour: Int,
+
+    @ColumnInfo(name = "duration") // <-- AÑADIDO
+    var duration: Int,
 
     @ColumnInfo(name = "tipy_task")
     var typeTask: String,
@@ -39,5 +43,8 @@ data class TaskDao(
     var isDone: Boolean = false,
 
     @ColumnInfo(name = "location")
-    var location: String?
+    var location: String?,
+
+    @ColumnInfo(name = "sub_tasks") // <-- AÑADIDO
+    var subTasks: List<SubTaskDomain> = emptyList()
 )

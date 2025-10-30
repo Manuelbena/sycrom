@@ -57,11 +57,12 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         viewModel.event.observe(viewLifecycleOwner) { event ->
             when (event) {
                 is TaskEvent.InsertTask -> {
-                   requireActivity().finish()
+                    requireActivity().finish()
                 }
 
                 is TaskEvent.ErrorSavingTask -> {
-
+                    // Mostrar error al usuario
+                    Snackbar.make(binding.root, event.message, Snackbar.LENGTH_LONG).show()
                 }
 
                 TaskEvent.DeleteTask -> TODO()
@@ -106,7 +107,13 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
                 val durationInMinutes = getDurationInMinutes()
                 val taskType = getSelectedTaskType()
                 val place = binding.tvLocation.text.toString().trim()
-                // La lista de subtareas ya está actualizada en la variable `subtaskList`
+
+                // --- INICIO DE LA CORRECCIÓN ---
+                // Convertir la lista de Strings a List<SubTaskPresentation>
+                val subTasksToSave = subtaskList.map { subtaskTitle ->
+                    SubTaskPresentation(title = subtaskTitle, isDone = false)
+                }
+                // --- FIN DE LA CORRECCIÓN ---
 
                 // 2. Crear el objeto TaskDomain con los datos reales
                 val taskToSave = TaskDomain(
@@ -117,7 +124,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
                     duration = durationInMinutes,
                     typeTask = taskType,
                     place = place,
-                    subTasks = listOf(), // Usamos la lista que ya gestionas
+                    subTasks = subTasksToSave, // <-- Usar la lista convertida
                     isActive = true, // O la lógica que corresponda
                     isDone = false
                 )
@@ -136,13 +143,14 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
     private fun getDateTimestamp(): Long {
         val dateText = binding.btnFecha.text.toString()
         if (dateText.equals("Fecha", ignoreCase = true)) {
-            return 0L
+            // Si no se selecciona fecha, usar la de hoy por defecto
+            return MaterialDatePicker.todayInUtcMilliseconds()
         }
         return try {
             val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            format.parse(dateText)?.time ?: 0L
+            format.parse(dateText)?.time ?: MaterialDatePicker.todayInUtcMilliseconds()
         } catch (e: Exception) {
-            0L
+            MaterialDatePicker.todayInUtcMilliseconds()
         }
     }
 
@@ -153,7 +161,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
     private fun getTimeInMinutes(): Int {
         val timeText = binding.btnHora.text.toString()
         if (timeText.equals("Hora", ignoreCase = true)) {
-            return 0
+            return 0 // 0 minutos = 00:00
         }
         return try {
             val parts = timeText.split(":")
@@ -176,8 +184,10 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             return when (checkedChipId) {
                 R.id.chip_15_min -> 15
                 R.id.chip_30_min -> 30
+                R.id.chip_60_min -> 45 // <-- OJO: Este chip dice 60_min pero el texto es 45 Minitos
                 R.id.chip_1_hour -> 60
-                // Añade más casos si tienes más chips
+                R.id.chip_5_hour -> 300 // 5 * 60
+                R.id.chip_8_hour -> 480 // 8 * 60
                 else -> 0
             }
         }
@@ -194,72 +204,72 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     /**
      * Obtiene el tipo de tarea del ChipGroup correspondiente.
-     * Devuelve un string vacío si no hay nada seleccionado.
+     * Devuelve "Personal" si no hay nada seleccionado (coincide con chip_personal checked=true).
      */
     private fun getSelectedTaskType(): String {
         val checkedChipId = binding.chipGroupTypeTask.checkedChipId
         return if (checkedChipId != View.NO_ID) {
-            view?.findViewById<com.google.android.material.chip.Chip>(checkedChipId)?.text?.toString() ?: ""
+            view?.findViewById<com.google.android.material.chip.Chip>(checkedChipId)?.text?.toString() ?: "Personal"
         } else {
-            ""
+            "Personal" // Valor por defecto si nada está seleccionado
         }
     }
 
     private fun setupDatePicker() {
 
-            // Crear el MaterialDatePicker
-            val datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Selecciona una fecha")
-                .setSelection(MaterialDatePicker.todayInUtcMilliseconds()) // Fecha por defecto
-                .build()
+        // Crear el MaterialDatePicker
+        val datePicker = MaterialDatePicker.Builder.datePicker()
+            .setTitleText("Selecciona una fecha")
+            .setSelection(MaterialDatePicker.todayInUtcMilliseconds()) // Fecha por defecto
+            .build()
 
-            // Listener para cuando el usuario presiona "OK"
-            datePicker.addOnPositiveButtonClickListener { selection ->
-                // 'selection' es un Long (timestamp en milisegundos UTC)
-                // Lo convertimos a una fecha legible
-                val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
-                calendar.timeInMillis = selection
-                val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                val fechaFormateada = format.format(calendar.time)
+        // Listener para cuando el usuario presiona "OK"
+        datePicker.addOnPositiveButtonClickListener { selection ->
+            // 'selection' es un Long (timestamp en milisegundos UTC)
+            // Lo convertimos a una fecha legible
+            val calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+            calendar.timeInMillis = selection
+            val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val fechaFormateada = format.format(calendar.time)
 
-                // Actualizamos el texto del botón
-                binding.btnFecha.text = fechaFormateada
-            }
+            // Actualizamos el texto del botón
+            binding.btnFecha.text = fechaFormateada
+        }
 
-            // Mostrar el DatePicker
-            datePicker.show(childFragmentManager, "MATERIAL_DATE_PICKER")
+        // Mostrar el DatePicker
+        datePicker.show(childFragmentManager, "MATERIAL_DATE_PICKER")
 
     }
 
     private fun setupTimePicker() {
 
-            // Obtenemos la hora y minuto actuales para el valor por defecto
-            val calendar = Calendar.getInstance()
-            val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
-            val currentMinute = calendar.get(Calendar.MINUTE)
+        // Obtenemos la hora y minuto actuales para el valor por defecto
+        val calendar = Calendar.getInstance()
+        val currentHour = calendar.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = calendar.get(Calendar.MINUTE)
 
-            // Crear el MaterialTimePicker
-            val timePicker = MaterialTimePicker.Builder()
-                .setTimeFormat(TimeFormat.CLOCK_24H) // Formato 24h (o CLOCK_12H)
-                .setHour(currentHour)
-                .setMinute(currentMinute)
-                .setTitleText("Selecciona una hora")
-                .build()
+        // Crear el MaterialTimePicker
+        val timePicker = MaterialTimePicker.Builder()
+            .setTimeFormat(TimeFormat.CLOCK_24H) // Formato 24h (o CLOCK_12H)
+            .setHour(currentHour)
+            .setMinute(currentMinute)
+            .setTitleText("Selecciona una hora")
+            .build()
 
-            // Listener para cuando el usuario presiona "OK"
-            timePicker.addOnPositiveButtonClickListener {
-                val horaSeleccionada = timePicker.hour
-                val minutoSeleccionado = timePicker.minute
+        // Listener para cuando el usuario presiona "OK"
+        timePicker.addOnPositiveButtonClickListener {
+            val horaSeleccionada = timePicker.hour
+            val minutoSeleccionado = timePicker.minute
 
-                // Formateamos la hora (ej: "14:30")
-                val horaFormateada = String.format(Locale.getDefault(), "%02d:%02d", horaSeleccionada, minutoSeleccionado)
+            // Formateamos la hora (ej: "14:30")
+            val horaFormateada = String.format(Locale.getDefault(), "%02d:%02d", horaSeleccionada, minutoSeleccionado)
 
-                // Actualizamos el texto del botón
-                binding.btnHora.text = horaFormateada
-            }
+            // Actualizamos el texto del botón
+            binding.btnHora.text = horaFormateada
+        }
 
-            // Mostrar el TimePicker
-            timePicker.show(childFragmentManager, "MATERIAL_TIME_PICKER")
+        // Mostrar el TimePicker
+        timePicker.show(childFragmentManager, "MATERIAL_TIME_PICKER")
 
     }
 

@@ -10,9 +10,11 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.manuelbena.synkron.databinding.BotoomSheetTaskDetailBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
+import com.manuelbena.synkron.domain.models.SubTask // <-- MODIFICADO
 import com.manuelbena.synkron.presentation.util.adapters.SubtaskAdapter
-
-// ... otras importaciones
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 private const val ARG_TASK = "arg_task"
 
@@ -27,15 +29,21 @@ class TaskDetailBottomSheet (
 
     private val subtaskAdapter = SubtaskAdapter()
 
+    // Formateador para la fecha
+    private val dateFormatter = SimpleDateFormat("dd 'de' MMMM 'de' yyyy", Locale("es", "ES"))
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = BotoomSheetTaskDetailBinding.inflate(inflater, container, false)
-        bindTaskData(task)
+
+        // Recuperar la tarea de los argumentos si el fragmento se recrea
+        val taskToBind = arguments?.getParcelable<TaskDomain>(ARG_TASK) ?: task
+        bindTaskData(taskToBind)
+
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         setupRecyclerView()
     }
 
@@ -46,12 +54,30 @@ class TaskDetailBottomSheet (
     private fun bindTaskData(task: TaskDomain) {
         binding.titleTextView.text = task.title
         binding.typeChip.text = task.typeTask
-        binding.descriptionTextView.text = task.description
-        binding.placeTextView.text = task.place
-        // Aquí podrías formatear la fecha y hora de forma más elegante
-        binding.dateTimeTextView.text = "${task.date} - ${task.hour}"
+        binding.descriptionTextView.text = task.description.takeIf { it.isNotEmpty() } ?: "Sin descripción"
+        binding.placeTextView.text = task.place.takeIf { it.isNotEmpty() } ?: "Sin ubicación"
+
+        // --- Formateo de fecha y hora ---
+        // Fecha (desde timestamp Long)
+        val date = Date(task.date)
+        val formattedDate = dateFormatter.format(date)
+
+        // Hora (desde Int de minutos)
+        val hours = task.hour / 60
+        val minutes = task.hour % 60
+        val formattedTime = String.format(Locale.getDefault(), "%02d:%02d", hours, minutes)
+
+        binding.dateTimeTextView.text = "$formattedDate - $formattedTime"
+        // --- Fin de formateo ---
 
         subtaskAdapter.submitList(task.subTasks)
+
+        // Ocultar/Mostrar sección de subtareas si está vacía
+        val hasSubtasks = task.subTasks.isNotEmpty()
+        binding.subtasksRecyclerView.visibility = if (hasSubtasks) View.VISIBLE else View.GONE
+        // Referencia al TextView de "Subtareas" (asumiendo que tiene un ID `subtasksTitleTextView` o similar)
+        // Por ejemplo, si el TextView "Subtareas" en `botoom_sheet_task_detail.xml` tuviera id `tvSubtasksTitle`:
+        // binding.tvSubtasksTitle.visibility = if (hasSubtasks) View.VISIBLE else View.GONE
     }
 
     override fun onStart() {
@@ -93,3 +119,4 @@ class TaskDetailBottomSheet (
         }
     }
 }
+

@@ -8,12 +8,11 @@ fun TaskDao.toDomain() =
         hour = hour,
         date = date,
         title = title,
-        description = "",
+        description = description ?: "", // <-- CORREGIDO (manejar nulo)
         typeTask = typeTask,
-        place = "",
+        place = location ?: "", // <-- CORREGIDO (manejar nulo)
         isActive = isActive,
         isDone = isDone,
-        subTasks = listOf(),
-        duration = 0
-
+        subTasks = subTasks, // <-- CORREGIDO
+        duration = duration // <-- CORREGIDO
     )

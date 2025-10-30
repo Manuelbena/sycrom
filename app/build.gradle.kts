@@ -53,6 +53,7 @@ dependencies {
     implementation("androidx.room:room-ktx:$room_version") // Para usar Coroutines con Room
     ksp("androidx.room:room-compiler:$room_version") // Usamos ksp para el procesador de anotaciones
 
+
     // --- DEPENDENCIAS DE HILT ---
     // 3. Añadir la librería principal de Hilt
     implementation("com.google.dagger:hilt-android:2.50")
@@ -61,6 +62,7 @@ dependencies {
 
 
     // --- DEPENDENCIAS EXISTENTES ---
+    implementation(libs.google.gson) // <-- AÑADE ESTA LÍNEA
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.compose.google.fonts)

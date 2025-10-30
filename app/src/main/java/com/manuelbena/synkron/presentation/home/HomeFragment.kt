@@ -1,8 +1,6 @@
 package com.manuelbena.synkron.presentation.home
 
-import android.annotation.SuppressLint
 import android.content.Intent
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,12 +9,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentHomeBinding
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
-import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.util.ADD_TASK
 import com.manuelbena.synkron.presentation.util.CarouselScrollListener
 import com.manuelbena.synkron.presentation.util.TaskDetailBottomSheet
@@ -28,8 +24,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override val viewModel: HomeViewModel by viewModels()
     // Inicializar TaskAdapter aquí
-    private val taskAdapter = TaskAdapter { task ->
-        // Acción al hacer clic: Mostrar BottomSheet
+    private val taskAdapter  = TaskAdapter { task ->
         TaskDetailBottomSheet.newInstance(task).show(
             parentFragmentManager,
             TaskDetailBottomSheet.TAG
