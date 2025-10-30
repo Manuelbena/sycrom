@@ -1,12 +1,13 @@
 package com.manuelbena.synkron.data.repository
 
+
 import com.manuelbena.synkron.data.local.models.EventDao
-import com.manuelbena.synkron.data.local.models.TaskDao
+import kotlinx.coroutines.flow.map
 import com.manuelbena.synkron.data.mappers.toData
 import com.manuelbena.synkron.data.mappers.toDomain
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import com.manuelbena.synkron.domain.models.TaskDomain
-import kotlinx.coroutines.flow.first // <-- 1. IMPORTA la función 'first'
+
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -19,13 +20,12 @@ class TasksRepository @Inject constructor(
      * Obtiene la lista de tareas de forma asíncrona.
      * Utiliza .first() para recolectar el primer valor emitido por el Flow de Room.
      */
-    override suspend fun getTaskToday(): List<TaskDomain> {
-        // 2. RECOLECTA el primer valor del Flow (que es la lista)
-        val taskDaoList: List<TaskDao> = eventDao.getAllEvents().first()
+    override fun getTaskToday(): kotlinx.coroutines.flow.Flow<List<TaskDomain>> {
 
-        // 3. MAPEA la lista de DAOs a una lista de objetos de Dominio y la devuelve
-        return taskDaoList.map { taskDao ->
-            taskDao.toDomain()
+        return eventDao.getAllEvents().map { eventDaoList ->
+            eventDaoList.map { eventDao ->
+                eventDao.toDomain()
+            }
         }
     }
 

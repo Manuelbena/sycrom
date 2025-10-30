@@ -58,7 +58,8 @@ class CalendarFragment : Fragment() {
                     SubTaskPresentation(title = "Definir próximos pasos", isDone = false)
                 ),
                 isActive = true, // La tarea está en curso o es la siguiente
-                isDone = false   // Aún no ha sido completada
+                isDone = false ,  // Aún no ha sido completada
+                duration = 9
             ),
             TaskDomain(
                 hour = 20251008,
@@ -69,7 +70,8 @@ class CalendarFragment : Fragment() {
                 place = "Clínica Dental 'Sonrisa Sana'",
                 subTasks = emptyList(), // No tiene subtareas
                 isActive = false,
-                isDone = false
+                isDone = false,
+                duration = 9
             ),
             TaskDomain(
                 hour = 20251008,
@@ -83,7 +85,8 @@ class CalendarFragment : Fragment() {
                     SubTaskPresentation(title = "Hacer ejercicios del capítulo 5", isDone = true)
                 ),
                 isActive = false, // Ya no está activa porque pasó la fecha
-                isDone = true     // La marcamos como completada
+                isDone = true ,    // La marcamos como completada
+                duration = 9
             )
         )
 

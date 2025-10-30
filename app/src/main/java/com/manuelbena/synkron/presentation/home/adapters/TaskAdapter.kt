@@ -11,13 +11,23 @@ import com.manuelbena.synkron.databinding.ItemTaskTodayBinding
 import com.manuelbena.synkron.base.BaseAdapter
 import com.manuelbena.synkron.base.BaseViewHolder
 import com.manuelbena.synkron.domain.models.TaskDomain
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
-class TaskAdapter(
+class
+TaskAdapter(
     private val onItemClicked: (TaskDomain) -> Unit
 ) :
     BaseAdapter<TaskDomain, TaskAdapter.TaskViewHolder>(
-        diffCallback
+        diffCallback // Usar el DiffUtil definido abajo
     ) {
+
+    // Formateador para la hora, inicializado una vez
+    private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm", Locale("es", "ES"))
+        .withZone(ZoneId.systemDefault())
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder =
         TaskViewHolder(
@@ -35,66 +45,71 @@ class TaskAdapter(
         override fun bind(data: TaskDomain) {
             binding.tvEventTitle.text = data.title
             binding.tvEventType.text = data.typeTask
-            binding.tvEventLocation.text = data.place
-            binding.tvAttendees.text = data.hour.toString()
-            binding.tvProgressPercentage.text = "${calcularPorcentajeSubtareasCompletadas(listOf(data)).toInt()}%"
-            binding.pbCircularProgress.progress = calcularPorcentajeSubtareasCompletadas(listOf(data)).toInt()
-            binding.pbLinearProgress.progress = calcularPorcentajeSubtareasCompletadas(listOf(data)).toInt()
-            binding.tvSubtasks.text = "${data.subTasks.count(){it.isDone}} / ${data.subTasks.size} subtareas"
+            binding.tvEventLocation.text = data.place ?: "Sin ubicación" // Manejar nulo
 
+            // Formatear la hora desde el Long (timestamp)
+            val instant = Instant.ofEpochMilli(data.hour.toLong()) // Asumiendo que 'hour' es el timestamp completo
+            binding.tvAttendees.text = timeFormatter.format(instant) // Reutilizado tvAttendees para la hora
+
+            val progress = calcularPorcentajeSubtareasCompletadas(listOf(data)).toInt()
+            binding.tvProgressPercentage.text = "$progress%"
+            binding.pbCircularProgress.progress = progress
+            binding.pbLinearProgress.progress = progress
+
+            val completedSubtasks = data.subTasks.count { it.isDone }
+            binding.tvSubtasks.text = "$completedSubtasks / ${data.subTasks.size} subtareas"
+
+            // Aplicar o quitar el tachado
             if (data.isDone){
-                binding.tvEventTitle.paintFlags = Paint.STRIKE_THRU_TEXT_FLAG
+                binding.tvEventTitle.paintFlags = binding.tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 binding.tvEventTitle.setTextColor(Color.GRAY)
+            } else {
+                binding.tvEventTitle.paintFlags = binding.tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                // Restaurar color original (ajusta según tu tema)
+                binding.tvEventTitle.setTextColor(binding.root.context.getColor(com.google.android.material.R.color.material_dynamic_primary0))
             }
-            if (data.subTasks.isEmpty()){
-                binding.llSubtasks.visibility = View.INVISIBLE
-                binding.progressCircular.visibility = View.INVISIBLE
-            }
+
+            // Ocultar/Mostrar sección de subtareas
+            val hasSubtasks = data.subTasks.isNotEmpty()
+            binding.llSubtasks.visibility = if (hasSubtasks) View.VISIBLE else View.INVISIBLE
+            binding.progressCircular.visibility = if (hasSubtasks) View.VISIBLE else View.INVISIBLE
+
+
             binding.root.setOnClickListener {
-                // Cuando se hace clic, llama a la función lambda pasando la tarea actual
                 onItemClicked(data)
             }
         }
     }
-    fun calcularPorcentajeSubtareasCompletadas(tareas: List<TaskDomain>): Double {
-        // 1. Contar el número total de subtareas en todas las tareas.
-        // Usamos flatMap para unir todas las listas de subtareas en una sola.
+
+    // Función auxiliar movida fuera del ViewHolder
+    private fun calcularPorcentajeSubtareasCompletadas(tareas: List<TaskDomain>): Double {
         val todasLasSubtareas = tareas.flatMap { it.subTasks }
         val totalSubtareas = todasLasSubtareas.size
-
-        // Si no hay ninguna subtarea, el progreso es 0.
-        if (totalSubtareas == 0) {
-            return 0.0
-        }
-
-        // 2. Contar cuántas de esas subtareas están completadas (isDone = true).
+        if (totalSubtareas == 0) return 0.0
         val subtareasCompletadas = todasLasSubtareas.count { it.isDone }
-
-        // 3. Calcular el porcentaje y devolverlo.
-        // Convertimos los números a Double para obtener un resultado con decimales.
         return (subtareasCompletadas.toDouble() / totalSubtareas.toDouble()) * 100
     }
 
     companion object {
+        // DiffUtil Callback implementado correctamente
         private val diffCallback = object : DiffUtil.ItemCallback<TaskDomain>() {
             override fun areItemsTheSame(
                 oldItem: TaskDomain,
                 newItem: TaskDomain
             ): Boolean {
-                return oldItem.title == newItem.title
+                // Compara por un identificador único si lo tienes, sino por título/fecha/hora
+                return oldItem.title == newItem.title && oldItem.date == newItem.date && oldItem.hour == newItem.hour // Ejemplo si no hay ID único
             }
 
+            @SuppressLint("DiffUtilEquals") // Suprimir advertencia si TaskDomain es data class
             override fun areContentsTheSame(
                 oldItem: TaskDomain,
                 newItem: TaskDomain
             ): Boolean {
-                TODO("Not yet implemented")
+                // Compara todo el contenido del objeto.
+                // Si TaskDomain es una data class, la comparación '==' funciona bien.
+                return oldItem == newItem
             }
-
-
         }
     }
-
-
-
 }

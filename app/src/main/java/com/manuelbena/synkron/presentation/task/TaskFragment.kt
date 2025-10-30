@@ -13,6 +13,7 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
 import android.widget.Toast
+
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -91,21 +92,116 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
                 }
             }
             binding.btnGuardar.setOnClickListener {
-                viewModel.onSaveTask(
-                    TaskDomain(
-                        hour = 0,
-                        date = 0,
-                        title = binding.tvSubTask.text.toString(),
-                        description = binding.tvSubTask.text.toString(),
-                        typeTask = "binding.chipGroupTypeTask.checkedChipId",
-                        place = "binding.tvLocation.text.toString()",
-                        subTasks = listOf(),
-                        isActive = true,
-                        isDone = false
-                    )
+                // Validación básica del título
+                val title = binding.tvTitle.text.toString().trim()
+                if (title.isEmpty()) {
+                    binding.tvTitle.error = "El título no puede estar vacío"
+                    return@setOnClickListener
+                }
+
+                // 1. Recolectar todos los datos del formulario
+                val description = binding.tvDescription.text.toString().trim()
+                val dateTimestamp = getDateTimestamp()
+                val timeInMinutes = getTimeInMinutes()
+                val durationInMinutes = getDurationInMinutes()
+                val taskType = getSelectedTaskType()
+                val place = binding.tvLocation.text.toString().trim()
+                // La lista de subtareas ya está actualizada en la variable `subtaskList`
+
+                // 2. Crear el objeto TaskDomain con los datos reales
+                val taskToSave = TaskDomain(
+                    title = title,
+                    description = description,
+                    date = dateTimestamp,
+                    hour = timeInMinutes,
+                    duration = durationInMinutes,
+                    typeTask = taskType,
+                    place = place,
+                    subTasks = listOf(), // Usamos la lista que ya gestionas
+                    isActive = true, // O la lógica que corresponda
+                    isDone = false
                 )
+
+                // 3. Enviar el objeto al ViewModel
+                viewModel.onSaveTask(taskToSave)
             }
             setupSubtaskManager()
+        }
+    }
+
+    /**
+     * Obtiene el timestamp en milisegundos de la fecha seleccionada en el botón.
+     * Devuelve 0 si no se ha seleccionado ninguna fecha.
+     */
+    private fun getDateTimestamp(): Long {
+        val dateText = binding.btnFecha.text.toString()
+        if (dateText.equals("Fecha", ignoreCase = true)) {
+            return 0L
+        }
+        return try {
+            val format = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            format.parse(dateText)?.time ?: 0L
+        } catch (e: Exception) {
+            0L
+        }
+    }
+
+    /**
+     * Obtiene la hora seleccionada en el botón y la convierte a minutos totales desde la medianoche.
+     * Devuelve 0 si no se ha seleccionado ninguna hora.
+     */
+    private fun getTimeInMinutes(): Int {
+        val timeText = binding.btnHora.text.toString()
+        if (timeText.equals("Hora", ignoreCase = true)) {
+            return 0
+        }
+        return try {
+            val parts = timeText.split(":")
+            val hours = parts[0].toInt()
+            val minutes = parts[1].toInt()
+            (hours * 60) + minutes
+        } catch (e: Exception) {
+            0
+        }
+    }
+
+    /**
+     * Obtiene la duración en minutos, ya sea de los chips o del diálogo personalizado.
+     * Devuelve 0 si no se ha establecido ninguna duración.
+     */
+    private fun getDurationInMinutes(): Int {
+        // Primero, revisamos si hay un chip seleccionado
+        val checkedChipId = binding.chipGroupDuration.checkedChipId
+        if (checkedChipId != View.NO_ID) {
+            return when (checkedChipId) {
+                R.id.chip_15_min -> 15
+                R.id.chip_30_min -> 30
+                R.id.chip_1_hour -> 60
+                // Añade más casos si tienes más chips
+                else -> 0
+            }
+        }
+
+        // Si no hay chip, revisamos el texto del botón del diálogo personalizado
+        val durationText = binding.btnDuracion.text.toString()
+        if (durationText.startsWith("Duración:", ignoreCase = true)) {
+            // Extrae el número del texto "Duración: 120 min"
+            return durationText.removePrefix("Duración:").trim().split(" ")[0].toIntOrNull() ?: 0
+        }
+
+        return 0
+    }
+
+    /**
+     * Obtiene el tipo de tarea del ChipGroup correspondiente.
+     * Devuelve un string vacío si no hay nada seleccionado.
+     */
+    private fun getSelectedTaskType(): String {
+        val checkedChipId = binding.chipGroupTypeTask.checkedChipId
+        return if (checkedChipId != View.NO_ID) {
+            view?.findViewById<com.google.android.material.chip.Chip>(checkedChipId)?.text?.toString() ?: ""
+        } else {
+            ""
         }
     }
 

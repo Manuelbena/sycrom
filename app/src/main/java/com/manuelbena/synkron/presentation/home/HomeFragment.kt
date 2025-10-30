@@ -16,7 +16,6 @@ import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentHomeBinding
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
-import com.manuelbena.synkron.presentation.models.SubTaskPresentation
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.util.ADD_TASK
 import com.manuelbena.synkron.presentation.util.CarouselScrollListener
@@ -28,12 +27,17 @@ import dagger.hilt.android.AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override val viewModel: HomeViewModel by viewModels()
-    private lateinit var taskAdapter: TaskAdapter
+    // Inicializar TaskAdapter aquí
+    private val taskAdapter = TaskAdapter { task ->
+        // Acción al hacer clic: Mostrar BottomSheet
+        TaskDetailBottomSheet.newInstance(task).show(
+            parentFragmentManager,
+            TaskDetailBottomSheet.TAG
+        )
+    }
     private lateinit var weekCalendarManager: WeekCalendarManager
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
+
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentHomeBinding {
         return FragmentHomeBinding.inflate(inflater, container, false)
@@ -41,13 +45,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override fun setUI() {
         super.setUI()
-        viewModel.getTaskToday()
+        // No llamamos a viewModel.getTaskToday() aquí, el ViewModel carga los datos en su init
         setupRecyclerView()
         setupWeekCalendar()
+        // updateFinanceData(1500f, 500f) // Considera mover esto a observe si los datos son dinámicos
     }
 
     override fun observe() {
-
         viewModel.event.observe(viewLifecycleOwner) { event ->
             when (event) {
                 is HomeEvent.ShowErrorSnackbar -> {
@@ -55,16 +59,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 }
 
                 is HomeEvent.NavigateToTaskDetail -> {
-
+                    // Lógica de navegación si es necesaria
                 }
 
                 is HomeEvent.ListTasksToday -> {
-                    if (event.list.isNotEmpty()){
-                        taskAdapter.submitList(event.list)
-                    }else{
-                        binding.recyclerViewTasks.visibility = View.INVISIBLE
-                    }
-
+                    // El Flow emitió una nueva lista
+                    binding.recyclerViewTasks.visibility = if (event.list.isEmpty()) View.INVISIBLE else View.VISIBLE
+                    // Usar submitList para que ListAdapter calcule diferencias y anime
+                    taskAdapter.submitList(event.list)
                 }
             }
         }
@@ -77,32 +79,27 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 intent.putExtra(ADD_TASK, "true")
                 startActivity(intent)
             }
+            // Listener para el botón de sugerencia si es necesario
+            buttonAddTaskSuggestion.setOnClickListener {
+                // Lógica para añadir la tarea sugerida
+            }
         }
-
-
-
     }
 
 
     private fun setupRecyclerView() {
-        // 1. Al crear el adaptador, le decimos QUÉ HACER cuando se pulse un ítem.
-        taskAdapter = TaskAdapter { task ->
-            // 'task' es el objeto TaskPresentation del ítem que se ha pulsado.
-
-            // 2. Muestra el Bottom Sheet con los datos de la tarea pulsada.
-            TaskDetailBottomSheet.newInstance(task).show(
-                parentFragmentManager,
-                TaskDetailBottomSheet.TAG
-            )
-        }
-
+        // El adaptador ya se inicializó como propiedad de la clase
 
         val snapHelper = PagerSnapHelper()
 
         binding.recyclerViewTasks.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-            adapter = taskAdapter
+            adapter = taskAdapter // Asignar el adaptador inicializado
             applyCarouselPadding()
+            // Quitar el addOnScrollListener si ya estás usando ListAdapter,
+            // a menos que CarouselScrollListener haga algo más que animaciones básicas.
+            // Si solo es para escala/alpha/blur, mantenlo.
+            // Si era para lógica de carga/paginación, ya no es necesario con Flow.
             addOnScrollListener(CarouselScrollListener())
         }
         snapHelper.attachToRecyclerView(binding.recyclerViewTasks)
@@ -110,26 +107,23 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun setupWeekCalendar() {
         weekCalendarManager = WeekCalendarManager(binding.weekDaysContainer) { selectedDate ->
-            viewModel.onDateSelected(selectedDate)
+            viewModel.onDateSelected(selectedDate) // Notificar al ViewModel
         }
         weekCalendarManager.setupCalendar()
     }
 
-    @SuppressLint("StringFormatInvalid")
-    private fun updateFinanceData(income: Float, expenses: Float) {
-        binding.financePie.setData(ingresos = income, gastos = expenses)
-        binding.textIngresos.text = context?.getString(R.string.currency_format, income)
-        binding.textGastos.text = context?.getString(R.string.currency_format_negative, expenses)
-    }
+    // Eliminado updateFinanceData si no se usa dinámicamente o se mueve a observe
 
     /**
      * Calcula y aplica el padding horizontal necesario para que el primer y último ítem
      * del RecyclerView puedan centrarse en la pantalla.
      */
     private fun RecyclerView.applyCarouselPadding() {
-        val itemWidthPx = resources.displayMetrics.density * 300 // Ancho del ítem en dp.
+        // Asegúrate de que el ancho del item (300dp) sea correcto
+        val itemWidthDp = 250 // Ancho definido en item_task_today.xml
+        val itemWidthPx = resources.displayMetrics.density * itemWidthDp
         val screenWidthPx = resources.displayMetrics.widthPixels
-        val padding = (screenWidthPx / 2f - itemWidthPx / 2f).toInt()
+        val padding = (screenWidthPx / 2f - itemWidthPx / 2f).toInt().coerceAtLeast(0) // Asegurar que no sea negativo
 
         setPadding(padding, 0, padding, 0)
         clipToPadding = false

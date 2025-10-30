@@ -13,6 +13,7 @@ fun TaskDao.toDomain() =
         place = "",
         isActive = isActive,
         isDone = isDone,
-        subTasks = listOf()
+        subTasks = listOf(),
+        duration = 0
 
     )

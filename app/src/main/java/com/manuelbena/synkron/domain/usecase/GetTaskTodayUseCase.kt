@@ -8,7 +8,8 @@ class GetTaskTodayUseCase @Inject constructor(
     private val tasksRepository: ITaskRepository
 ) {
 
-    suspend operator fun invoke(): List<TaskDomain> {
+
+    operator fun invoke(): kotlinx.coroutines.flow.Flow<List<TaskDomain>> {
         return tasksRepository.getTaskToday()
     }
 }

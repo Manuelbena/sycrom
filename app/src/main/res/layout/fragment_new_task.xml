@@ -93,21 +93,21 @@
                             tools:ignore="SpUsage" />
 
                         <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/tv_title"
+
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="Título de la tarea"
                             app:startIconDrawable="@drawable/ic_edit">
 
                             <com.google.android.material.textfield.TextInputEditText
-
+                                android:id="@+id/tv_title"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textCapWords" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/tv_description"
+
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
@@ -115,7 +115,7 @@
                             app:startIconDrawable="@drawable/ic_info">
 
                             <com.google.android.material.textfield.TextInputEditText
-
+                                android:id="@+id/tv_description"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:gravity="top"
@@ -133,19 +133,21 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="Ubicac'ion"
+                            android:text="Ubicacion"
                             android:textColor="@color/background_primary"
                             android:textSize="@dimen/txt_dimen_xxl"
                             android:textStyle="bold"
                             tools:ignore="SpUsage" />
 
                         <com.google.android.material.textfield.TextInputLayout
+
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="Localizacion"
                             app:startIconDrawable="@drawable/ic_location">
 
                             <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/tv_location"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textCapWords" />
@@ -228,33 +230,39 @@
                             app:singleSelection="true">
 
                             <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_15_min"
                                 style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="15 Minitos" />
 
                             <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_30_min"
                                 style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="30 Minitos" />
 
                             <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_60_min"
                                 style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="45 Minitos" />
                             <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_1_hour"
                                 style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="1 Hora" />
                             <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_5_hour"
                                 style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="5 Hora" />
                             <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_8_hour"
                                 style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -398,18 +406,21 @@
                             tools:ignore="SpUsage" />
 
                         <com.google.android.material.chip.ChipGroup
+                            android:id="@+id/chip_group_type_task"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             app:singleSelection="true">
 
                             <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_work"
                                 style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Trabajo" />
 
                             <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_personal"
                                 style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -417,20 +428,20 @@
                                 android:text="Personal" />
 
                             <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_studen"
                                 style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Estudios" />
 
                             <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_salud"
                                 style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Salud" />
-
-
-
                             <com.google.android.material.chip.Chip
+                                android:id="@+id/chip_other"
                                 style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"

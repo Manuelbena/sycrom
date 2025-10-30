@@ -27,7 +27,7 @@ data class TaskDao(
     var date: Long,
 
     @ColumnInfo(name = "hour")
-    var hour: Long,
+    var hour: Int,
 
     @ColumnInfo(name = "tipy_task")
     var typeTask: String,

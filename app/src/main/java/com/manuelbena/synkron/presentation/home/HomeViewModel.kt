@@ -17,15 +17,23 @@ class HomeViewModel @Inject constructor(
     private val getTaskToday : GetTaskTodayUseCase // 2. Hilt inyecta la dependencia
 ) : BaseViewModel<HomeEvent>() { // 3. Heredamos y especificamos el tipo de evento
 
+    init {
+        getTaskToday()
+    }
     fun getTaskToday(){
-        executeUseCase({
-            getTaskToday.invoke()
-        },{
-            _event.value = HomeEvent.ListTasksToday(it)
-
-        },{
-
-        })
+        // AHORA:
+        // Usamos el helper executeFlow de tu BaseViewModel
+        executeFlow(
+            useCase = { getTaskToday.invoke() }, // Esto devuelve el Flow
+            onEach = { taskList ->
+                // "onEach" se ejecutará CADA VEZ que la lista en la BD cambie
+                _event.value = HomeEvent.ListTasksToday(taskList)
+            },
+            onError = {
+                // Opcional: manejar errores
+                _event.value = HomeEvent.ShowErrorSnackbar("Error al cargar tareas")
+            }
+        )
     }
 
     // El resto de la lógica permanece igual...
