@@ -67,7 +67,15 @@ class TaskAdapter(
                 tvEventType.text = item.typeTask
                 tvEventLocation.text = item.place.takeIf { it.isNotEmpty() } ?: "Sin ubicación"
                 tvDuration.text = item.duration.takeIf { it > 0 }
-                    ?.let { "${it}min" }
+                    ?.let {
+                        if (it > 60) {
+                            val hours = it / 60
+                            val minutes = it % 60
+                            "${hours} h ${minutes} min"
+                        }else{
+                            "${it} min"
+                        }
+                    }
                     ?: "Sin Duración"
 
                 // Formatear la hora (ej: 8 -> "08:00")
