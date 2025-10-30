@@ -104,6 +104,26 @@
                         android:textColor="@color/slate"
                         android:textSize="14sp" />
                 </LinearLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@drawable/ic_timer_duration"
+                        app:tint="@color/slate" />
+                    <TextView
+                        android:id="@+id/tvDuration"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="@string/event_attendees_more"
+                        android:textColor="@color/slate"
+                        android:textSize="14sp" />
+                </LinearLayout>
             </LinearLayout>
 
             <FrameLayout

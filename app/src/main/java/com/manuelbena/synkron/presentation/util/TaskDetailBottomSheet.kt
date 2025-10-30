@@ -10,7 +10,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.manuelbena.synkron.databinding.BotoomSheetTaskDetailBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
-import com.manuelbena.synkron.domain.models.SubTask // <-- MODIFICADO
+import com.manuelbena.synkron.domain.models.SubTaskDomain // <-- MODIFICADO
 import com.manuelbena.synkron.presentation.util.adapters.SubtaskAdapter
 import java.text.SimpleDateFormat
 import java.util.Date

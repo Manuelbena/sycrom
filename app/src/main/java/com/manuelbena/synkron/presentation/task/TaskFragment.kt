@@ -28,6 +28,7 @@ import com.google.android.material.timepicker.TimeFormat
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentNewTaskBinding
+import com.manuelbena.synkron.domain.models.SubTaskDomain
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.home.HomeEvent
 import com.manuelbena.synkron.presentation.home.HomeViewModel
@@ -111,7 +112,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
                 // --- INICIO DE LA CORRECCIÓN ---
                 // Convertir la lista de Strings a List<SubTaskPresentation>
                 val subTasksToSave = subtaskList.map { subtaskTitle ->
-                    SubTaskPresentation(title = subtaskTitle, isDone = false)
+                    SubTaskDomain(title = subtaskTitle, isDone = false)
                 }
                 // --- FIN DE LA CORRECCIÓN ---
 

@@ -8,10 +8,10 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.manuelbena.synkron.R
-import com.manuelbena.synkron.domain.models.SubTask
+import com.manuelbena.synkron.domain.models.SubTaskDomain
 
 
-class SubtaskAdapter : ListAdapter<SubTask, SubtaskAdapter.SubtaskViewHolder>(SubtaskDiffCallback()) {
+class SubtaskAdapter : ListAdapter<SubTaskDomain, SubtaskAdapter.SubtaskViewHolder>(SubtaskDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubtaskViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_subtask, parent, false)
@@ -25,19 +25,19 @@ class SubtaskAdapter : ListAdapter<SubTask, SubtaskAdapter.SubtaskViewHolder>(Su
     inner class SubtaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val checkBox: MaterialCheckBox = itemView.findViewById(R.id.subtaskCheckbox)
 
-        fun bind(subtask: SubTaskPresentation) {
+        fun bind(subtask: SubTaskDomain) {
             checkBox.text = subtask.title
             checkBox.isChecked = subtask.isDone
         }
     }
 }
 
-class SubtaskDiffCallback : DiffUtil.ItemCallback<SubTask>() { // <-- MODIFICADO
-    override fun areItemsTheSame(oldItem: SubTask, newItem: SubTask): Boolean { // <-- MODIFICADO
+class SubtaskDiffCallback : DiffUtil.ItemCallback<SubTaskDomain>() { // <-- MODIFICADO
+    override fun areItemsTheSame(oldItem: SubTaskDomain, newItem: SubTaskDomain): Boolean { // <-- MODIFICADO
         return oldItem.title == newItem.title // Assuming title is a unique identifier
     }
 
-    override fun areContentsTheSame(oldItem: SubTask, newItem: SubTask): Boolean { // <-- MODIFICADO
+    override fun areContentsTheSame(oldItem: SubTaskDomain, newItem: SubTaskDomain): Boolean { // <-- MODIFICADO
         return oldItem == newItem
     }
 }
