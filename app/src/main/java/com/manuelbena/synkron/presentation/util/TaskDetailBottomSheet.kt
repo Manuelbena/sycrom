@@ -103,12 +103,10 @@ class TaskDetailBottomSheet(
      */
     fun updateTask(newTask: TaskDomain) {
         // Comprobamos si la tarea actualizada es la que estamos mostrando
-        // (Sería mejor usar un ID único si lo tuvieras)
-        if (task.title == newTask.title && task.date == newTask.date && task.hour == newTask.hour) {
-            this.task = newTask // Actualizamos la variable local
-            arguments?.putParcelable(ARG_TASK, newTask) // Actualizamos el bundle por si se recrea
+        if (task.id == newTask.id) { // <-- Usa esto
+            this.task = newTask
+            arguments?.putParcelable(ARG_TASK, newTask)
 
-            // Si el binding aún existe, actualizamos la UI
             if (_binding != null) {
                 bindTaskData(newTask)
             }

@@ -5,6 +5,7 @@ import com.manuelbena.synkron.domain.models.TaskDomain
 
 fun TaskDao.toDomain() =
     TaskDomain(
+        id = this.id,
         hour = hour,
         date = date,
         title = title,

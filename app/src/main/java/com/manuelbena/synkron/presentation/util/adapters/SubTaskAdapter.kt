@@ -30,28 +30,36 @@ class SubtaskAdapter(
     inner class SubtaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val checkBox: MaterialCheckBox = itemView.findViewById(R.id.subtaskCheckbox)
 
+        // --- INICIO DE MODIFICACIÓN ---
+        init {
+            // 1. Configuramos el listener en el init, igual que en TaskAdapter
+            checkBox.setOnClickListener {
+                // Solo notificamos si la posición es válida
+                if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                    val item = getItem(bindingAdapterPosition)
+                    val newIsDone = !item.isDone // Calculamos el NUEVO estado
+
+                    // Aplicar/Quitar el tachado INMEDIATAMENTE al hacer clic
+                    updateStrikeThrough(newIsDone)
+
+                    // Notificamos al ViewModel
+                    onSubtaskCheckedChange(item, newIsDone)
+                }
+            }
+        }
+        // --- FIN DE MODIFICACIÓN ---
+
         fun bind(subtask: SubTaskDomain) {
             checkBox.text = subtask.title
 
-            // --- LÓGICA DE TACHADO ---
             // Aplicar/Quitar el tachado según el estado inicial
             updateStrikeThrough(subtask.isDone)
-            // --- FIN DE LÓGICA DE TACHADO ---
 
-            // 1. Establecemos el estado inicial del check sin disparar el listener
+            // Establecemos el estado inicial del check SIN disparar el listener
+            // (setOnClickListener no se dispara al cambiar isChecked programáticamente,
+            // pero setOnCheckedChangeListener sí lo haría, por eso es bueno ponerlo en null)
             checkBox.setOnCheckedChangeListener(null)
             checkBox.isChecked = subtask.isDone
-
-            // 2. Añadimos el listener para futuras interacciones del usuario
-            checkBox.setOnCheckedChangeListener { _, isChecked ->
-                // Aplicar/Quitar el tachado INMEDIATAMENTE al hacer clic
-                updateStrikeThrough(isChecked)
-
-                // Solo notificamos si la posición es válida
-                if (adapterPosition != RecyclerView.NO_POSITION) {
-                    onSubtaskCheckedChange(getItem(adapterPosition), isChecked)
-                }
-            }
         }
 
         /**
@@ -72,12 +80,12 @@ class SubtaskAdapter(
  */
 class SubtaskDiffCallback : DiffUtil.ItemCallback<SubTaskDomain>() {
     override fun areItemsTheSame(oldItem: SubTaskDomain, newItem: SubTaskDomain): Boolean {
-        // Asumimos que el título es único DENTRO de una tarea
-        return oldItem.title == newItem.title
+        // !! IMPORTANTE: ¡Cambia esto para usar el ID!
+        // return oldItem.title == newItem.title // <-- Cambia esto
+        return oldItem.id == newItem.id // <-- Por esto
     }
 
     override fun areContentsTheSame(oldItem: SubTaskDomain, newItem: SubTaskDomain): Boolean {
         return oldItem == newItem
     }
 }
-

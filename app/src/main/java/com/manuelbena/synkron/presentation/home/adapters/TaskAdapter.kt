@@ -197,8 +197,10 @@ class TaskAdapter(
          */
         private fun updateStrikeThrough(isDone: Boolean) {
             if (isDone) {
+                binding.cbIsDone.isChecked = true
                 binding.tvEventTitle.paintFlags = binding.tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
             } else {
+                binding.cbIsDone.isChecked = false
                 binding.tvEventTitle.paintFlags = binding.tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
             }
         }
@@ -217,18 +219,10 @@ class TaskAdapter(
      */
     private class TaskDiffCallback : DiffUtil.ItemCallback<TaskDomain>() {
 
-        /**
-         * Comprueba si dos items representan la misma entidad.
-         * Usamos una combinación única. (Si tuvieras un ID, sería mejor usar item.id == newItem.id)
-         */
         override fun areItemsTheSame(oldItem: TaskDomain, newItem: TaskDomain): Boolean {
-            return oldItem.title == newItem.title && oldItem.date == newItem.date && oldItem.hour == newItem.hour
+            return oldItem.id == newItem.id // <-- Usa esto
         }
 
-        /**
-         * Comprueba si los contenidos de dos items son idénticos.
-         * Como [TaskDomain] es una 'data class', podemos usar '=='
-         */
         override fun areContentsTheSame(oldItem: TaskDomain, newItem: TaskDomain): Boolean {
             return oldItem == newItem
         }

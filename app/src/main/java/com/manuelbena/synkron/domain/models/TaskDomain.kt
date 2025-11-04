@@ -5,6 +5,7 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class TaskDomain(
+    val id: Long = 0L,
     val hour: Int,
     val date : Long,
     val title: String,

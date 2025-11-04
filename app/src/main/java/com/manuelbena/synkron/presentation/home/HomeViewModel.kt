@@ -58,36 +58,36 @@ class HomeViewModel @Inject constructor(
      * Se llama cuando el usuario marca/desmarca el checkbox de una SUBTAREA
      * (desde el TaskDetailBottomSheet).
      */
+    // Archivo: presentation/home/HomeViewModel.kt
+
     fun onSubtaskCheckedChanged(parentTask: TaskDomain, subtaskToUpdate: SubTaskDomain, isDone: Boolean) {
         // 1. Crear la subtarea actualizada
         val updatedSubtask = subtaskToUpdate.copy(isDone = isDone)
 
         // 2. Crear la nueva lista de subtareas
-        // Esta es la parte clave: mapeamos la lista *antigua* y reemplazamos
-        // la subtarea que cambió.
         val newSubtasks = parentTask.subTasks.map {
-            if (it.title == subtaskToUpdate.title) { // Asumimos que el título es único por tarea
+            // --- ¡AQUÍ ESTÁ EL CAMBIO! ---
+            if (it.id == subtaskToUpdate.id) { // <-- Cambiamos 'it.title' por 'it.id'
                 updatedSubtask
             } else {
                 it
             }
+            // --- FIN DEL CAMBIO ---
         }
 
-        // 3. Comprobar si *todas* las subtareas (en la nueva lista) están hechas
+        // 3. Comprobar si *todas* las subtareas están hechas
         val allSubtasksDone = newSubtasks.isNotEmpty() && newSubtasks.all { it.isDone }
 
         // 4. Crear la tarea padre actualizada
         val updatedParentTask = parentTask.copy(
             subTasks = newSubtasks,
-            isDone = allSubtasksDone // La tarea padre se marca como hecha si todas las subtareas lo están
+            isDone = allSubtasksDone // <-- ¡Esto ya actualiza la tarea padre si se completan todas!
         )
 
-        // 5. Ejecutar el caso de uso (PARA GUARDAR EN BD) y notificar al BottomSheet
+        // 5. Ejecutar el caso de uso (PARA GUARDAR EN BD)
         executeUseCase(
-            useCase = { updateTaskUseCase(updatedParentTask) }, // <-- ESTO GUARDA EN LA BD
+            useCase = { updateTaskUseCase(updatedParentTask) }, // <-- Esto guarda la Tarea CON la lista de subtareas actualizada
             onSuccess = {
-                // Notificamos al BottomSheet que la tarea ha cambiado
-                // para que actualice su 'task' interna
                 _event.value = HomeEvent.TaskUpdated(updatedParentTask)
             },
             onError = { _event.value = HomeEvent.ShowErrorSnackbar("Error al actualizar la subtarea") }

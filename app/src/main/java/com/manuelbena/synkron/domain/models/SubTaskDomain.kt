@@ -2,6 +2,7 @@ package com.manuelbena.synkron.domain.models
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import java.util.UUID
 
 /**
  * Este es el nuevo modelo canónico para SubTask.
@@ -10,6 +11,7 @@ import kotlinx.parcelize.Parcelize
  */
 @Parcelize
 data class SubTaskDomain(
+    val id: String = UUID.randomUUID().toString(),
     val title : String,
     val isDone : Boolean,
 ): Parcelable
