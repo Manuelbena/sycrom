@@ -12,7 +12,7 @@ data class TaskDomain(
     val duration: Int,
     val typeTask : String,
     val place: String,
-    val subTasks: List<SubTaskDomain>, // <-- MODIFICADO
+    val subTasks: List<SubTaskDomain>,
     val isActive: Boolean,
     val isDone: Boolean
 ) : Parcelable

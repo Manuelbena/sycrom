@@ -120,18 +120,6 @@
                             android:textStyle="bold"
                             tools:ignore="SpUsage" />
 
-                        <Button
-                            android:id="@+id/buttonAddTask"
-                            style="@style/Widget.Material3.Button.Icon"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:elevation="@dimen/activity_horizontal_XXL_margin"
-                            android:text="@string/tvAddSugestion"
-                            android:textColor="@color/ivory"
-                            android:textStyle="bold"
-                            app:backgroundTint="@color/color_primary"
-                            app:icon="@drawable/ic_plus"
-                            app:iconTint="@color/ivory" />
                     </LinearLayout>
 
 
@@ -139,7 +127,7 @@
                         android:id="@+id/weekDaysContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
+
                         android:orientation="horizontal"
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="10dp" />
@@ -405,6 +393,80 @@
             </androidx.cardview.widget.CardView>
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <Button
+        android:id="@+id/tvFabAddTask"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:text="Tarea"
+        style="@style/Widget.Material3.Button.Icon"
+        android:visibility="invisible"
+        android:textColor="@color/ivory"
+        android:background="@drawable/shape_tag_background_prymary"
+        android:padding="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/fabMain"
+        app:layout_constraintEnd_toEndOf="@+id/fabMain"
+        />
+
+
+    <Button
+        android:id="@+id/tvFabAddSuggestion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Widget.Material3.Button.Icon"
+        android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:text="Tarea IA"
+        android:visibility="invisible"
+        android:padding="10dp"
+        android:textColor="@color/ivory"
+        android:background="@drawable/shape_tag_background_prymary"
+        app:layout_constraintBottom_toTopOf="@+id/tvFabAddTask"
+        app:layout_constraintEnd_toEndOf="@+id/tvFabAddTask"/>
+
+    <Button
+        android:id="@+id/tvFabAddGasto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Widget.Material3.Button.Icon"
+        android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:text="Gasto"
+        android:visibility="invisible"
+        android:padding="10dp"
+        android:textColor="@color/ivory"
+        android:background="@drawable/shape_tag_background_prymary"
+        app:layout_constraintBottom_toTopOf="@+id/tvFabAddIng"
+        app:layout_constraintEnd_toEndOf="@+id/tvFabAddIng"/>
+
+    <Button
+        android:id="@+id/tvFabAddIng"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Widget.Material3.Button.Icon"
+        android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:text="Ingreso"
+        android:visibility="invisible"
+        android:padding="10dp"
+        android:textColor="@color/ivory"
+        android:background="@drawable/shape_tag_background_prymary"
+        app:layout_constraintBottom_toTopOf="@+id/tvFabAddSuggestion"
+        app:layout_constraintEnd_toEndOf="@+id/tvFabAddSuggestion"/>
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabMain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="100dp"
+        android:layout_gravity="bottom|end"
+        android:outlineAmbientShadowColor="@color/background_primary"
+        app:backgroundTint="@color/background_primary"
+        android:layout_marginEnd="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:srcCompat="@drawable/ic_plus" />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

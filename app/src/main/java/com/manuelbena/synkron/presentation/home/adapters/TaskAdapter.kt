@@ -3,15 +3,15 @@ package com.manuelbena.synkron.presentation.home.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
-import androidx.viewbinding.ViewBinding
+import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseAdapter
 import com.manuelbena.synkron.base.BaseViewHolder
 import com.manuelbena.synkron.databinding.ItemTaskTodayBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
 import java.util.Locale
-import kotlin.time.Duration.Companion.hours
-import kotlin.time.Duration.Companion.minutes
+
 
 /**
  * Adaptador para la lista de tareas (Tasks) en el RecyclerView del Home.
@@ -20,7 +20,8 @@ import kotlin.time.Duration.Companion.minutes
  * @param onItemClick Lambda que se ejecuta cuando se pulsa en un item de la lista.
  */
 class TaskAdapter(
-    private val onItemClick: (TaskDomain) -> Unit
+    private val onItemClick: (TaskDomain) -> Unit,
+    private val onMenuAction: (TaskMenuAction) -> Unit
 ) : BaseAdapter<TaskDomain, TaskAdapter.TaskViewHolder>(TaskDiffCallback()) {
 
     /**
@@ -53,6 +54,64 @@ class TaskAdapter(
                     onItemClick(getItem(bindingAdapterPosition))
                 }
             }
+
+            // 3. AÑADE EL LISTENER PARA EL BOTÓN DE MENÚ
+            binding.btnTaskOptions.setOnClickListener {
+                if (bindingAdapterPosition != DiffUtil.DiffResult.NO_POSITION) {
+                    showPopupMenu(binding.btnTaskOptions, getItem(bindingAdapterPosition))
+                }
+            }
+            binding.lottieCheckbox.setOnClickListener {
+                // Volvemos a leer el estado actual (o usamos una variable local)
+                if (getItem(bindingAdapterPosition).isDone) {
+                    // ESTABA MARCADO -> Animamos para desmarcar
+                    binding.lottieCheckbox.speed = -1.0f // Velocidad negativa (hacia atrás)
+                    binding.lottieCheckbox.playAnimation()
+
+                    // Actualiza tu modelo
+                    // item.isDone = false
+                    // viewModel.updateSubtask(item)
+
+                } else {
+                    // ESTABA DESMARCADO -> Animamos para marcar
+                    binding.lottieCheckbox.speed = 1.0f // Velocidad positiva (normal)
+                    binding.lottieCheckbox.playAnimation()
+
+                    // Actualiza tu modelo
+                    // item.isDone = true
+                    // viewModel.updateSubtask(item)
+                }
+            }
+        }
+        // 4. AÑADE LA FUNCIÓN PARA MOSTRAR EL MENÚ
+        private fun showPopupMenu(anchorView: View, task: TaskDomain) {
+            // Crea el PopupMenu
+            val popup = PopupMenu(anchorView.context, anchorView)
+
+            // Infla tu menú XML
+            popup.menuInflater.inflate(R.menu.menu_item_task, popup.menu)
+
+            // Configura el listener para los clics en los items del menú
+            popup.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.action_edit_task -> {
+                        onMenuAction(TaskMenuAction.OnEdit(task)) // Envía la acción
+                        true
+                    }
+                    R.id.action_delete_task -> {
+                        onMenuAction(TaskMenuAction.OnDelete(task)) // Envía la acción
+                        true
+                    }
+                    R.id.action_share_task -> {
+                        onMenuAction(TaskMenuAction.OnShare(task)) // Envía la acción
+                        true
+                    }
+                    else -> false
+                }
+            }
+
+            // Muestra el menú
+            popup.show()
         }
 
         /**
@@ -83,6 +142,15 @@ class TaskAdapter(
                 val hours = item.hour / 60
                 val minutes = item.hour % 60
                 tvAttendees.text =  String.format(Locale.getDefault(), "%02d:%02d", hours, minutes)
+
+
+                if (item.isDone) {
+                    // Si está hecho, ponemos la animación al 100% (el final)
+                    binding.lottieCheckbox.progress = 1.0f
+                } else {
+                    // Si no está hecho, la ponemos al 0% (el inicio)
+                    binding.lottieCheckbox.progress = 0.0f
+                }
 
                 // Lógica para calcular el progreso de las sub-tareas
                 val totalSubtasks = item.subTasks.size
@@ -118,9 +186,21 @@ class TaskAdapter(
 
                     tvProgressPercentage.text = "0%"
                 }
+
             }
+
         }
+
+
     }
+
+    sealed class TaskMenuAction {
+        data class OnEdit(val task: TaskDomain) : TaskMenuAction()
+        data class OnDelete(val task: TaskDomain) : TaskMenuAction()
+        data class OnShare(val task: TaskDomain) : TaskMenuAction()
+    }
+
+
 
     /**
      * Clase interna para que [ListAdapter] (la clase padre de [BaseAdapter])

@@ -48,6 +48,8 @@ android {
 }
 
 dependencies {
+
+    implementation("com.airbnb.android:lottie:6.4.1")
     val room_version = "2.6.1" // Última versión estable de Room
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version") // Para usar Coroutines con Room

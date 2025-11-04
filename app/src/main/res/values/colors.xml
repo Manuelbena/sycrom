@@ -33,10 +33,10 @@
         <color name="slate_alpha_70">#B34A4E5A</color>
 
 
-        <color name="priority_high_bg">#FFCDD2</color>
-    <color name="priority_high_text">#B71C1C</color>
+    <color name="priority_high_bg">#FFCDD2</color>
+    <color name="priority_high_text">@color/red</color>
     <color name="priority_medium_bg">#FFECB3</color>
-    <color name="priority_medium_text">#E65100</color>
+    <color name="priority_medium_text">@color/gold_dark</color>
     <color name="priority_low_bg">#C8E6C9</color>
     <color name="priority_low_text">#1B5E20</color>
 

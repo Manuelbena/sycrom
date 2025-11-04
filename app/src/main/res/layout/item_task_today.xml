@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="250dp"
-    android:layout_height="300dp"
+    android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/card_margin_vertical"
     android:layout_marginBottom="@dimen/card_margin_vertical"
     app:cardCornerRadius="@dimen/card_margin_horizontal"
@@ -36,7 +36,15 @@
                 android:layout_centerVertical="true"
                 android:layout_alignParentStart="true"/>
 
-
+            <ImageButton
+                android:id="@+id/btnTaskOptions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_more_vert"
+                app:tint="@color/slate"/>
         </RelativeLayout>
 
         <LinearLayout
@@ -75,6 +83,8 @@
                         android:src="@drawable/ic_location"
                         app:tint="@color/slate" />
                     <TextView
+                        android:maxLines="1"
+                        android:ellipsize="end"
                         android:id="@+id/tvEventLocation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -97,6 +107,8 @@
                         app:tint="@color/slate" />
                     <TextView
                         android:id="@+id/tvAttendees"
+                        android:maxLines="1"
+                        android:ellipsize="end"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
@@ -117,6 +129,8 @@
                         app:tint="@color/slate" />
                     <TextView
                         android:id="@+id/tvDuration"
+                        android:maxLines="1"
+                        android:ellipsize="end"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
@@ -157,6 +171,7 @@
 
         <LinearLayout
             android:id="@+id/llSubtasks"
+            android:padding="@dimen/activity_horizontal_margin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -197,6 +212,31 @@
             </FrameLayout>
 
         </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvFinishEvent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/card_margin_vertical"
+                android:layout_marginTop="12dp"
+                android:text="@string/event_finish"
+                android:textColor="@color/slate_alpha_70"
+                android:textSize="12sp"
+                />
+            <com.airbnb.lottie.LottieAnimationView
+                android:id="@+id/lottieCheckbox"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:lottie_rawRes="@raw/lottie_checkbox"
+                app:lottie_autoPlay="false"
+                android:scaleX="2.5" android:scaleY="2.5"
+                app:lottie_loop="false" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvExpandDetails"
@@ -207,6 +247,8 @@
             android:textColor="@color/slate_alpha_70"
             android:textSize="12sp"
             />
+
+
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>
