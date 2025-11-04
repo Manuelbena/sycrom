@@ -1,7 +1,7 @@
 package com.manuelbena.synkron.di.repository
 
 
-import com.manuelbena.synkron.data.repository.TaskRepository // <-- Asegúrate que el import sea "TaskRepository" (singular)
+import com.manuelbena.synkron.data.repository.TaskRepository
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import dagger.Binds
 import dagger.Module
@@ -21,8 +21,8 @@ abstract class RepositoryModule {
     @Singleton
     abstract fun bindTaskRepository(
         // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
-        // El nombre de la clase es "TaskRepository" (singular), no "TasksRepository" (plural)
-        taskRepository: TaskRepository
+        taskRepository: TaskRepository // <-- Este es el nombre correcto de la clase
         // --- FIN DE LA CORRECCIÓN ---
     ): ITaskRepository
 }
+

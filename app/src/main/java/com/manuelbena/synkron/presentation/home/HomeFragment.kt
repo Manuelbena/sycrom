@@ -2,17 +2,16 @@ package com.manuelbena.synkron.presentation.home
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
-// --- AÑADIDOS ---
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-// --- FIN AÑADIDOS ---
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -28,7 +27,7 @@ import com.manuelbena.synkron.presentation.util.EDIT_TASK
 import com.manuelbena.synkron.presentation.util.TaskDetailBottomSheet
 import com.manuelbena.synkron.presentation.util.WeekCalendarManager
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch // <-- AÑADIDO
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
@@ -59,17 +58,25 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         return FragmentHomeBinding.inflate(inflater, container, false)
     }
 
-    override fun setUI() {
-        super.setUI()
+    // --- MODIFICACIÓN: Mover la configuración de vistas a onViewCreated ---
+    // Tu BaseFragment llama a setUI(), setListener() y observe() desde aquí.
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         setupRecyclerView()
         setupWeekCalendar()
     }
+    // --- FIN MODIFICACIÓN ---
 
-    // --- ¡AQUÍ ESTÁ LA CORRECCIÓN DEL ERROR! ---
+    // --- MODIFICACIÓN: Soluciona problemas 1 y 2 ---
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshData()
+    }
+
+
     override fun observe() {
-        // Usamos '.observe' de LiveData en lugar de '.collect' de Flow
         viewModel.event.observe(viewLifecycleOwner) { event ->
-            // El tipo 'event' se infiere correctamente como HomeEvent
             when (event) {
                 is HomeEvent.ShowErrorSnackbar -> {
                     Snackbar.make(binding.root, event.message, Snackbar.LENGTH_SHORT).show()
@@ -89,17 +96,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                     startActivity(intent)
                 }
 
-                // --- MANEJO DE FECHAS ---
                 is HomeEvent.UpdateHeaderText -> {
-                    // 1. Actualiza el saludo "Hola Manuel, [FECHA DE HOY]"
                     binding.textDate.text = event.formattedDate
                 }
 
                 is HomeEvent.UpdateSelectedDate -> {
-                    // 2. Actualiza el título de la tarjeta "Tareas programadas"
                     binding.tvDateTitle.text = event.formattedDate
                 }
-                // --- FIN MANEJO DE FECHAS ---
 
                 is HomeEvent.ShareTask -> {
                     shareTask(event.task)
@@ -110,12 +113,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 }
 
                 is HomeEvent.NavigateToTaskDetail -> {
-                    // Esta lógica ya la manejamos en el init del adapter
+                    // Lógica manejada en el click del adapter
                 }
             }
         }
     }
-    // --- FIN DE LA CORRECCIÓN ---
 
     override fun setListener() {
         binding.apply {
@@ -212,8 +214,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             .setInterpolator(fabInterpolator)
             .setDuration(300)
             .withEndAction {
-                fab.visibility = View.INVISIBLE
-                textView.visibility = View.INVISIBLE
+                fab.visibility = View.GONE
+                textView.visibility = View.GONE
             }
             .start()
 

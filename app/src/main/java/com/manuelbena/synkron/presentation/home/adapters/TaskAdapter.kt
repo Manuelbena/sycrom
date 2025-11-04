@@ -111,7 +111,7 @@ class TaskAdapter(
                 val totalSubtasks = item.subTasks.size
                 val completedSubtasks = item.subTasks.count { it.isDone }
 
-                if (totalSubtasks > 0) {
+                if (item.subTasks.isNotEmpty()) {
                     llSubtasks.visibility = View.VISIBLE
                     val progress = (completedSubtasks * 100) / totalSubtasks
                     pbLinearProgress.progress = progress
@@ -119,10 +119,7 @@ class TaskAdapter(
                     tvProgressPercentage.text = "$progress%"
                     tvSubtasks.text = "$completedSubtasks/$totalSubtasks"
                 } else {
-                    llSubtasks.visibility = View.GONE
-                    pbCircularProgress.visibility = View.GONE
-                    pbLinearProgress.visibility = View.INVISIBLE
-                    tvProgressPercentage.visibility = View.INVISIBLE
+                    tvSubtasks.text = "Sin subtareas"
                     pbCircularProgress.progress = 0
                     tvProgressPercentage.text = "0%"
                 }

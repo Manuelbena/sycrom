@@ -144,35 +144,43 @@
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="10dp" />
 
-                    <!-- MODIFICACIÓN: Añadidos IDs para el mensaje de "Sin Tareas" -->
-                    <TextView
-                        android:id="@+id/tvNoTasks"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:padding="16dp"
-                        android:text="No hay tareas para este día."
-                        android:textColor="@color/slate"
-                        android:textSize="16sp"
-                        android:visibility="gone"
-                        tools:visibility="visible" />
-
-                    <ImageView
+                    <LinearLayout
                         android:id="@+id/ivNoTasks"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:layout_gravity="center"
-                        android:src="@drawable/ic_no_planifi"
-                        android:alpha="0.5"
                         android:visibility="gone"
-                        tools:visibility="visible"
-                        app:tint="@color/slate" />
+                        android:layout_width="match_parent"
+                        android:layout_height="350dp"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView
+                            android:id="@+id/tvNoTasks"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:padding="16dp"
+                            android:text="No hay tareas para este día."
+                            android:textColor="@color/slate"
+                            android:textSize="16sp"
+                            android:visibility="gone"
+                            tools:visibility="visible" />
+
+                        <ImageView
+
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_no_planifi"
+                            android:alpha="0.5"
+
+                            tools:visibility="visible"
+                            app:tint="@color/color_primary" />
+                    </LinearLayout>
+
 
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerViewTasks"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="350dp"
                         android:clipToPadding="false"
                         android:orientation="horizontal"
                         android:paddingStart="40dp"
@@ -440,7 +448,7 @@
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Tarea"
         style="@style/Widget.Material3.Button.Icon"
-        android:visibility="invisible"
+        android:visibility="gone"
         android:textColor="@color/ivory"
         android:background="@drawable/shape_tag_background_prymary"
         android:padding="10dp"
@@ -456,7 +464,7 @@
         style="@style/Widget.Material3.Button.Icon"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Tarea IA"
-        android:visibility="invisible"
+        android:visibility="gone"
         android:padding="10dp"
         android:textColor="@color/ivory"
         android:background="@drawable/shape_tag_background_prymary"
@@ -470,7 +478,7 @@
         style="@style/Widget.Material3.Button.Icon"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Gasto"
-        android:visibility="invisible"
+        android:visibility="gone"
         android:padding="10dp"
         android:textColor="@color/ivory"
         android:background="@drawable/shape_tag_background_prymary"
@@ -484,7 +492,7 @@
         style="@style/Widget.Material3.Button.Icon"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Ingreso"
-        android:visibility="invisible"
+        android:visibility="gone"
         android:padding="10dp"
         android:textColor="@color/ivory"
         android:background="@drawable/shape_tag_background_prymary"

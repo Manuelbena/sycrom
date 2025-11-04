@@ -92,9 +92,7 @@ class TaskDetailBottomSheet(
         // Ocultar/Mostrar sección de subtareas si está vacía
         val hasSubtasks = task.subTasks.isNotEmpty()
         binding.subtasksRecyclerView.visibility = if (hasSubtasks) View.VISIBLE else View.GONE
-        // Referencia al TextView de "Subtareas" (asumiendo que tiene un ID `subtasksTitleTextView` o similar)
-        // Por ejemplo, si el TextView "Subtareas" en `botoom_sheet_task_detail.xml` tuviera id `tvSubtasksTitle`:
-        // binding.tvSubtasksTitle.visibility = if (hasSubtasks) View.VISIBLE else View.GONE
+         binding.tvSubtasksRecyclerView.visibility = if (hasSubtasks) View.VISIBLE else View.GONE
     }
 
     /**
@@ -117,7 +115,6 @@ class TaskDetailBottomSheet(
     override fun onStart() {
         super.onStart()
 
-        // --- AQUÍ EMPIEZA LA MAGIA ---
         val dialog = dialog as? BottomSheetDialog
         val behavior = dialog?.behavior
 
