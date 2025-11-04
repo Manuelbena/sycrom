@@ -32,13 +32,13 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="SpUsage" />
 
-        <!-- Fecha -->
+        <!-- Fecha (Este ID es el que actualizaremos) -->
         <TextView
             android:id="@+id/textDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="12 de mayo de 2025"
+            tools:text="12 de mayo de 2025"
             android:textColor="@color/white"
             android:textSize="@dimen/txt_dimen_l"
             app:layout_constraintStart_toStartOf="@id/textGreeting"
@@ -122,15 +122,52 @@
 
                     </LinearLayout>
 
+                    <TextView
+                        android:id="@+id/tv_date_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="@dimen/txt_dimen_xl"
+                        android:layout_marginBottom="@dimen/txt_dimen_l"
+                        android:textAlignment="center"
+                        android:textColor="@color/background_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        tools:text="12 de mayo de 2025" />
+
+
 
                     <LinearLayout
                         android:id="@+id/weekDaysContainer"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-
                         android:orientation="horizontal"
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="10dp" />
+
+                    <!-- MODIFICACIÓN: Añadidos IDs para el mensaje de "Sin Tareas" -->
+                    <TextView
+                        android:id="@+id/tvNoTasks"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:padding="16dp"
+                        android:text="No hay tareas para este día."
+                        android:textColor="@color/slate"
+                        android:textSize="16sp"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
+
+                    <ImageView
+                        android:id="@+id/ivNoTasks"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/ic_no_planifi"
+                        android:alpha="0.5"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        app:tint="@color/slate" />
+
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerViewTasks"
@@ -140,6 +177,7 @@
                         android:orientation="horizontal"
                         android:paddingStart="40dp"
                         android:paddingEnd="40dp"
+                        android:visibility="visible"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:listitem="@layout/item_task_today" />
 

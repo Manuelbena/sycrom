@@ -1,23 +1,25 @@
 package com.manuelbena.synkron.presentation.home
 
 import android.content.Intent
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
-import androidx.fragment.app.viewModels
+import androidx.core.view.isVisible
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentHomeBinding
-import com.manuelbena.synkron.domain.models.TaskDomain // <-- AÑADIDO (si no estaba)
+import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
 import com.manuelbena.synkron.presentation.util.ADD_TASK
 import com.manuelbena.synkron.presentation.util.CarouselScrollListener
-import com.manuelbena.synkron.presentation.util.EDIT_TASK // <-- AÑADIDO
+import com.manuelbena.synkron.presentation.util.EDIT_TASK
 import com.manuelbena.synkron.presentation.util.TaskDetailBottomSheet
 import com.manuelbena.synkron.presentation.util.WeekCalendarManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,34 +27,35 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
-    override val viewModel: HomeViewModel by viewModels()
-    private var isFabMenuOpen = false
-    private val fabInterpolator = OvershootInterpolator() // Para animación "expressive"
+    // --- MODIFICACIÓN ---
+    // Usamos activityViewModels() para compartir la instancia con el BottomSheet
+    override val viewModel: HomeViewModel by activityViewModels()
+    // --- FIN MODIFICACIÓN ---
 
-    // --- MODIFICACIÓN AQUÍ ---
-    // Ahora inicializamos el adapter con las tres lambdas:
+    private var isFabMenuOpen = false
+    private val fabInterpolator = OvershootInterpolator()
+
+    // Referencia al BottomSheet para poder actualizarlo
+    private var taskDetailBottomSheet: TaskDetailBottomSheet? = null
+
     private val taskAdapter = TaskAdapter(
-        // 1. onItemClick: Para abrir el BottomSheet
         onItemClick = { task ->
-            TaskDetailBottomSheet.newInstance(task).show(
-                parentFragmentManager,
-                TaskDetailBottomSheet.TAG
-            )
+            // --- MODIFICACIÓN ---
+            // Guardamos la referencia y mostramos el BottomSheet
+            taskDetailBottomSheet?.dismiss()
+            taskDetailBottomSheet = TaskDetailBottomSheet.newInstance(task)
+            taskDetailBottomSheet?.show(childFragmentManager, TaskDetailBottomSheet.TAG)
+            // --- FIN MODIFICACIÓN ---
         },
-        // 2. onMenuAction: Para manejar las acciones del menú
         onMenuAction = { action ->
-            // Simplemente pasamos la acción al ViewModel
             viewModel.onTaskMenuAction(action)
         },
-        // 3. onTaskCheckedChange: Para manejar el click en el checkbox
         onTaskCheckedChange = { task, isDone ->
             viewModel.onTaskCheckedChanged(task, isDone)
         }
     )
-    // --- FIN DE MODIFICACIÓN ---
 
     private lateinit var weekCalendarManager: WeekCalendarManager
-
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentHomeBinding {
         return FragmentHomeBinding.inflate(inflater, container, false)
@@ -65,58 +68,58 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     override fun observe() {
-        viewModel.event.observe(viewLifecycleOwner) { event ->
-            when (event) {
-                is HomeEvent.ShowErrorSnackbar -> {
-                    Snackbar.make(binding.root, event.message, Snackbar.LENGTH_SHORT).show()
-                }
+        // Usamos launchOnLifecycleScope (asumiendo que está en tu BaseFragment, si no, usa lifecycleScope.launch)
+        launchOnLifecycleScope {
+            viewModel.event.collect { event ->
+                when (event) {
+                    is HomeEvent.ShowErrorSnackbar -> {
+                        Snackbar.make(binding.root, event.message, Snackbar.LENGTH_SHORT).show()
+                    }
 
-                is HomeEvent.NavigateToTaskDetail -> {
-                    // Lógica de navegación si es necesaria
-                }
+                    is HomeEvent.ListTasksToday -> {
+                        val hasTasks = event.list.isNotEmpty()
+                        // Mostramos/ocultamos vistas según si hay tareas
+                        binding.recyclerViewTasks.isVisible = hasTasks
+                        binding.tvNoTasks.isVisible = !hasTasks
+                        binding.ivNoTasks.isVisible = !hasTasks
 
-                is HomeEvent.ListTasksToday -> {
-                    binding.recyclerViewTasks.visibility =
-                        if (event.list.isEmpty()) View.INVISIBLE else View.VISIBLE
-                    taskAdapter.submitList(event.list)
-                }
+                        taskAdapter.submitList(event.list)
+                    }
 
-                // --- AÑADIR ESTOS CASOS PARA EL MENÚ ---
-                is HomeEvent.NavigateToEditTask -> {
-                    // El ViewModel nos pide navegar a Editar
-                    val intent = Intent(requireContext(), ContainerActivity::class.java)
-                    // Usamos la constante EDIT_TASK y pasamos el objeto Task
-                    // (Asegúrate de que TaskDomain sea Parcelable)
-                    intent.putExtra(EDIT_TASK, event.task)
-                    startActivity(intent)
-                }
+                    // --- INICIO DE MODIFICACIONES DE FECHA ---
+                    is HomeEvent.NavigateToEditTask -> {
+                        val intent = Intent(requireContext(), ContainerActivity::class.java)
+                        intent.putExtra(EDIT_TASK, event.task)
+                        startActivity(intent)
+                    }
 
-                // En HomeFragment.kt, dentro de collectEvents
-                is HomeEvent.UpdateSelectedDate -> {
-                    binding.tvSelectedDate.text = event.formattedDate // (Asumo que tienes un TextView con ese id)
-                }
-                is HomeEvent.ShareTask -> {
-                    // El ViewModel nos pide compartir
-                    shareTask(event.task)
-                }
-                // --- FIN DE CASOS AÑADIDOS ---
+                    is HomeEvent.UpdateHeaderText -> {
+                        // Actualiza el saludo "Hola Manuel, [FECHA DE HOY]"
+                        binding.textDate.text = event.formattedDate
+                    }
 
-                // --- AÑADIDO PARA ACTUALIZAR BOTTOMSHEET ---
-                is HomeEvent.TaskUpdated -> {
-                    // Buscamos el BottomSheet por su TAG
-                    val bottomSheet =
-                        parentFragmentManager.findFragmentByTag(TaskDetailBottomSheet.TAG) as? TaskDetailBottomSheet
-                    // Si está abierto, le pasamos la tarea actualizada
-                    bottomSheet?.updateTask(event.task)
+                    is HomeEvent.UpdateSelectedDate -> {
+                        // Actualiza el título de la tarjeta "Tareas programadas"
+                        // con la fecha seleccionada
+                        binding.tvDateTitle.text = event.formattedDate
+                    }
+                    // --- FIN DE MODIFICACIONES DE FECHA ---
+
+                    is HomeEvent.ShareTask -> {
+                        shareTask(event.task)
+                    }
+
+                    is HomeEvent.TaskUpdated -> {
+                        // Si el BottomSheet está abierto, le pasamos la tarea actualizada
+                        taskDetailBottomSheet?.updateTask(event.task)
+                    }
                 }
-                // --- FIN DE CASO AÑADIDO ---
             }
         }
     }
 
     override fun setListener() {
         binding.apply {
-            // --- Lógica del Menú FAB ---
             fabMain.setOnClickListener {
                 if (isFabMenuOpen) {
                     closeFabMenu()
@@ -125,7 +128,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 }
             }
 
-            // Listeners para los mini FABs
             tvFabAddTask.setOnClickListener {
                 closeFabMenu()
                 val intent = Intent(requireContext(), ContainerActivity::class.java)
@@ -135,8 +137,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
             tvFabAddSuggestion.setOnClickListener {
                 closeFabMenu()
-                // Lógica para añadir la tarea sugerida
-                // (La misma que tenías en buttonAddTaskSuggestion)
                 Snackbar.make(
                     binding.root,
                     "Añadir sugerencia (lógica pendiente)",
@@ -145,11 +145,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             }
             tvFabAddGasto.setOnClickListener {
                 closeFabMenu()
-                // Lógica para añadir la tarea sugerida
             }
             tvFabAddIng.setOnClickListener {
                 closeFabMenu()
-                // Lógica para añadir la tarea sugerida
             }
             buttonAddTaskSuggestion.setOnClickListener {
                 // Lógica para añadir la tarea sugerida
@@ -159,14 +157,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun openFabMenu() {
         isFabMenuOpen = true
-        // Rotar el FAB principal a 45 grados (forma de 'X')
         binding.fabMain.animate()
             .rotation(45f)
             .setInterpolator(fabInterpolator)
             .setDuration(300)
             .start()
 
-        // Mostrar y animar mini FABs y textos
         showFab(binding.tvFabAddTask, binding.tvFabAddTask)
         showFab(binding.tvFabAddSuggestion, binding.tvFabAddSuggestion)
         showFab(binding.tvFabAddGasto, binding.tvFabAddGasto)
@@ -175,14 +171,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun closeFabMenu() {
         isFabMenuOpen = false
-        // Rotar el FAB principal de vuelta a 0 grados
         binding.fabMain.animate()
             .rotation(0f)
             .setInterpolator(fabInterpolator)
             .setDuration(300)
             .start()
 
-        // Ocultar y animar mini FABs y textos
         hideFab(binding.tvFabAddTask, binding.tvFabAddTask)
         hideFab(binding.tvFabAddSuggestion, binding.tvFabAddSuggestion)
         hideFab(binding.tvFabAddGasto, binding.tvFabAddGasto)
@@ -191,10 +185,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun showFab(fab: View, textView: View) {
         fab.visibility = View.VISIBLE
-        textView.visibility = View.VISIBLE // Mostrar texto
+        textView.visibility = View.VISIBLE
         fab.alpha = 0f
         textView.alpha = 0f
-        fab.translationY = 50f // Empezar un poco abajo
+        fab.translationY = 50f
         textView.translationY = 50f
 
         fab.animate()
@@ -215,12 +209,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private fun hideFab(fab: View, textView: View) {
         fab.animate()
             .alpha(0f)
-            .translationY(50f) // Mover hacia abajo al ocultar
+            .translationY(50f)
             .setInterpolator(fabInterpolator)
             .setDuration(300)
             .withEndAction {
                 fab.visibility = View.INVISIBLE
-                textView.visibility = View.INVISIBLE // Ocultar texto
+                textView.visibility = View.INVISIBLE
             }
             .start()
 
@@ -237,7 +231,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         val snapHelper = PagerSnapHelper()
         binding.recyclerViewTasks.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-            adapter = taskAdapter // Asignar el adaptador ya inicializado
+            adapter = taskAdapter
             applyCarouselPadding()
             addOnScrollListener(CarouselScrollListener())
         }
@@ -251,10 +245,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         weekCalendarManager.setupCalendar()
     }
 
-    // --- AÑADIR ESTA FUNCIÓN HELPER ---
-    /**
-     * Crea un Intent para compartir el contenido de una tarea.
-     */
     private fun shareTask(task: TaskDomain) {
         val sendIntent: Intent = Intent().apply {
             action = Intent.ACTION_SEND
@@ -267,8 +257,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         val shareIntent = Intent.createChooser(sendIntent, "Compartir tarea")
         startActivity(shareIntent)
     }
-    // --- FIN DE FUNCIÓN HELPER ---
-
 
     private fun RecyclerView.applyCarouselPadding() {
         val itemWidthDp = 300
@@ -278,4 +266,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         setPadding(padding, 0, padding, 0)
         clipToPadding = false
     }
+
+    // --- MODIFICACIÓN ---
+    // Limpiamos la referencia al BottomSheet para evitar memory leaks
+    override fun onDestroyView() {
+        taskDetailBottomSheet = null
+        super.onDestroyView()
+    }
+    // --- FIN MODIFICACIÓN ---
 }
