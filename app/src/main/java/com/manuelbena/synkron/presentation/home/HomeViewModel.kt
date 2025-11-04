@@ -4,7 +4,8 @@ import androidx.lifecycle.viewModelScope
 import com.manuelbena.synkron.base.BaseViewModel
 import com.manuelbena.synkron.domain.models.SubTaskDomain
 import com.manuelbena.synkron.domain.models.TaskDomain
-import com.manuelbena.synkron.domain.usecase.GetTaskTodayUseCase
+// CAMBIO: Importamos el nuevo Use Case
+import com.manuelbena.synkron.domain.usecase.GetTasksForDateUseCase
 import com.manuelbena.synkron.domain.usecase.UpdateTaskUseCase
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
 
@@ -16,21 +17,27 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import java.util.UUID // Importamos UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getTaskToday: GetTaskTodayUseCase,
-    private val updateTaskUseCase: UpdateTaskUseCase // Asegúrate de que esto esté inyectado
+    // CAMBIO: Inyectamos el nuevo Use Case
+    private val getTasksForDate: GetTasksForDateUseCase,
+    private val updateTaskUseCase: UpdateTaskUseCase
 ) : BaseViewModel<HomeEvent>() {
 
     init {
-        getTaskToday()
+        // CAMBIO: Cargamos las tareas para el día de hoy al iniciar
+        loadTasksForDate(LocalDate.now())
     }
 
-    fun getTaskToday() {
+    /**
+     * Carga las tareas para una fecha específica desde el repositorio.
+     */
+    fun loadTasksForDate(date: LocalDate) {
         executeFlow(
-            useCase = { getTaskToday.invoke() },
+            useCase = { getTasksForDate.invoke(date) },
             onEach = { taskList ->
                 _event.value = HomeEvent.ListTasksToday(taskList)
             },
@@ -38,6 +45,8 @@ class HomeViewModel @Inject constructor(
                 _event.value = HomeEvent.ShowErrorSnackbar("Error al cargar tareas")
             }
         )
+        // Adicionalmente, notificamos a la UI que la fecha ha cambiado
+        _event.value = HomeEvent.UpdateSelectedDate(getFormattedDate(date))
     }
 
     /**
@@ -47,7 +56,6 @@ class HomeViewModel @Inject constructor(
         // Creamos una copia de la tarea con el nuevo estado
         val updatedTask = task.copy(isDone = isDone)
 
-        // Ejecutamos el caso de uso para actualizar la BD
         executeUseCase(
             useCase = { updateTaskUseCase(updatedTask) },
             onError = { _event.value = HomeEvent.ShowErrorSnackbar("Error al actualizar la tarea") }
@@ -57,44 +65,63 @@ class HomeViewModel @Inject constructor(
     /**
      * Se llama cuando el usuario marca/desmarca el checkbox de una SUBTAREA
      * (desde el TaskDetailBottomSheet).
+     *
+     * !! INCLUYE LA CORRECCIÓN DEL NULLPOINTEREXCEPTION !!
      */
-    // Archivo: presentation/home/HomeViewModel.kt
-
     fun onSubtaskCheckedChanged(parentTask: TaskDomain, subtaskToUpdate: SubTaskDomain, isDone: Boolean) {
-        // 1. Crear la subtarea actualizada
-        val updatedSubtask = subtaskToUpdate.copy(isDone = isDone)
+
+        // 1. Crear la subtarea actualizada, ASEGURANDO un ID
+        // (Solución al NullPointerException de datos antiguos)
+        val safeId = subtaskToUpdate.id ?: UUID.randomUUID().toString()
+        val updatedSubtask = subtaskToUpdate.copy(
+            id = safeId,
+            isDone = isDone
+        )
 
         // 2. Crear la nueva lista de subtareas
         val newSubtasks = parentTask.subTasks.map {
-            // --- ¡AQUÍ ESTÁ EL CAMBIO! ---
-            if (it.id == subtaskToUpdate.id) { // <-- Cambiamos 'it.title' por 'it.id'
+            // Comparamos usando el ID seguro.
+            // Si 'it.id' es nulo, también le asignamos uno para "arreglarlo"
+            val itId = it.id ?: if (it.title == subtaskToUpdate.title) safeId else UUID.randomUUID().toString()
+
+            if (itId == safeId) {
                 updatedSubtask
             } else {
-                it
+                // Si el ID era nulo, lo guardamos ya "arreglado"
+                if (it.id == null) it.copy(id = itId) else it
             }
-            // --- FIN DEL CAMBIO ---
         }
 
-        // 3. Comprobar si *todas* las subtareas están hechas
+        // 3. Comprobar si *todas* las subtareas (en la nueva lista) están hechas
         val allSubtasksDone = newSubtasks.isNotEmpty() && newSubtasks.all { it.isDone }
 
         // 4. Crear la tarea padre actualizada
         val updatedParentTask = parentTask.copy(
             subTasks = newSubtasks,
-            isDone = allSubtasksDone // <-- ¡Esto ya actualiza la tarea padre si se completan todas!
+            isDone = allSubtasksDone // La tarea padre se marca como hecha si todas las subtareas lo están
         )
 
-        // 5. Ejecutar el caso de uso (PARA GUARDAR EN BD)
+        // 5. Ejecutar el caso de uso (PARA GUARDAR EN BD) y notificar al BottomSheet
         executeUseCase(
-            useCase = { updateTaskUseCase(updatedParentTask) }, // <-- Esto guarda la Tarea CON la lista de subtareas actualizada
+            useCase = { updateTaskUseCase(updatedParentTask) }, // <-- ESTO GUARDA EN LA BD
             onSuccess = {
+                // Notificamos al BottomSheet que la tarea ha cambiado
                 _event.value = HomeEvent.TaskUpdated(updatedParentTask)
             },
             onError = { _event.value = HomeEvent.ShowErrorSnackbar("Error al actualizar la subtarea") }
         )
     }
 
+    /**
+     * Se llama cuando el usuario selecciona una nueva fecha en el calendario.
+     */
+    fun onDateSelected(date: LocalDate) {
+        loadTasksForDate(date)
+    }
 
+    /**
+     * Maneja las acciones del menú de 3 puntos de una tarea.
+     */
     fun onTaskMenuAction(action: TaskAdapter.TaskMenuAction) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
@@ -118,18 +145,11 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // El resto de la lógica permanece igual...
-    private fun getFormattedDate(): String {
+    /**
+     * Formatea una fecha (LocalDate) a un String legible (ej: "04 de noviembre de 2025")
+     */
+    private fun getFormattedDate(date: LocalDate): String {
         val formatter = DateTimeFormatter.ofPattern("dd 'de' MMMM 'de' yyyy", Locale("es", "ES"))
-        return LocalDate.now().format(formatter)
-    }
-
-    fun onDateSelected(date: LocalDate) {
-        // Lógica para cargar datos de una nueva fecha
-    }
-
-    fun onTaskClicked(task: TaskDomain) {
-        // _event.value = HomeEvent.NavigateToTaskDetail(task.id)
+        return date.format(formatter)
     }
 }
-

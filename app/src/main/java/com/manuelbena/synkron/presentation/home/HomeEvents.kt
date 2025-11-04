@@ -12,4 +12,6 @@ sealed interface HomeEvent {
     data class ShareTask(val task: TaskDomain) : HomeEvent
 
     data class TaskUpdated(val task: TaskDomain) : HomeEvent
+
+    data class UpdateSelectedDate(val formattedDate: String) : HomeEvent
 }

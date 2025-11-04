@@ -91,6 +91,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                     startActivity(intent)
                 }
 
+                // En HomeFragment.kt, dentro de collectEvents
+                is HomeEvent.UpdateSelectedDate -> {
+                    binding.tvSelectedDate.text = event.formattedDate // (Asumo que tienes un TextView con ese id)
+                }
                 is HomeEvent.ShareTask -> {
                     // El ViewModel nos pide compartir
                     shareTask(event.task)

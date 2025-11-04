@@ -2,14 +2,18 @@ package com.manuelbena.synkron.domain.usecase
 
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import com.manuelbena.synkron.domain.models.TaskDomain
+import java.time.LocalDate
 import javax.inject.Inject
 
-class GetTaskTodayUseCase @Inject constructor(
-    private val tasksRepository: ITaskRepository
+/**
+ * Caso de uso para OBTENER las tareas de una fecha específica.
+ */
+class GetTasksForDateUseCase @Inject constructor(
+    private val repository: ITaskRepository
 ) {
-
-
-    operator fun invoke(): kotlinx.coroutines.flow.Flow<List<TaskDomain>> {
-        return tasksRepository.getTaskToday()
-    }
+    /**
+     * Invoca el caso de uso.
+     * @param date El día específico del que se quieren obtener las tareas.
+     */
+    suspend operator fun  invoke(date: LocalDate) = repository.getTasksForDate(date)
 }

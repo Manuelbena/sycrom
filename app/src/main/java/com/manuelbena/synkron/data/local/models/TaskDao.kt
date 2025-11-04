@@ -45,6 +45,6 @@ data class TaskDao(
     @ColumnInfo(name = "location")
     var location: String?,
 
-    @ColumnInfo(name = "sub_tasks") // <-- AÑADIDO
+    @ColumnInfo(name = "sub_tasks")
     var subTasks: List<SubTaskDomain> = emptyList()
 )

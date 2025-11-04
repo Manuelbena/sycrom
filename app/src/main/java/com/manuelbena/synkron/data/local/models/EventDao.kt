@@ -61,4 +61,13 @@ interface EventDao {
      */
     @Query("SELECT * FROM events_table WHERE start_time BETWEEN :startTime AND :endTime ORDER BY start_time ASC")
     fun getEventsInRange(startTime: Long, endTime: Long): Flow<List<TaskDao>>
+
+    /**
+     * Nueva consulta para obtener tareas por rango de fechas.
+     * Busca tareas donde 'date' (timestamp) sea:
+     * - Mayor o IGUAL a [startTime] (p.ej., 4 de Nov a las 00:00:00)
+     * - MENOR que [nextDayStartTime] (p.ej., 5 de Nov a las 00:00:00)
+     */
+    @Query("SELECT * FROM events_table WHERE start_time >= :startTime AND start_time < :nextDayStartTime ORDER BY hour ASC")
+    fun getTasksForDateRange(startTime: Long, nextDayStartTime: Long): Flow<List<TaskDao>>
 }
