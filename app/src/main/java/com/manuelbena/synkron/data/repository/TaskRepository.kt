@@ -38,11 +38,10 @@ class TasksRepository @Inject constructor(
 
     /**
      * Actualiza una tarea existente.
-     * TODO: Implementar la lógica de actualización.
      */
-    override suspend fun updateEvent(taskDao: TaskDomain) {
-        // Lógica futura: eventDao.updateEvent(taskDao.toData())
-        TODO("Not yet implemented")
+    override suspend fun updateEvent(taskDomain: TaskDomain) {
+        // Lógica implementada:
+        eventDao.updateEvent(taskDomain.toData())
     }
 
     /**

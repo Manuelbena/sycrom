@@ -1,5 +1,6 @@
 package com.manuelbena.synkron.presentation.home.adapters
 
+import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,10 +19,13 @@ import java.util.Locale
  * Extiende de [BaseAdapter] usando [TaskDomain] como modelo y [TaskViewHolder] como ViewHolder.
  *
  * @param onItemClick Lambda que se ejecuta cuando se pulsa en un item de la lista.
+ * @param onMenuAction Lambda para acciones del menú (editar, borrar, compartir).
+ * @param onTaskCheckedChange Lambda que se ejecuta cuando el LottieCheckbox es pulsado.
  */
 class TaskAdapter(
     private val onItemClick: (TaskDomain) -> Unit,
-    private val onMenuAction: (TaskMenuAction) -> Unit
+    private val onMenuAction: (TaskMenuAction) -> Unit,
+    private val onTaskCheckedChange: (task: TaskDomain, isDone: Boolean) -> Unit
 ) : BaseAdapter<TaskDomain, TaskAdapter.TaskViewHolder>(TaskDiffCallback()) {
 
     /**
@@ -61,28 +65,24 @@ class TaskAdapter(
                     showPopupMenu(binding.btnTaskOptions, getItem(bindingAdapterPosition))
                 }
             }
-            binding.lottieCheckbox.setOnClickListener {
-                // Volvemos a leer el estado actual (o usamos una variable local)
-                if (getItem(bindingAdapterPosition).isDone) {
-                    // ESTABA MARCADO -> Animamos para desmarcar
-                    binding.lottieCheckbox.speed = -1.0f // Velocidad negativa (hacia atrás)
-                    binding.lottieCheckbox.playAnimation()
 
-                    // Actualiza tu modelo
-                    // item.isDone = false
-                    // viewModel.updateSubtask(item)
+            // --- MODIFICADO ---
+            binding.cbIsDone.setOnClickListener {
+                if (bindingAdapterPosition != DiffUtil.DiffResult.NO_POSITION) {
+                    val item = getItem(bindingAdapterPosition)
+                    val newIsDone = !item.isDone // Calculamos el NUEVO estado
 
-                } else {
-                    // ESTABA DESMARCADO -> Animamos para marcar
-                    binding.lottieCheckbox.speed = 1.0f // Velocidad positiva (normal)
-                    binding.lottieCheckbox.playAnimation()
+                    // Actualizamos el tachado del título INMEDIATAMENTE
+                    updateStrikeThrough(newIsDone)
 
-                    // Actualiza tu modelo
-                    // item.isDone = true
-                    // viewModel.updateSubtask(item)
+
+                    // Notificamos al ViewModel el cambio de estado
+                    onTaskCheckedChange(item, newIsDone)
                 }
             }
+            // --- FIN MODIFICACIÓN ---
         }
+
         // 4. AÑADE LA FUNCIÓN PARA MOSTRAR EL MENÚ
         private fun showPopupMenu(anchorView: View, task: TaskDomain) {
             // Crea el PopupMenu
@@ -98,14 +98,17 @@ class TaskAdapter(
                         onMenuAction(TaskMenuAction.OnEdit(task)) // Envía la acción
                         true
                     }
+
                     R.id.action_delete_task -> {
                         onMenuAction(TaskMenuAction.OnDelete(task)) // Envía la acción
                         true
                     }
+
                     R.id.action_share_task -> {
                         onMenuAction(TaskMenuAction.OnShare(task)) // Envía la acción
                         true
                     }
+
                     else -> false
                 }
             }
@@ -123,6 +126,11 @@ class TaskAdapter(
             binding.apply {
                 // Asignar datos básicos
                 tvEventTitle.text = item.title
+
+                // --- AÑADIDO: TACHADO PARA TAREA PRINCIPAL ---
+                updateStrikeThrough(item.isDone)
+                // --- FIN DE AÑADIDO ---
+
                 tvEventType.text = item.typeTask
                 tvEventLocation.text = item.place.takeIf { it.isNotEmpty() } ?: "Sin ubicación"
                 tvDuration.text = item.duration.takeIf { it > 0 }
@@ -131,7 +139,7 @@ class TaskAdapter(
                             val hours = it / 60
                             val minutes = it % 60
                             "${hours} h ${minutes} min"
-                        }else{
+                        } else {
                             "${it} min"
                         }
                     }
@@ -141,16 +149,9 @@ class TaskAdapter(
                 // Hora (desde Int de minutos)
                 val hours = item.hour / 60
                 val minutes = item.hour % 60
-                tvAttendees.text =  String.format(Locale.getDefault(), "%02d:%02d", hours, minutes)
+                tvAttendees.text = String.format(Locale.getDefault(), "%02d:%02d", hours, minutes)
 
 
-                if (item.isDone) {
-                    // Si está hecho, ponemos la animación al 100% (el final)
-                    binding.lottieCheckbox.progress = 1.0f
-                } else {
-                    // Si no está hecho, la ponemos al 0% (el inicio)
-                    binding.lottieCheckbox.progress = 0.0f
-                }
 
                 // Lógica para calcular el progreso de las sub-tareas
                 val totalSubtasks = item.subTasks.size
@@ -191,7 +192,16 @@ class TaskAdapter(
 
         }
 
-
+        /**
+         * Helper para aplicar o quitar el tachado del TÍTULO de la tarea.
+         */
+        private fun updateStrikeThrough(isDone: Boolean) {
+            if (isDone) {
+                binding.tvEventTitle.paintFlags = binding.tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            } else {
+                binding.tvEventTitle.paintFlags = binding.tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            }
+        }
     }
 
     sealed class TaskMenuAction {
@@ -199,7 +209,6 @@ class TaskAdapter(
         data class OnDelete(val task: TaskDomain) : TaskMenuAction()
         data class OnShare(val task: TaskDomain) : TaskMenuAction()
     }
-
 
 
     /**
@@ -210,10 +219,10 @@ class TaskAdapter(
 
         /**
          * Comprueba si dos items representan la misma entidad.
-         * Idealmente se usa un ID único. A falta de él, usamos una combinación.
+         * Usamos una combinación única. (Si tuvieras un ID, sería mejor usar item.id == newItem.id)
          */
         override fun areItemsTheSame(oldItem: TaskDomain, newItem: TaskDomain): Boolean {
-            return oldItem.title == newItem.title && oldItem.date == newItem.date
+            return oldItem.title == newItem.title && oldItem.date == newItem.date && oldItem.hour == newItem.hour
         }
 
         /**
@@ -225,3 +234,4 @@ class TaskAdapter(
         }
     }
 }
+

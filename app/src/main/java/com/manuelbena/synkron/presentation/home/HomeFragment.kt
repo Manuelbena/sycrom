@@ -30,9 +30,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private val fabInterpolator = OvershootInterpolator() // Para animación "expressive"
 
     // --- MODIFICACIÓN AQUÍ ---
-    // Ahora inicializamos el adapter con las dos lambdas:
+    // Ahora inicializamos el adapter con las tres lambdas:
     private val taskAdapter = TaskAdapter(
-        // 1. onItemClick: Para abrir el BottomSheet (esto ya lo tenías)
+        // 1. onItemClick: Para abrir el BottomSheet
         onItemClick = { task ->
             TaskDetailBottomSheet.newInstance(task).show(
                 parentFragmentManager,
@@ -43,6 +43,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         onMenuAction = { action ->
             // Simplemente pasamos la acción al ViewModel
             viewModel.onTaskMenuAction(action)
+        },
+        // 3. onTaskCheckedChange: Para manejar el click en el checkbox
+        onTaskCheckedChange = { task, isDone ->
+            viewModel.onTaskCheckedChanged(task, isDone)
         }
     )
     // --- FIN DE MODIFICACIÓN ---
@@ -72,7 +76,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 }
 
                 is HomeEvent.ListTasksToday -> {
-                    binding.recyclerViewTasks.visibility = if (event.list.isEmpty()) View.INVISIBLE else View.VISIBLE
+                    binding.recyclerViewTasks.visibility =
+                        if (event.list.isEmpty()) View.INVISIBLE else View.VISIBLE
                     taskAdapter.submitList(event.list)
                 }
 
@@ -91,6 +96,16 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                     shareTask(event.task)
                 }
                 // --- FIN DE CASOS AÑADIDOS ---
+
+                // --- AÑADIDO PARA ACTUALIZAR BOTTOMSHEET ---
+                is HomeEvent.TaskUpdated -> {
+                    // Buscamos el BottomSheet por su TAG
+                    val bottomSheet =
+                        parentFragmentManager.findFragmentByTag(TaskDetailBottomSheet.TAG) as? TaskDetailBottomSheet
+                    // Si está abierto, le pasamos la tarea actualizada
+                    bottomSheet?.updateTask(event.task)
+                }
+                // --- FIN DE CASO AÑADIDO ---
             }
         }
     }
@@ -118,7 +133,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 closeFabMenu()
                 // Lógica para añadir la tarea sugerida
                 // (La misma que tenías en buttonAddTaskSuggestion)
-                Snackbar.make(binding.root, "Añadir sugerencia (lógica pendiente)", Snackbar.LENGTH_SHORT).show()
+                Snackbar.make(
+                    binding.root,
+                    "Añadir sugerencia (lógica pendiente)",
+                    Snackbar.LENGTH_SHORT
+                ).show()
             }
             tvFabAddGasto.setOnClickListener {
                 closeFabMenu()
@@ -235,7 +254,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private fun shareTask(task: TaskDomain) {
         val sendIntent: Intent = Intent().apply {
             action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_TEXT, "¡Echa un vistazo a mi tarea: ${task.title}!\n\n${task.description}")
+            putExtra(
+                Intent.EXTRA_TEXT,
+                "¡Echa un vistazo a mi tarea: ${task.title}!\n\n${task.description}"
+            )
             type = "text/plain"
         }
         val shareIntent = Intent.createChooser(sendIntent, "Compartir tarea")
