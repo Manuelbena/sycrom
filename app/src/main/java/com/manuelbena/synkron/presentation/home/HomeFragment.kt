@@ -8,6 +8,11 @@ import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
+// --- AÑADIDOS ---
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+// --- FIN AÑADIDOS ---
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -23,29 +28,22 @@ import com.manuelbena.synkron.presentation.util.EDIT_TASK
 import com.manuelbena.synkron.presentation.util.TaskDetailBottomSheet
 import com.manuelbena.synkron.presentation.util.WeekCalendarManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch // <-- AÑADIDO
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
-    // --- MODIFICACIÓN ---
-    // Usamos activityViewModels() para compartir la instancia con el BottomSheet
     override val viewModel: HomeViewModel by activityViewModels()
-    // --- FIN MODIFICACIÓN ---
-
     private var isFabMenuOpen = false
     private val fabInterpolator = OvershootInterpolator()
 
-    // Referencia al BottomSheet para poder actualizarlo
     private var taskDetailBottomSheet: TaskDetailBottomSheet? = null
 
     private val taskAdapter = TaskAdapter(
         onItemClick = { task ->
-            // --- MODIFICACIÓN ---
-            // Guardamos la referencia y mostramos el BottomSheet
             taskDetailBottomSheet?.dismiss()
             taskDetailBottomSheet = TaskDetailBottomSheet.newInstance(task)
             taskDetailBottomSheet?.show(childFragmentManager, TaskDetailBottomSheet.TAG)
-            // --- FIN MODIFICACIÓN ---
         },
         onMenuAction = { action ->
             viewModel.onTaskMenuAction(action)
@@ -67,56 +65,57 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         setupWeekCalendar()
     }
 
+    // --- ¡AQUÍ ESTÁ LA CORRECCIÓN DEL ERROR! ---
     override fun observe() {
-        // Usamos launchOnLifecycleScope (asumiendo que está en tu BaseFragment, si no, usa lifecycleScope.launch)
-        launchOnLifecycleScope {
-            viewModel.event.collect { event ->
-                when (event) {
-                    is HomeEvent.ShowErrorSnackbar -> {
-                        Snackbar.make(binding.root, event.message, Snackbar.LENGTH_SHORT).show()
-                    }
+        // Usamos '.observe' de LiveData en lugar de '.collect' de Flow
+        viewModel.event.observe(viewLifecycleOwner) { event ->
+            // El tipo 'event' se infiere correctamente como HomeEvent
+            when (event) {
+                is HomeEvent.ShowErrorSnackbar -> {
+                    Snackbar.make(binding.root, event.message, Snackbar.LENGTH_SHORT).show()
+                }
 
-                    is HomeEvent.ListTasksToday -> {
-                        val hasTasks = event.list.isNotEmpty()
-                        // Mostramos/ocultamos vistas según si hay tareas
-                        binding.recyclerViewTasks.isVisible = hasTasks
-                        binding.tvNoTasks.isVisible = !hasTasks
-                        binding.ivNoTasks.isVisible = !hasTasks
+                is HomeEvent.ListTasksToday -> {
+                    val hasTasks = event.list.isNotEmpty()
+                    binding.recyclerViewTasks.isVisible = hasTasks
+                    binding.tvNoTasks.isVisible = !hasTasks
+                    binding.ivNoTasks.isVisible = !hasTasks
+                    taskAdapter.submitList(event.list)
+                }
 
-                        taskAdapter.submitList(event.list)
-                    }
+                is HomeEvent.NavigateToEditTask -> {
+                    val intent = Intent(requireContext(), ContainerActivity::class.java)
+                    intent.putExtra(EDIT_TASK, event.task)
+                    startActivity(intent)
+                }
 
-                    // --- INICIO DE MODIFICACIONES DE FECHA ---
-                    is HomeEvent.NavigateToEditTask -> {
-                        val intent = Intent(requireContext(), ContainerActivity::class.java)
-                        intent.putExtra(EDIT_TASK, event.task)
-                        startActivity(intent)
-                    }
+                // --- MANEJO DE FECHAS ---
+                is HomeEvent.UpdateHeaderText -> {
+                    // 1. Actualiza el saludo "Hola Manuel, [FECHA DE HOY]"
+                    binding.textDate.text = event.formattedDate
+                }
 
-                    is HomeEvent.UpdateHeaderText -> {
-                        // Actualiza el saludo "Hola Manuel, [FECHA DE HOY]"
-                        binding.textDate.text = event.formattedDate
-                    }
+                is HomeEvent.UpdateSelectedDate -> {
+                    // 2. Actualiza el título de la tarjeta "Tareas programadas"
+                    binding.tvDateTitle.text = event.formattedDate
+                }
+                // --- FIN MANEJO DE FECHAS ---
 
-                    is HomeEvent.UpdateSelectedDate -> {
-                        // Actualiza el título de la tarjeta "Tareas programadas"
-                        // con la fecha seleccionada
-                        binding.tvDateTitle.text = event.formattedDate
-                    }
-                    // --- FIN DE MODIFICACIONES DE FECHA ---
+                is HomeEvent.ShareTask -> {
+                    shareTask(event.task)
+                }
 
-                    is HomeEvent.ShareTask -> {
-                        shareTask(event.task)
-                    }
+                is HomeEvent.TaskUpdated -> {
+                    taskDetailBottomSheet?.updateTask(event.task)
+                }
 
-                    is HomeEvent.TaskUpdated -> {
-                        // Si el BottomSheet está abierto, le pasamos la tarea actualizada
-                        taskDetailBottomSheet?.updateTask(event.task)
-                    }
+                is HomeEvent.NavigateToTaskDetail -> {
+                    // Esta lógica ya la manejamos en el init del adapter
                 }
             }
         }
     }
+    // --- FIN DE LA CORRECCIÓN ---
 
     override fun setListener() {
         binding.apply {
@@ -202,7 +201,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             .alpha(1f)
             .translationY(0f)
             .setInterpolator(fabInterpolator)
-            .setDuration(300)
+            .setDuration(3)
             .start()
     }
 
@@ -267,11 +266,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         clipToPadding = false
     }
 
-    // --- MODIFICACIÓN ---
-    // Limpiamos la referencia al BottomSheet para evitar memory leaks
     override fun onDestroyView() {
         taskDetailBottomSheet = null
         super.onDestroyView()
     }
-    // --- FIN MODIFICACIÓN ---
 }
+
