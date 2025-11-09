@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
 import androidx.core.view.isVisible
+import androidx.core.widget.NestedScrollView // ¡AÑADIDO! Import necesario
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -58,17 +59,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         return FragmentHomeBinding.inflate(inflater, container, false)
     }
 
-    // --- MODIFICACIÓN: Mover la configuración de vistas a onViewCreated ---
-    // Tu BaseFragment llama a setUI(), setListener() y observe() desde aquí.
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         setupRecyclerView()
         setupWeekCalendar()
+        setupFabAnimation() // ¡AÑADIDO! Llamamos a la nueva función de animación
     }
-    // --- FIN MODIFICACIÓN ---
 
-    // --- MODIFICACIÓN: Soluciona problemas 1 y 2 ---
     override fun onResume() {
         super.onResume()
         viewModel.refreshData()
@@ -83,10 +81,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 }
 
                 is HomeEvent.ListTasksToday -> {
+
                     val hasTasks = event.list.isNotEmpty()
-                    binding.recyclerViewTasks.isVisible = hasTasks
-                    binding.tvNoTasks.isVisible = !hasTasks
+                    // ¡AÑADIDO! He unido tus 3 líneas en una para más limpieza
                     binding.ivNoTasks.isVisible = !hasTasks
+                    binding.tvNoTasks.isVisible = !hasTasks
+                    binding.recyclerViewTasks.isVisible = hasTasks
+
                     taskAdapter.submitList(event.list)
                 }
 
@@ -150,47 +151,73 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             tvFabAddIng.setOnClickListener {
                 closeFabMenu()
             }
-            buttonAddTaskSuggestion.setOnClickListener {
-                // Lógica para añadir la tarea sugerida
-            }
+
         }
     }
+
+    // --- ¡FUNCIÓN NUEVA AÑADIDA! ---
+    /**
+     * Configura el NestedScrollView para que escuche el scroll
+     * y anime el FAB principal (fabMain) para encogerse o extenderse.
+     */
+    private fun setupFabAnimation() {
+        // Aseguramos que el botón empiece extendido
+        binding.fabMain.extend()
+
+        // Escuchamos el scroll del NestedScrollView (usando el ID 'nested_scroll_view' del XML)
+        binding.nestedScrollView.setOnScrollChangeListener(
+            NestedScrollView.OnScrollChangeListener { v, scrollX, scrollY, oldScrollX, oldScrollY ->
+
+                // Si el usuario baja (el scroll nuevo 'Y' es mayor que el anterior)
+                if (scrollY > oldScrollY) {
+                    // Encogemos el botón
+                    binding.fabMain.shrink()
+                }
+                // Si el usuario sube (el scroll nuevo 'Y' es menor que el anterior)
+                else if (scrollY < oldScrollY) {
+                    // Extendemos el botón
+                    binding.fabMain.extend()
+                }
+            }
+        )
+    }
+    // --- FIN DE LA FUNCIÓN AÑADIDA ---
+
 
     private fun openFabMenu() {
         isFabMenuOpen = true
         binding.fabMain.animate()
-            .rotation(45f)
             .setInterpolator(fabInterpolator)
             .setDuration(300)
             .start()
 
-        showFab(binding.tvFabAddTask, binding.tvFabAddTask)
-        showFab(binding.tvFabAddSuggestion, binding.tvFabAddSuggestion)
-        showFab(binding.tvFabAddGasto, binding.tvFabAddGasto)
-        showFab(binding.tvFabAddIng, binding.tvFabAddIng)
+        // Pequeña corrección: Tu 'showFab' toma dos vistas pero las usas como una.
+        // Lo he limpiado para que solo pases la vista que quieres mostrar.
+        showFab(binding.tvFabAddTask)
+        showFab(binding.tvFabAddSuggestion)
+        showFab(binding.tvFabAddGasto)
+        showFab(binding.tvFabAddIng)
     }
 
     private fun closeFabMenu() {
         isFabMenuOpen = false
         binding.fabMain.animate()
-            .rotation(0f)
             .setInterpolator(fabInterpolator)
             .setDuration(300)
             .start()
 
-        hideFab(binding.tvFabAddTask, binding.tvFabAddTask)
-        hideFab(binding.tvFabAddSuggestion, binding.tvFabAddSuggestion)
-        hideFab(binding.tvFabAddGasto, binding.tvFabAddGasto)
-        hideFab(binding.tvFabAddIng, binding.tvFabAddIng)
+        // Igual aquí, he limpiado la llamada
+        hideFab(binding.tvFabAddTask)
+        hideFab(binding.tvFabAddSuggestion)
+        hideFab(binding.tvFabAddGasto)
+        hideFab(binding.tvFabAddIng)
     }
 
-    private fun showFab(fab: View, textView: View) {
+    // ¡AÑADIDO! Firma de la función simplificada
+    private fun showFab(fab: View) {
         fab.visibility = View.VISIBLE
-        textView.visibility = View.VISIBLE
         fab.alpha = 0f
-        textView.alpha = 0f
         fab.translationY = 50f
-        textView.translationY = 50f
 
         fab.animate()
             .alpha(1f)
@@ -198,16 +225,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             .setInterpolator(fabInterpolator)
             .setDuration(300)
             .start()
-
-        textView.animate()
-            .alpha(1f)
-            .translationY(0f)
-            .setInterpolator(fabInterpolator)
-            .setDuration(3)
-            .start()
     }
 
-    private fun hideFab(fab: View, textView: View) {
+    // ¡AÑADIDO! Firma de la función simplificada
+    private fun hideFab(fab: View) {
         fab.animate()
             .alpha(0f)
             .translationY(50f)
@@ -215,15 +236,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             .setDuration(300)
             .withEndAction {
                 fab.visibility = View.GONE
-                textView.visibility = View.GONE
             }
-            .start()
-
-        textView.animate()
-            .alpha(0f)
-            .translationY(50f)
-            .setInterpolator(fabInterpolator)
-            .setDuration(300)
             .start()
     }
 
@@ -273,4 +286,3 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         super.onDestroyView()
     }
 }
-

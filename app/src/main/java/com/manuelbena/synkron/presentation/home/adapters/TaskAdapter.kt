@@ -85,10 +85,7 @@ class TaskAdapter(
             binding.apply {
                 tvEventTitle.text = item.title
 
-                // --- MODIFICACIÓN ---
-                // Sincroniza el checkbox y el tachado
                 updateStrikeThrough(item.isDone)
-                // --- FIN MODIFICACIÓN ---
 
                 tvEventType.text = item.typeTask
                 tvEventLocation.text = item.place.takeIf { it.isNotEmpty() } ?: "Sin ubicación"
@@ -121,7 +118,7 @@ class TaskAdapter(
                 } else {
                     tvSubtasks.text = "Sin subtareas"
                     pbCircularProgress.progress = 0
-                    tvProgressPercentage.text = "0%"
+                    tvProgressPercentage.text = "-"
                 }
             }
         }

@@ -8,7 +8,7 @@
     android:layout_marginBottom="@dimen/card_margin_vertical"
     app:cardCornerRadius="@dimen/card_margin_horizontal"
     app:cardElevation="@dimen/card_elevation"
-    app:cardBackgroundColor="@color/ivory">
+    app:cardBackgroundColor="?attr/colorPrimary">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -44,7 +44,7 @@
                 android:layout_centerVertical="true"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/ic_more_vert"
-                app:tint="@color/slate"/>
+                app:tint="?attr/colorOnPrimary"/>
         </RelativeLayout>
 
         <LinearLayout
@@ -52,7 +52,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginTop="8dp">
+            >
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -68,75 +68,75 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/event_title_marketing"
-                    android:textColor="@color/navy"
+                    android:textColor="?attr/colorOnPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="4dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
                     <ImageView
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:src="@drawable/ic_location"
-                        app:tint="@color/slate" />
+                        app:tint="?attr/colorOnPrimary" />
                     <TextView
                         android:maxLines="1"
                         android:ellipsize="end"
                         android:id="@+id/tvEventLocation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="4dp"
                         android:text="@string/event_location_cordoba"
-                        android:textColor="@color/slate"
+                        android:textColor="?attr/colorOnPrimary"
                         android:textSize="14sp" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="4dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
                     <ImageView
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:src="@drawable/ic_clock"
-                        app:tint="@color/slate" />
+                        app:tint="?attr/colorOnPrimary" />
                     <TextView
                         android:id="@+id/tvAttendees"
                         android:maxLines="1"
                         android:ellipsize="end"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="4dp"
                         android:text="@string/event_attendees_more"
-                        android:textColor="@color/slate"
+                        android:textColor="?attr/colorOnPrimary"
                         android:textSize="14sp" />
                 </LinearLayout>
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="4dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
                     <ImageView
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:src="@drawable/ic_timer_duration"
-                        app:tint="@color/slate" />
+                        app:tint="?attr/colorOnPrimary" />
                     <TextView
                         android:id="@+id/tvDuration"
                         android:maxLines="1"
                         android:ellipsize="end"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="4dp"
                         android:text="@string/event_attendees_more"
-                        android:textColor="@color/slate"
+                        android:textColor="?attr/colorOnPrimary"
                         android:textSize="14sp" />
                 </LinearLayout>
             </LinearLayout>
@@ -155,7 +155,7 @@
                     android:progressDrawable="@drawable/circular_progress_bar"
                     android:background="@drawable/circular_progress_background"
                     android:max="100"
-                    android:progress="60"
+                    android:progress="0"
                     android:rotation="-90"/>
 
                 <TextView
@@ -164,7 +164,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:text="@string/event_progress_60"
-                    android:textColor="@color/navy"
+                    android:textColor="?attr/colorOnPrimary"
                     android:textSize="14sp"
                     android:textStyle="bold" />
             </FrameLayout>
@@ -172,7 +172,6 @@
 
         <LinearLayout
             android:id="@+id/llSubtasks"
-            android:padding="@dimen/activity_horizontal_margin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
@@ -183,7 +182,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/event_subtasks_3_5"
-                android:textColor="@color/slate"
+                android:textColor="?attr/colorOnPrimary"
                 android:textSize="12sp"
                 android:textStyle="bold"/>
 
@@ -201,14 +200,13 @@
 
             <FrameLayout
                 android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:background="@drawable/shape_circle_background">
+                android:layout_height="24dp">
                 <ImageView
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_clock"
                     android:layout_gravity="center"
-                    app:tint="@color/emerald" />
+                    app:tint="?attr/colorOnPrimary"/>
             </FrameLayout>
 
         </LinearLayout>
@@ -223,10 +221,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/event_finish"
-                android:textColor="@color/slate_alpha_70"
+                android:textColor="?attr/colorOnPrimary"
                 android:textSize="12sp"
                 />
             <com.google.android.material.checkbox.MaterialCheckBox
+
                 android:id="@+id/cbIsDone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -238,7 +237,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/event_expand_details"
-            android:textColor="@color/slate_alpha_70"
+            android:textColor="?attr/colorOnPrimary"
             android:textSize="12sp"
             />
 

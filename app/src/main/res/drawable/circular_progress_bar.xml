@@ -10,6 +10,6 @@
         android:shape="ring"
         android:thickness="5dp"
         android:useLevel="true">
-        <solid android:color="@color/emerald" />
+        <solid android:color="?attr/colorSecondaryContainer" />
     </shape>
 </rotate>

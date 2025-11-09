@@ -4,76 +4,76 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_primary">
+    android:background="?attr/colorPrimary">
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/ly_header"
-        android:layout_width="match_parent"
+    android:id="@+id/ly_header"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorPrimary"
+    android:paddingBottom="@dimen/activity_horizontal_XL_margin"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    tools:ignore="MissingConstraints">
+
+    <TextView
+        android:id="@+id/textGreeting"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingBottom="@dimen/activity_horizontal_XL_margin"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="32dp"
+        android:text="Hola, Manuel"
+        android:textColor="?attr/colorOnPrimary"
+        android:textSize="@dimen/txt_dimen_extra"
+        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingConstraints">
+        tools:ignore="SpUsage" />
 
-        <!-- Saludo -->
-        <TextView
-            android:id="@+id/textGreeting"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="32dp"
-            android:text="Hola, Manuel"
-            android:textColor="@color/white"
-            android:textSize="@dimen/txt_dimen_extra"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="SpUsage" />
+    <TextView
+        android:id="@+id/textDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="?attr/colorOnPrimary"
+        android:textSize="@dimen/txt_dimen_l"
+        android:visibility="visible"
+        app:layout_constraintStart_toStartOf="@id/textGreeting"
+        app:layout_constraintTop_toBottomOf="@id/textGreeting"
+        tools:ignore="SpUsage"
+        tools:text="12 de mayo de 2025" />
 
-        <!-- Fecha (Este ID es el que actualizaremos) -->
-        <TextView
-            android:id="@+id/textDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            tools:text="12 de mayo de 2025"
-            android:textColor="@color/white"
-            android:textSize="@dimen/txt_dimen_l"
-            app:layout_constraintStart_toStartOf="@id/textGreeting"
-            app:layout_constraintTop_toBottomOf="@id/textGreeting"
-            tools:ignore="SpUsage" />
+    <ImageView
+        android:id="@+id/iconWeather"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_margin="24dp"
+        android:contentDescription="TODO"
+        android:src="@drawable/ic_sol"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?attr/colorOnPrimary" />
 
-        <!-- Clima -->
-        <ImageView
-            android:id="@+id/iconWeather"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_margin="24dp"
-            android:contentDescription="TODO"
-            android:src="@drawable/ic_sol"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <TextView
+        android:id="@+id/textTemperature"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="17°C"
+        android:textColor="?attr/colorOnPrimary"
+        android:textSize="@dimen/txt_dimen_l"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/iconWeather"
+        app:layout_constraintStart_toStartOf="@+id/iconWeather"
+        app:layout_constraintTop_toBottomOf="@+id/iconWeather"
+        tools:ignore="SpUsage" />
 
-        <TextView
-            android:id="@+id/textTemperature"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="17°C"
-            android:textColor="@color/white"
-            android:textSize="@dimen/txt_dimen_l"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@id/iconWeather"
-            app:layout_constraintStart_toStartOf="@+id/iconWeather"
-            app:layout_constraintTop_toBottomOf="@+id/iconWeather"
-            tools:ignore="SpUsage" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
+</androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/nested_scroll_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -86,13 +86,13 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginBottom="100dp">
-            <!-- Bloque de tareas -->
+
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardTasks"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="24dp"
-                app:cardBackgroundColor="@color/ivory"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -115,7 +115,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Tareas programadas"
-                            android:textColor="@color/background_primary"
+                            android:textColor="?attr/colorPrimary"
                             android:textSize="@dimen/txt_dimen_xxl"
                             android:textStyle="bold"
                             tools:ignore="SpUsage" />
@@ -129,12 +129,10 @@
                         android:layout_marginHorizontal="@dimen/txt_dimen_xl"
                         android:layout_marginBottom="@dimen/txt_dimen_l"
                         android:textAlignment="center"
-                        android:textColor="@color/background_primary"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         tools:text="12 de mayo de 2025" />
-
-
 
                     <LinearLayout
                         android:id="@+id/weekDaysContainer"
@@ -146,11 +144,12 @@
 
                     <LinearLayout
                         android:id="@+id/ivNoTasks"
-                        android:visibility="gone"
                         android:layout_width="match_parent"
                         android:layout_height="350dp"
                         android:gravity="center"
-                        android:orientation="vertical">
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
                         <TextView
                             android:id="@+id/tvNoTasks"
                             android:layout_width="match_parent"
@@ -158,24 +157,20 @@
                             android:gravity="center"
                             android:padding="16dp"
                             android:text="No hay tareas para este día."
-                            android:textColor="@color/slate"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="16sp"
                             android:visibility="gone"
                             tools:visibility="visible" />
 
                         <ImageView
-
                             android:layout_width="100dp"
                             android:layout_height="100dp"
                             android:layout_gravity="center"
-                            android:src="@drawable/ic_no_planifi"
                             android:alpha="0.5"
-
-                            tools:visibility="visible"
-                            app:tint="@color/color_primary" />
+                            android:src="@drawable/ic_no_planifi"
+                            app:tint="?attr/colorOnSurfaceVariant"
+                            tools:visibility="visible" />
                     </LinearLayout>
-
-
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerViewTasks"
@@ -189,18 +184,15 @@
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:listitem="@layout/item_task_today" />
 
-
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-
-            <!-- Bloque de resumen de cartera -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardSuggestion"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="24dp"
-                app:cardBackgroundColor="@color/ivory"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -225,23 +217,12 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="0.3"
                             android:text="Te sugiero..."
-                            android:textColor="@color/background_primary"
+                            android:textColor="?attr/colorPrimary"
                             android:textSize="@dimen/txt_dimen_xxl"
                             android:textStyle="bold"
                             tools:ignore="SpUsage" />
 
-                        <Button
-                            android:id="@+id/buttonAddTaskSuggestion"
-                            style="@style/Widget.Material3.Button.Icon"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:elevation="@dimen/activity_horizontal_XXL_margin"
-                            android:text="@string/tvAddSugestion"
-                            android:textColor="@color/ivory"
-                            android:textStyle="bold"
-                            app:backgroundTint="@color/color_primary"
-                            app:icon="@drawable/ic_plus"
-                            app:iconTint="@color/ivory" />
+
                     </LinearLayout>
 
                     <LinearLayout
@@ -260,7 +241,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
                             android:text="Tienes una hora libre a las 17:00. ¿Por qué no dar un paseo por el Parque del Retiro?"
-                            android:textColor="@color/secondary_text"
+                            android:textColor="?attr/colorPrimary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
@@ -283,7 +264,8 @@
                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
-                            android:src="@drawable/ic_clock" />
+                            android:src="@drawable/ic_clock"
+                            app:tint="?attr/colorOnSurfaceVariant" />
 
                         <TextView
                             android:id="@+id/textHora"
@@ -291,7 +273,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:text="17:00"
-                            android:textColor="@color/secondary_text"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
@@ -299,7 +281,8 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:layout_marginStart="16dp"
-                            android:src="@drawable/ic_location" />
+                            android:src="@drawable/ic_location"
+                            app:tint="?attr/colorOnSurfaceVariant" />
 
                         <TextView
                             android:id="@+id/textLugar"
@@ -307,25 +290,22 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:text="Parque del Retiro"
-                            android:textColor="@color/secondary_text"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
                     </LinearLayout>
 
-
                 </androidx.constraintlayout.widget.ConstraintLayout>
-
 
             </androidx.cardview.widget.CardView>
 
-            <!-- Bloque de resumen de cartera -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cardResumenMoney"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="24dp"
-                app:cardBackgroundColor="@color/ivory"
+                app:cardBackgroundColor="?attr/colorSurfaceVariant"
                 app:cardCornerRadius="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -343,7 +323,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
                         android:text="Resumen Cartera"
-                        android:textColor="@color/background_primary"
+                        android:textColor="?attr/colorOnSurfaceVariant"
                         android:textSize="@dimen/txt_dimen_xxl"
                         android:textStyle="bold"
                         app:layout_constraintStart_toStartOf="parent"
@@ -357,7 +337,7 @@
                         android:layout_gravity="top"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/tv_wallet" />
-                    <!-- Gastos -->
+
                     <LinearLayout
                         android:id="@+id/ly_gastos"
                         android:layout_width="wrap_content"
@@ -374,14 +354,14 @@
                             android:layout_height="20dp"
                             android:layout_marginEnd="8dp"
                             android:background="@drawable/circle_legend"
-                            android:backgroundTint="@color/red" />
+                            android:backgroundTint="?attr/colorError" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
                             android:text="Gastos"
-                            android:textColor="@color/secondary_text"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
@@ -391,13 +371,11 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:text="-500€"
-                            android:textColor="@color/secondary_text"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="@dimen/txt_dimen_xl"
-
                             tools:ignore="SpUsage" />
                     </LinearLayout>
 
-                    <!-- Ingresos -->
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -412,14 +390,14 @@
                             android:layout_height="20dp"
                             android:layout_marginEnd="8dp"
                             android:background="@drawable/circle_legend"
-                            android:backgroundTint="@color/teal" />
+                            android:backgroundTint="?attr/colorTertiary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
                             android:text="Ingresos"
-                            android:textColor="@color/secondary_text"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
@@ -429,90 +407,83 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
                             android:text="500€"
-                            android:textColor="@color/secondary_text"
+                            android:textColor="?attr/colorOnSurfaceVariant"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
                     </LinearLayout>
 
-
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <Button
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/tvFabAddTask"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Tarea"
-        style="@style/Widget.Material3.Button.Icon"
+        android:textColor="?attr/colorOnSecondaryContainer"
         android:visibility="gone"
-        android:textColor="@color/ivory"
-        android:background="@drawable/shape_tag_background_prymary"
-        android:padding="10dp"
+        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:iconTint="?attr/colorOnSecondaryContainer"
         app:layout_constraintBottom_toTopOf="@+id/fabMain"
-        app:layout_constraintEnd_toEndOf="@+id/fabMain"
-        />
+        app:layout_constraintEnd_toEndOf="@+id/fabMain" />
 
-
-    <Button
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/tvFabAddSuggestion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/Widget.Material3.Button.Icon"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Tarea IA"
+        android:textColor="?attr/colorOnSecondaryContainer"
         android:visibility="gone"
-        android:padding="10dp"
-        android:textColor="@color/ivory"
-        android:background="@drawable/shape_tag_background_prymary"
+        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:iconTint="?attr/colorOnSecondaryContainer"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddTask"
-        app:layout_constraintEnd_toEndOf="@+id/tvFabAddTask"/>
+        app:layout_constraintEnd_toEndOf="@+id/tvFabAddTask" />
 
-    <Button
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/tvFabAddGasto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/Widget.Material3.Button.Icon"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Gasto"
+        android:textColor="?attr/colorOnSecondaryContainer"
         android:visibility="gone"
-        android:padding="10dp"
-        android:textColor="@color/ivory"
-        android:background="@drawable/shape_tag_background_prymary"
+        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:iconTint="?attr/colorOnSecondaryContainer"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddIng"
-        app:layout_constraintEnd_toEndOf="@+id/tvFabAddIng"/>
+        app:layout_constraintEnd_toEndOf="@+id/tvFabAddIng" />
 
-    <Button
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/tvFabAddIng"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/Widget.Material3.Button.Icon"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Ingreso"
+        android:textColor="?attr/colorOnSecondaryContainer"
         android:visibility="gone"
-        android:padding="10dp"
-        android:textColor="@color/ivory"
-        android:background="@drawable/shape_tag_background_prymary"
+        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:iconTint="?attr/colorOnSecondaryContainer"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddSuggestion"
-        app:layout_constraintEnd_toEndOf="@+id/tvFabAddSuggestion"/>
+        app:layout_constraintEnd_toEndOf="@+id/tvFabAddSuggestion" />
 
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabMain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="100dp"
-        android:layout_gravity="bottom|end"
-        android:outlineAmbientShadowColor="@color/background_primary"
-        app:backgroundTint="@color/background_primary"
         android:layout_marginEnd="24dp"
+        android:layout_marginBottom="100dp"
+        android:text="Añadir"
+        android:textColor="@color/background_primary"
+        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:icon="@drawable/ic_plus"
+        app:iconTint="@color/background_primary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/ic_plus" />
-
-
+        app:tint="@color/background_primary"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

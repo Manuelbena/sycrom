@@ -1,5 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+
+    <color name="md_theme_primary">#5C899D</color>
+    <color name="md_theme_onPrimary">#FFFFFF</color>
+    <color name="md_theme_primaryContainer">#D1E4FF</color>
+    <color name="md_theme_onPrimaryContainer">#042043</color>
+
+    <color name="md_theme_secondary">#765A00</color>
+    <color name="md_theme_onSecondary">#FFFFFF</color>
+    <color name="md_theme_secondaryContainer">#FFE08B</color>
+    <color name="md_theme_onSecondaryContainer">#241A00</color>
+
+    <color name="md_theme_tertiary">#006C4C</color>
+    <color name="md_theme_onTertiary">#FFFFFF</color>
+    <color name="md_theme_tertiaryContainer">#89F8C6</color>
+    <color name="md_theme_onTertiaryContainer">#002114</color>
+
+    <color name="md_theme_error">#BA1A1A</color>
+    <color name="md_theme_onError">#FFFFFF</color>
+    <color name="md_theme_errorContainer">#FFDAD6</color>
+    <color name="md_theme_onErrorContainer">#410002</color>
+
+    <color name="md_theme_background">#FDFBFF</color>
+    <color name="md_theme_onBackground">#1A1C1E</color>
+
+    <color name="md_theme_surface">#F5F8FF</color>
+    <color name="md_theme_onSurface">#1A1C1E</color>
+
+    <color name="md_theme_surfaceVariant">#FFFCEF</color>
+    <color name="md_theme_onSurfaceVariant">#43474E</color>
+
+    <color name="md_theme_outline">#73777F</color>
+
     <color name="color_primary">#223042</color>
     <color name="color_surface">#223042</color>
 
@@ -23,14 +56,13 @@
     <color name="trackGray">#D8DBDF</color>
 
 
-
-        <color name="gold">#FFE5B867</color>
-        <color name="gold_alpha_30">#4DE5B867</color>
-        <color name="gold_dark">#8F6E2F</color>
-        <color name="emerald">#FF3D9970</color>
-        <color name="emerald_alpha_20">#333D9970</color>
-        <color name="slate">#FF4A4E5A</color>
-        <color name="slate_alpha_70">#B34A4E5A</color>
+    <color name="gold">#FFE5B867</color>
+    <color name="gold_alpha_30">#4DE5B867</color>
+    <color name="gold_dark">#8F6E2F</color>
+    <color name="emerald">#FF3D9970</color>
+    <color name="emerald_alpha_20">#333D9970</color>
+    <color name="slate">#FF4A4E5A</color>
+    <color name="slate_alpha_70">#B34A4E5A</color>
 
 
     <color name="priority_high_bg">#FFCDD2</color>
@@ -40,6 +72,6 @@
     <color name="priority_low_bg">#C8E6C9</color>
     <color name="priority_low_text">#1B5E20</color>
 
-        <color name="light_gray">#D3D3D3</color>
-    </resources>
+    <color name="light_gray">#D3D3D3</color>
+</resources>
 
