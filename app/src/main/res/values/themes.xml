@@ -49,6 +49,12 @@
         <item name="android:textColor">?attr/colorOnPrimary</item>
         <item name="android:textSize">12sp</item>
     </style>
+    <style name="TextAppearance.Sycrom.TaskSectionHeader" parent="TextAppearance.MaterialComponents.Headline6">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/background_primary</item> <item name="android:textSize">@dimen/txt_dimen_xxl</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 
     <style name="CalendarDayHeader">
         <item name="android:layout_width">36dp</item>

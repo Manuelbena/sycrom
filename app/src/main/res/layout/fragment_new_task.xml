@@ -4,13 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_primary"
+    android:background="?attr/colorPrimary"
     android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/color_primary"
+        android:background="?attr/colorPrimary"
         app:liftOnScroll="false">
 
         <com.google.android.material.appbar.MaterialToolbar
@@ -30,8 +30,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="wrap_content" android:orientation="vertical">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -43,10 +42,11 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical"
+                    android:layout_height="wrap_content" android:orientation="vertical"
                     android:layout_gravity="center">
+
                     <com.google.android.material.tabs.TabLayout
+                        android:id="@+id/tabLayout_task_type"
                         android:layout_width="match_parent"
                         android:background="@color/ivory"
                         app:tabTextColor="@color/color_primary"
@@ -93,36 +93,33 @@
                             tools:ignore="SpUsage" />
 
                         <com.google.android.material.textfield.TextInputLayout
-
-                            android:layout_width="match_parent"
+                            android:id="@+id/til_title" android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="Título de la tarea"
                             app:startIconDrawable="@drawable/ic_edit">
 
                             <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/tv_title"
-                                android:layout_width="match_parent"
+                                android:id="@+id/tiet_title" android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textCapWords" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
-
-                            android:layout_width="match_parent"
+                            android:id="@+id/til_description" android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
                             android:hint="Descripción detallada"
                             app:startIconDrawable="@drawable/ic_info">
 
                             <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/tv_description"
-                                android:layout_width="match_parent"
+                                android:id="@+id/tiet_description" android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:gravity="top"
                                 android:inputType="textMultiLine"
                                 android:minLines="3" />
                         </com.google.android.material.textfield.TextInputLayout>
                     </LinearLayout>
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -140,20 +137,16 @@
                             tools:ignore="SpUsage" />
 
                         <com.google.android.material.textfield.TextInputLayout
-
-                            android:layout_width="match_parent"
+                            android:id="@+id/til_location" android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="Localizacion"
                             app:startIconDrawable="@drawable/ic_location">
 
                             <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/tv_location"
-                                android:layout_width="match_parent"
+                                android:id="@+id/tiet_location" android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textCapWords" />
                         </com.google.android.material.textfield.TextInputLayout>
-
-
                     </LinearLayout>
 
                     <LinearLayout
@@ -172,17 +165,15 @@
                             android:textStyle="bold"
                             tools:ignore="SpUsage" />
 
-
                         <com.google.android.material.textfield.TextInputLayout
-                            android:layout_width="match_parent"
+                            android:id="@+id/til_sub_task" android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:hint="Nueva subtarea"
                             app:endIconMode="clear_text">
 
                             <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/tv_sub_task"
-                                android:layout_width="match_parent"
+                                android:id="@+id/tiet_sub_task" android:layout_width="match_parent"
                                 android:layout_height="wrap_content" />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -196,13 +187,14 @@
                             android:layout_marginTop="8dp"
                             android:text="Agregar subtarea"
                             app:icon="@drawable/ic_add" />
-                        <!-- AÑADE ESTO para mostrar la lista -->
+
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/rvSubtareas"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:clipToPadding="false"
+                            tools:listitem="@layout/item_subtask_new"
                             />
                     </LinearLayout>
 
@@ -325,8 +317,6 @@
                                 android:text="Hora"
                                 app:icon="@drawable/ic_access_time" />
                         </LinearLayout>
-
-
                     </LinearLayout>
 
                     <LinearLayout
@@ -344,7 +334,6 @@
                             android:textStyle="bold"
                             tools:ignore="SpUsage" />
 
-                        <!-- REEMPLAZAMOS EL CHIPGROUP POR UN LINEARLAYOUT -->
                         <LinearLayout
                             android:id="@+id/priority_chip_container"
                             android:layout_width="match_parent"
@@ -387,7 +376,6 @@
                                 android:textAlignment="center" />
                         </LinearLayout>
                     </LinearLayout>
-
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -448,16 +436,15 @@
                                 android:text="Otro" />
                         </com.google.android.material.chip.ChipGroup>
                     </LinearLayout>
-
-
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingBottom="@dimen/activity_horizontal_XL_margin"
+                android:paddingStart="@dimen/txt_dimen_xl"
+                android:paddingEnd="@dimen/txt_dimen_xl"
                 android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
@@ -477,7 +464,6 @@
                     android:layout_weight="1"
                     android:text="Guardar Tarea" />
             </LinearLayout>
-
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

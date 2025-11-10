@@ -63,6 +63,7 @@
             android:id="@+id/progress_circular"
             android:layout_width="50dp"
             android:layout_height="50dp"
+            android:layout_margin="@dimen/txt_dimen_s"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/tvEventTitle"
             app:layout_constraintBottom_toTopOf="@+id/guideline_progress_separator">

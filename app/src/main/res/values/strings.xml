@@ -16,6 +16,7 @@
     <string name="event_subtasks_3_5">Subtareas 3/5</string>
     <string name="event_expand_details">Ver detalles y subtareas (Toca para expandir)</string>
     <string name="event_finish">¿Terminado el evento?</string>
+    <string name="duration_button_default">Duración</string>
 
     <string name="tvModificarPorcentajes"><u>Modificar Porcentajes</u></string>
     <string name="tvHistoric"><u>Ver Historial</u></string>
