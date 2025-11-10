@@ -62,9 +62,9 @@ class SubtaskAdapter(
 
 class SubtaskDiffCallback : DiffUtil.ItemCallback<SubTaskDomain>() {
     override fun areItemsTheSame(oldItem: SubTaskDomain, newItem: SubTaskDomain): Boolean {
-        // --- MODIFICACIÓN ---
-        return oldItem.id == newItem.id // <-- Usar ID es crucial
-        // --- FIN MODIFICACIÓN ---
+
+        return oldItem.id == newItem.id
+
     }
 
     override fun areContentsTheSame(oldItem: SubTaskDomain, newItem: SubTaskDomain): Boolean {

@@ -40,12 +40,11 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
-    // --- INICIO DE CAMBIOS ---
-    // Restauramos las propiedades de tu HomeFragment original
     override val viewModel: HomeViewModel by activityViewModels()
     private var isFabMenuOpen = false
     private val fabInterpolator = OvershootInterpolator()
-
+    private lateinit var weekCalendarManager: WeekCalendarManager
+    private var shouldScrollToStart: Boolean = false
     private var taskDetailBottomSheet: TaskDetailBottomSheet? = null
 
     private val taskAdapter = TaskAdapter(
@@ -62,9 +61,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             viewModel.onTaskCheckedChanged(task, isDone)
         }
     )
-
-    private lateinit var weekCalendarManager: WeekCalendarManager
-    // --- FIN DE CAMBIOS ---
 
     private val midnightUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -93,12 +89,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override fun onResume() {
         super.onResume()
-        // --- INICIO DE CAMBIOS ---
-        // Usamos la lógica de tu HomeFragment original
-        viewModel.refreshToToday() // Usamos refreshToToday para asegurar que el calendario también se actualiza
+        shouldScrollToStart = true
+        viewModel.refreshToToday()
         val filter = IntentFilter(Intent.ACTION_DATE_CHANGED)
         requireActivity().registerReceiver(midnightUpdateReceiver, filter)
-        // --- FIN DE CAMBIOS ---
+
     }
 
     override fun onPause() {
@@ -126,15 +121,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
                     taskAdapter.submitList(event.list)
 
-                    if (hasTasks) {
+                    if (hasTasks && shouldScrollToStart) {
                         binding.recyclerViewTasks.post {
-                            // --- INICIO DE LA CORRECCIÓN ---
-                            // Usamos smoothScrollToPosition(0) en lugar de scrollToPosition(0).
-                            // Esto genera un evento de scroll, forzando al CarouselScrollListener
-                            // a re-evaluar y escalar las tarjetas correctamente.
+                            // Usamos smoothScroll para activar el CarouselListener
                             binding.recyclerViewTasks.smoothScrollToPosition(0)
-                            // --- FIN DE LA CORRECCIÓN ---
                         }
+                        // 5. Reseteamos la bandera
+                        shouldScrollToStart = false
                     }
                 }
 
@@ -312,6 +305,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         // --- INICIO DE CAMBIOS ---
         // Restauramos tu implementación original
         weekCalendarManager = WeekCalendarManager(binding.weekDaysContainer) { selectedDate ->
+            shouldScrollToStart = true
             viewModel.onDateSelected(selectedDate)
         }
         weekCalendarManager.setupCalendar()
@@ -331,11 +325,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
         val shareIntent = Intent.createChooser(sendIntent, "Compartir tarea")
         startActivity(shareIntent)
-        // --- FIN DE CAMBIOS ---
+
     }
 
-    // --- INICIO DE CAMBIOS ---
-    // 3. Restauramos tu función de padding
     private fun RecyclerView.applyCarouselPadding() {
         val itemWidthDp = 300 // (Este valor es de tu archivo original)
         val itemWidthPx = resources.displayMetrics.density * itemWidthDp

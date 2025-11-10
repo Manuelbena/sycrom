@@ -117,9 +117,8 @@ class HomeViewModel @Inject constructor(
             try {
                 // Creamos una nueva lista de subtareas
                 val newSubtasks = task.subTasks.map { subtask ->
-                    // Usamos el 'name' como ID, ya que SubTaskDomain no tiene ID
-                    // (Si tuvieras ID, lo usaríamos aquí)
-                    if (subtask.title == subtaskToUpdate.title) {
+
+                    if (subtask.id == subtaskToUpdate.id) {
                         subtask.copy(isDone = isDone)
                     } else {
                         subtask

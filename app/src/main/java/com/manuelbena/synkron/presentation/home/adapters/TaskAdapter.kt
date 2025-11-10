@@ -131,6 +131,10 @@ class TaskAdapter(
                 val completedSubtasks = item.subTasks.count { it.isDone }
 
                 if (item.subTasks.isNotEmpty()) {
+                    pbLinearProgress.visibility = View.VISIBLE
+                    pbCircularProgress.visibility = View.VISIBLE
+                    tvProgressPercentage.visibility = View.VISIBLE
+
                     llSubtasks.visibility = View.VISIBLE
                     val progress = if (totalSubtasks > 0) (completedSubtasks * 100) / totalSubtasks else 0 // Evitar división por cero
                     pbLinearProgress.progress = progress
@@ -138,7 +142,9 @@ class TaskAdapter(
                     tvProgressPercentage.text = "$progress%"
                     tvSubtasks.text = "$completedSubtasks/$totalSubtasks"
                 } else {
-                    // --- CAMBIO: Ocultar si no hay subtareas ---
+                    pbLinearProgress.visibility = View.GONE
+                    pbCircularProgress.visibility = View.GONE
+                    tvProgressPercentage.visibility = View.GONE
                     llSubtasks.visibility = View.GONE // Ocultamos la barra de progreso
                     tvSubtasks.text = "Sin subtareas"
                     pbCircularProgress.progress = 0
