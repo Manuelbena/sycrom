@@ -24,50 +24,64 @@ class WeekCalendarManager(
 ) {
     private val context: Context = container.context
     private var selectedView: View? = null
-    private val dayNameFormatter = DateTimeFormatter.ofPattern("E", Locale("es", "ES"))
+    private val daysOfWeekViews = mutableListOf<View>()
+    private val daysOfWeek = getWeekDays()
+    private val dayNameFormatter = DateTimeFormatter.ofPattern("EEE", Locale("es", "ES"))
+    private val dayNumberFormatter = DateTimeFormatter.ofPattern("d", Locale("es", "ES"))
 
+    /**
+     * Infla y configura los 7 días de la semana actual.
+     */
     fun setupCalendar() {
         container.removeAllViews()
-        val today = LocalDate.now()
-        val startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        daysOfWeekViews.clear()
 
-        for (i in 0..6) {
-            val date = startOfWeek.plusDays(i.toLong())
-            val dayView = createDayView(date)
+        val inflater = LayoutInflater.from(context)
+        for (day in daysOfWeek) {
+            val view = inflater.inflate(R.layout.item_calendar_dat, container, false)
+            val tvDayName = view.findViewById<TextView>(R.id.tvDayName)
+            val tvDayNumber = view.findViewById<TextView>(R.id.tvDayNumber)
 
-            if (date.isEqual(today)) {
-                selectDay(dayView)
+            tvDayName.text = day.format(dayNameFormatter).replaceFirstChar { it.uppercase() }
+            tvDayNumber.text = day.format(dayNumberFormatter)
+
+            view.tag = day // Almacenamos el LocalDate en el tag
+            view.setOnClickListener {
+                selectDay(it)
+                onDateSelected(day)
             }
 
-            container.addView(dayView)
+            container.addView(view)
+            daysOfWeekViews.add(view)
+
+            if (day == LocalDate.now()) {
+                selectDay(view) // Selecciona el día de hoy por defecto
+            }
         }
     }
 
-    private fun createDayView(date: LocalDate): View {
-        val dayView = LayoutInflater.from(context)
-            .inflate(R.layout.item_calendar_dat, container, false)
-
-        val tvDayName = dayView.findViewById<TextView>(R.id.tvDayName)
-        val tvDayNumber = dayView.findViewById<TextView>(R.id.tvDayNumber)
-
-        val dayName = dayNameFormatter.format(date)
-        tvDayName.text = dayName.replaceFirstChar { it.titlecase(Locale.getDefault()) }
-        tvDayNumber.text = date.dayOfMonth.toString()
-
-        dayView.tag = date
-        dayView.setOnClickListener {
-            selectDay(it)
-            onDateSelected(it.tag as LocalDate)
-        }
-        return dayView
+    /**
+     * Obtiene la lista de 7 días (LocalDate) para la semana actual.
+     */
+    private fun getWeekDays(): List<LocalDate> {
+        val today = LocalDate.now()
+        val startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+        return (0..6).map { startOfWeek.plusDays(it.toLong()) }
     }
 
+    /**
+     * Gestiona la selección visual de un día.
+     */
     private fun selectDay(view: View) {
         selectedView?.let { updateDayViewState(it, isSelected = false) }
         updateDayViewState(view, isSelected = true)
         selectedView = view
     }
 
+    // --- INICIO DE LA CORRECCIÓN ---
+    /**
+     * Actualiza la apariencia visual de un día (seleccionado o no).
+     */
     private fun updateDayViewState(view: View, isSelected: Boolean) {
         val container = view.findViewById<LinearLayout>(R.id.dayContainer)
         val tvDayName = view.findViewById<TextView>(R.id.tvDayName)
@@ -88,8 +102,9 @@ class WeekCalendarManager(
 
             // ¡ESTA ES LA CORRECCIÓN!
             // Usamos colores del tema que existen en 'values' y 'values-night'
-            textColorPrimary = ContextCompat.getColor(context, R.color.md_theme_onSurfaceVariant) // Color "gris" del tema
-            textColorSecondary = ContextCompat.getColor(context, R.color.md_theme_onSurface) // Color "normal" del tema
+            // Tus `colors.xml` SÍ tienen estos valores.
+            textColorPrimary = ContextCompat.getColor(context, R.color.md_theme_onSurfaceVariant) // Color "gris"
+            textColorSecondary = ContextCompat.getColor(context, R.color.md_theme_onSurface) // Color "normal"
         }
 
         // Usamos setBackgroundResource en lugar de .background
@@ -97,4 +112,5 @@ class WeekCalendarManager(
         tvDayName.setTextColor(textColorPrimary)
         tvDayNumber.setTextColor(textColorSecondary)
     }
+    // --- FIN DE LA CORRECCIÓN ---
 }

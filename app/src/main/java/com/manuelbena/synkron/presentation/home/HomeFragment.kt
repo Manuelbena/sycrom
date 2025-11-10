@@ -301,15 +301,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         binding.recyclerViewTasks.apply {
             layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             adapter = taskAdapter
-
-            // --- INICIO DE CAMBIOS ---
-            // 2. Restauramos tus funciones de carrusel
             applyCarouselPadding()
             addOnScrollListener(CarouselScrollListener())
-            // --- FIN DE CAMBIOS ---
-
-            // Mantenemos la corrección del "parpadeo" del check
-            (this.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
+            itemAnimator = null
         }
         snapHelper.attachToRecyclerView(binding.recyclerViewTasks)
     }
