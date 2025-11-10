@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseAdapter
 import com.manuelbena.synkron.base.BaseViewHolder
@@ -18,7 +20,21 @@ class TaskAdapter(
     private val onItemClick: (TaskDomain) -> Unit,
     private val onMenuAction: (TaskMenuAction) -> Unit,
     private val onTaskCheckedChange: (task: TaskDomain, isDone: Boolean) -> Unit
-) : BaseAdapter<TaskDomain, TaskAdapter.TaskViewHolder>(TaskDiffCallback()) {
+) : ListAdapter<TaskDomain, TaskAdapter.TaskViewHolder>(TaskDiffCallback()) { // <-- CAMBIO: Pasamos el DiffUtil
+
+    // --- INICIO DE CAMBIO: Añadimos StableIds ---
+    init {
+        setHasStableIds(true)
+    }
+
+    override fun getItemId(position: Int): Long {
+        // Usamos el ID de la tarea (Long) directamente
+        return getItem(position).id
+    }
+
+    override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
+        holder.bind(getItem(position))
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val binding = ItemTaskTodayBinding.inflate(
@@ -35,27 +51,19 @@ class TaskAdapter(
 
         init {
             binding.root.setOnClickListener {
-                if (bindingAdapterPosition != DiffUtil.DiffResult.NO_POSITION) {
+                if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
                     onItemClick(getItem(bindingAdapterPosition))
                 }
             }
 
             binding.btnTaskOptions.setOnClickListener {
-                if (bindingAdapterPosition != DiffUtil.DiffResult.NO_POSITION) {
+                if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
                     showPopupMenu(binding.btnTaskOptions, getItem(bindingAdapterPosition))
                 }
             }
 
-            binding.cbIsDone.setOnClickListener {
-                if (bindingAdapterPosition != DiffUtil.DiffResult.NO_POSITION) {
-                    val item = getItem(bindingAdapterPosition)
-                    val newIsDone = !item.isDone
 
-                    updateStrikeThrough(newIsDone)
 
-                    onTaskCheckedChange(item, newIsDone)
-                }
-            }
         }
 
         private fun showPopupMenu(anchorView: View, task: TaskDomain) {
@@ -87,6 +95,20 @@ class TaskAdapter(
 
                 updateStrikeThrough(item.isDone)
 
+                // 1. Quitamos el listener para que no se dispare solo
+                cbIsDone.setOnCheckedChangeListener(null)
+                // 2. Asignamos el estado del check BASADO EN EL MODELO
+                cbIsDone.isChecked = item.isDone
+                // 3. Volvemos a poner el listener para clicks del usuario
+                cbIsDone.setOnCheckedChangeListener { _, isChecked ->
+                    if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                        val task = getItem(bindingAdapterPosition)
+                        updateStrikeThrough(isChecked)
+                        onTaskCheckedChange(task, isChecked)
+                    }
+                }
+
+
                 tvEventType.text = item.typeTask
                 tvEventLocation.text = item.place.takeIf { it.isNotEmpty() } ?: "Sin ubicación"
                 tvDuration.text = item.duration.takeIf { it > 0 }
@@ -110,25 +132,22 @@ class TaskAdapter(
 
                 if (item.subTasks.isNotEmpty()) {
                     llSubtasks.visibility = View.VISIBLE
-                    val progress = (completedSubtasks * 100) / totalSubtasks
+                    val progress = if (totalSubtasks > 0) (completedSubtasks * 100) / totalSubtasks else 0 // Evitar división por cero
                     pbLinearProgress.progress = progress
                     pbCircularProgress.progress = progress
                     tvProgressPercentage.text = "$progress%"
                     tvSubtasks.text = "$completedSubtasks/$totalSubtasks"
                 } else {
+                    // --- CAMBIO: Ocultar si no hay subtareas ---
+                    llSubtasks.visibility = View.GONE // Ocultamos la barra de progreso
                     tvSubtasks.text = "Sin subtareas"
                     pbCircularProgress.progress = 0
-                    tvProgressPercentage.text = "-"
+                    tvProgressPercentage.text = "0%" // O " - " si prefieres
                 }
             }
         }
 
         private fun updateStrikeThrough(isDone: Boolean) {
-            // --- MODIFICACIÓN ---
-            // Asegura que el checkbox esté sincronizado
-            binding.cbIsDone.isChecked = isDone
-            // --- FIN MODIFICACIÓN ---
-
             if (isDone) {
                 binding.tvEventTitle.paintFlags = binding.tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
             } else {
@@ -143,16 +162,15 @@ class TaskAdapter(
         data class OnShare(val task: TaskDomain) : TaskMenuAction()
     }
 
+    // --- CAMBIO: Añadimos el DiffUtil.ItemCallback ---
     private class TaskDiffCallback : DiffUtil.ItemCallback<TaskDomain>() {
 
         override fun areItemsTheSame(oldItem: TaskDomain, newItem: TaskDomain): Boolean {
-            // --- MODIFICACIÓN ---
-            return oldItem.id == newItem.id // <-- Usar ID es crucial
-            // --- FIN MODIFICACIÓN ---
+            return oldItem.id == newItem.id // Compara solo por ID
         }
 
         override fun areContentsTheSame(oldItem: TaskDomain, newItem: TaskDomain): Boolean {
-            return oldItem == newItem
+            return oldItem == newItem // Compara todo el objeto
         }
     }
 }

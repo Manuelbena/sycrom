@@ -15,8 +15,8 @@ import kotlinx.coroutines.launch
  */
 abstract class BaseViewModel<E> : ViewModel() {
 
-    protected val _event by lazy { MutableLiveData<E>() }
-    val event: LiveData<E> = _event
+    protected open val _event by lazy { MutableLiveData<E>() }
+    open val event: LiveData<E> = _event
 
     protected val tag: String = this::class.java.simpleName
 

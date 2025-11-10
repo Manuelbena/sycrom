@@ -73,12 +73,27 @@ class WeekCalendarManager(
         val tvDayName = view.findViewById<TextView>(R.id.tvDayName)
         val tvDayNumber = view.findViewById<TextView>(R.id.tvDayNumber)
 
-        val backgroundColor = if (isSelected) R.drawable.day_selected_backgorund else android.R.color.transparent
-        val textColorPrimary = if (isSelected) android.R.color.white else R.color.slate
-        val textColorSecondary = if (isSelected) android.R.color.white else R.color.black
+        val backgroundColorRes: Int
+        val textColorPrimary: Int
+        val textColorSecondary: Int
 
-        container.background = ContextCompat.getDrawable(context, backgroundColor)
-        tvDayName.setTextColor(ContextCompat.getColor(context, textColorPrimary))
-        tvDayNumber.setTextColor(ContextCompat.getColor(context, textColorSecondary))
+        if (isSelected) {
+            backgroundColorRes = R.drawable.day_selected_backgorund
+            // Usamos los colores que has definido en tu tema
+            textColorPrimary = ContextCompat.getColor(context, R.color.md_theme_onPrimary)
+            textColorSecondary = ContextCompat.getColor(context, R.color.md_theme_onPrimary)
+        } else {
+            // Usamos 'transparent' de Android para el fondo
+            backgroundColorRes = android.R.color.transparent
+            // Usamos los colores por defecto del item_calendar_dat.xml
+            // (Asegúrate de que estos colores existen en tu colors.xml)
+            textColorPrimary = ContextCompat.getColor(context, R.color.slate)
+            textColorSecondary = ContextCompat.getColor(context, R.color.black)
+        }
+
+        // Usamos setBackgroundResource en lugar de .background
+        container.setBackgroundResource(backgroundColorRes)
+        tvDayName.setTextColor(textColorPrimary)
+        tvDayNumber.setTextColor(textColorSecondary)
     }
 }
