@@ -171,6 +171,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         val place = binding.tietLocation.text.toString().trim()
         val durationInMinutes = getDurationInMinutes()
         val taskType = getSelectedTaskType()
+        val taskPriority = getSelectedTaskPriority()
 
         // Mapea la lista de strings a [SubTaskDomain]
         val subTasksToSave = subtaskList.map { subtaskTitle ->
@@ -189,7 +190,11 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             place = place,
             subTasks = subTasksToSave,
             isDone = false,
-            isActive = true
+            isActive = true,
+            isDeleted = false,
+            isArchived = false,
+            isPinned = false,
+            priority = getSelectedTaskPriority()
         )
 
         // Envía el evento al ViewModel
@@ -383,6 +388,18 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         val checkedChipId = binding.chipGroupTypeTask.checkedChipId
         return if (checkedChipId != View.NO_ID) {
             view?.findViewById<com.google.android.material.chip.Chip>(checkedChipId)?.text?.toString() ?: "Personal"
+        } else {
+            "Personal" // Valor por defecto
+        }
+    }
+
+    /**
+     * Obtiene el string del tipo de tarea (Categoría) seleccionado.
+     */
+    private fun getSelectedTaskPriority(): String {
+        val checkedChipId = binding.chipGroupPriorityTask.checkedChipId
+        return if (checkedChipId != View.NO_ID) {
+            view?.findViewById<com.google.android.material.chip.Chip>(checkedChipId)?.text?.toString() ?: "Media"
         } else {
             "Personal" // Valor por defecto
         }

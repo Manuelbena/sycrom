@@ -45,6 +45,18 @@ data class TaskDao(
     @ColumnInfo(name = "location")
     var location: String?,
 
+    @ColumnInfo(name = "is_deleted")
+    var isDeleted: Boolean = false,
+
+    @ColumnInfo(name = "is_archived")
+    var isArchived: Boolean = false,
+
+    @ColumnInfo(name = "is_pinned")
+    var isPinned: Boolean = false,
+
+    @ColumnInfo(name = "priority")
+    var priority: String,
+
     @ColumnInfo(name = "sub_tasks")
     var subTasks: List<SubTaskDomain> = emptyList()
 )

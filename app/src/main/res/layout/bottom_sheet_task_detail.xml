@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/colorSurfaceVariant">
+    <androidx.core.widget.NestedScrollView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="100dp"> <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+        <ImageButton
+            android:id="@+id/button_close_sheet"
+            style="?attr/materialIconButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+           android:layout_margin="8dp"
+            android:contentDescription="Cerrar"
+            android:src="@drawable/ic_close"
+            app:tint="?attr/colorOnSurfaceVariant" />
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggleButton_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+        <Button
+            android:id="@+id/button_status_pending"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Pendiente" />
+        <Button
+            android:id="@+id/button_status_done"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Terminado" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <TextView
+        android:id="@+id/textView_taskDetail_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:textAppearance="?attr/textAppearanceHeadlineMedium"
+        android:textColor="?attr/colorOnSurface"
+        tools:text="Reunión de Marketing Estratégico Global" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroup_context"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        app:chipSpacingVertical="8dp">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_context_date"
+            style="@style/Widget.Material3.Chip.Assist"
+            android:background="?attr/colorSurfaceVariant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="31 de Octubre"
+            app:chipIcon="@drawable/ic_calendar_today" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_context_time"
+            style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="10:30"
+            app:chipIcon="@drawable/ic_clock" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_context_duration"
+            style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1h 30m"
+            app:chipIcon="@drawable/ic_timer_duration" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_context_location"
+            style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Oficina Principal"
+            app:chipIcon="@drawable/ic_location" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_context_priority"
+            style="@style/Widget.Material3.Chip.Assist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Prioridad Alta"
+            app:chipIcon="@drawable/ic_plus"
+            app:chipIconTint="?attr/colorError" />
+
+    </com.google.android.material.chip.ChipGroup>
+
+    <TextView
+        android:id="@+id/textView_taskDetail_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:textAppearance="?attr/textAppearanceBodyLarge"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        tools:text="Discutir los KPIs del Q3 y planificar la estrategia del Q4, incluyendo la campaña de Navidad." />
+
+    <LinearLayout
+        android:id="@+id/layout_subtasks"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/textView_taskDetail_subtaskTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:text="Progreso de Subtareas"
+                android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+            <TextView
+                android:id="@+id/textView_taskDetail_progressText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:textAppearance="?attr/textAppearanceLabelMedium"
+                tools:text="2 de 5 completadas"/>
+        </RelativeLayout>
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressBar_taskDetail_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:max="100"
+            tools:progress="60" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView_taskDetail_subtasks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:maxHeight="250dp"
+            tools:itemCount="3"
+            tools:listitem="@layout/item_subtask" />
+    </LinearLayout>
+
+</LinearLayout>
+</androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.bottomappbar.BottomAppBar
+        android:id="@+id/bottom_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        app:fabAlignmentMode="end"
+        app:backgroundTint="?attr/colorSurfaceVariant"
+        app:fabCradleMargin="10dp"
+        app:fabCradleRoundedCornerRadius="16dp"
+        app:navigationIcon="@drawable/ic_share"
+        app:menu="@menu/task_detail_bottom_bar" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_delete"
+        app:layout_anchor="@id/bottom_app_bar"
+        app:backgroundTint="?attr/colorErrorContainer"
+        app:tint="?attr/colorOnErrorContainer" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

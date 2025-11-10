@@ -30,7 +30,8 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:orientation="vertical">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
@@ -42,37 +43,35 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:orientation="vertical"
-                    android:layout_gravity="center">
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="vertical">
 
                     <com.google.android.material.tabs.TabLayout
                         android:id="@+id/tabLayout_task_type"
                         android:layout_width="match_parent"
-                        android:background="@color/ivory"
-                        app:tabTextColor="@color/color_primary"
                         android:layout_height="wrap_content"
-                        app:tabMode="fixed">
+                        android:background="@color/ivory"
+                        app:tabMode="fixed"
+                        app:tabTextColor="@color/color_primary">
 
                         <com.google.android.material.tabs.TabItem
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Planificado"
                             android:icon="@drawable/ic_clock"
-                            />
+                            android:text="Planificado" />
 
                         <com.google.android.material.tabs.TabItem
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Todo el día"
                             android:icon="@drawable/ic_calendar_today"
-                            />
+                            android:text="Todo el día" />
 
                         <com.google.android.material.tabs.TabItem
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="No planificado"
                             android:icon="@drawable/ic_no_planifi"
-                            />
+                            android:text="No planificado" />
 
                     </com.google.android.material.tabs.TabLayout>
 
@@ -93,26 +92,30 @@
                             tools:ignore="SpUsage" />
 
                         <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/til_title" android:layout_width="match_parent"
+                            android:id="@+id/til_title"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="Título de la tarea"
                             app:startIconDrawable="@drawable/ic_edit">
 
                             <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/tiet_title" android:layout_width="match_parent"
+                                android:id="@+id/tiet_title"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textCapWords" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/til_description" android:layout_width="match_parent"
+                            android:id="@+id/til_description"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
                             android:hint="Descripción detallada"
                             app:startIconDrawable="@drawable/ic_info">
 
                             <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/tiet_description" android:layout_width="match_parent"
+                                android:id="@+id/tiet_description"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:gravity="top"
                                 android:inputType="textMultiLine"
@@ -137,13 +140,15 @@
                             tools:ignore="SpUsage" />
 
                         <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/til_location" android:layout_width="match_parent"
+                            android:id="@+id/til_location"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="Localizacion"
                             app:startIconDrawable="@drawable/ic_location">
 
                             <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/tiet_location" android:layout_width="match_parent"
+                                android:id="@+id/tiet_location"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textCapWords" />
                         </com.google.android.material.textfield.TextInputLayout>
@@ -166,14 +171,16 @@
                             tools:ignore="SpUsage" />
 
                         <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/til_sub_task" android:layout_width="match_parent"
+                            android:id="@+id/til_sub_task"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:hint="Nueva subtarea"
                             app:endIconMode="clear_text">
 
                             <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/tiet_sub_task" android:layout_width="match_parent"
+                                android:id="@+id/tiet_sub_task"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content" />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -182,10 +189,10 @@
                             style="@style/Widget.Material3.Button"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:textColor="@color/ivory"
                             android:layout_gravity="start"
                             android:layout_marginTop="8dp"
                             android:text="Agregar subtarea"
+                            android:textColor="@color/ivory"
                             app:icon="@drawable/ic_add" />
 
                         <androidx.recyclerview.widget.RecyclerView
@@ -194,8 +201,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:clipToPadding="false"
-                            tools:listitem="@layout/item_subtask_new"
-                            />
+                            tools:listitem="@layout/item_subtask_new" />
                     </LinearLayout>
 
                     <LinearLayout
@@ -241,18 +247,21 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="45 Minitos" />
+
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/chip_1_hour"
                                 style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="1 Hora" />
+
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/chip_5_hour"
                                 style="@style/Widget.Material3.Chip.Filter"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="5 Hora" />
+
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/chip_8_hour"
                                 style="@style/Widget.Material3.Chip.Filter"
@@ -260,15 +269,16 @@
                                 android:layout_height="wrap_content"
                                 android:text="8 Hora" />
                         </com.google.android.material.chip.ChipGroup>
+
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnDuracion"
                             style="@style/Widget.Material3.Button"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="8dp"
-                            android:textColor="@color/ivory"
                             android:layout_weight="1"
                             android:text="Duracion"
+                            android:textColor="@color/ivory"
                             app:icon="@drawable/ic_plus" />
                     </LinearLayout>
 
@@ -291,8 +301,8 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
                             android:layout_gravity="center_horizontal"
+                            android:layout_marginTop="16dp"
                             android:orientation="horizontal">
 
                             <com.google.android.material.button.MaterialButton
@@ -313,8 +323,8 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="4dp"
                                 android:layout_weight="1"
-                                android:textColor="@color/ivory"
                                 android:text="Hora"
+                                android:textColor="@color/ivory"
                                 app:icon="@drawable/ic_access_time" />
                         </LinearLayout>
                     </LinearLayout>
@@ -341,39 +351,36 @@
                             android:layout_marginTop="8dp"
                             android:orientation="horizontal">
 
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chipAlta"
-                                style="@style/Widget.App.Chip.Priority.Alta"
-                                android:layout_width="0dp"
+                            <com.google.android.material.chip.ChipGroup
+                                android:id="@+id/chip_group_priority_task"
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:layout_marginEnd="4dp"
-                                android:checkable="true"
-                                android:text="Alta"
-                                android:textAlignment="center" />
+                                android:layout_marginTop="8dp"
+                                app:singleSelection="true">
 
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chipMedia"
-                                style="@style/Widget.App.Chip.Priority.Media"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:layout_marginStart="4dp"
-                                android:layout_marginEnd="4dp"
-                                android:checkable="true"
-                                android:text="Media"
-                                android:textAlignment="center" />
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_hight"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Alta" />
 
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chipBaja"
-                                style="@style/Widget.App.Chip.Priority.Baja"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:layout_marginStart="4dp"
-                                android:checkable="true"
-                                android:text="Baja"
-                                android:textAlignment="center" />
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_medium"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="true"
+                                    android:text="Media" />
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_small"
+                                    style="@style/Widget.Material3.Chip.Filter"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="true"
+                                    android:text="Baja" />
+                            </com.google.android.material.chip.ChipGroup>
                         </LinearLayout>
                     </LinearLayout>
 
@@ -428,6 +435,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Salud" />
+
                             <com.google.android.material.chip.Chip
                                 android:id="@+id/chip_other"
                                 style="@style/Widget.Material3.Chip.Filter"
@@ -442,10 +450,10 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingBottom="@dimen/activity_horizontal_XL_margin"
+                android:orientation="horizontal"
                 android:paddingStart="@dimen/txt_dimen_xl"
                 android:paddingEnd="@dimen/txt_dimen_xl"
-                android:orientation="horizontal">
+                android:paddingBottom="@dimen/activity_horizontal_XL_margin">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCancelar"

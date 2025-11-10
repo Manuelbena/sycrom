@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_edit_task"
+        android:icon="@drawable/ic_edit"
+        android:title="Editar"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_reschedule_task"
+        android:icon="@drawable/ic_calendar_today"
+        android:title="Reprogramar"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_duplicate_task"
+        android:icon="@drawable/ic_content_copy"
+        android:title="Duplicar"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_link_finance"
+        android:icon="@drawable/ic_attach_money"
+        android:title="Vincular Finanzas"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
+
+</menu>

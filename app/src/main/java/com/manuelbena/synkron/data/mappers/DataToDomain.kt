@@ -1,5 +1,6 @@
 package com.manuelbena.synkron.data.mappers
 
+import android.R.attr.priority
 import com.manuelbena.synkron.data.local.models.TaskDao
 import com.manuelbena.synkron.domain.models.TaskDomain
 
@@ -9,11 +10,15 @@ fun TaskDao.toDomain() =
         hour = hour,
         date = date,
         title = title,
-        description = description ?: "", // <-- CORREGIDO (manejar nulo)
+        description = description ?: "",
         typeTask = typeTask,
-        place = location ?: "", // <-- CORREGIDO (manejar nulo)
+        place = location ?: "",
         isActive = isActive,
         isDone = isDone,
-        subTasks = subTasks, // <-- CORREGIDO
-        duration = duration // <-- CORREGIDO
+        subTasks = subTasks,
+        duration = duration,
+        isDeleted = isDeleted,
+        isArchived = isArchived,
+        isPinned = isPinned,
+        priority = priority
     )

@@ -126,13 +126,14 @@ class TaskAdapter(
                 if (totalSubtasks > 0) {
                     val progress = (completedSubtasks * 100) / totalSubtasks
                     showProgress(true)
-                    pbLinearProgress.progress = progress
+
                     pbCircularProgress.progress = progress
-                    tvProgressPercentage.text = "$progress%"
+
                     tvSubtasks.text = "$completedSubtasks/$totalSubtasks"
                 } else {
                     showProgress(false)
-                    tvSubtasks.text = "Sin subtareas"
+                    tvSubtasks.visibility = View.GONE
+
                 }
             }
         }
@@ -141,9 +142,8 @@ class TaskAdapter(
          * Muestra u oculta los elementos visuales del progreso.
          */
         private fun showProgress(show: Boolean) {
-            binding.llSubtasks.isVisible = show
             binding.pbCircularProgress.isVisible = show // ID 'progress_circular' en XML
-            binding.tvProgressPercentage.isVisible = show
+
         }
 
         /**

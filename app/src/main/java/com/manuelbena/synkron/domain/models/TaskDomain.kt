@@ -15,5 +15,9 @@ data class TaskDomain(
     val place: String,
     val subTasks: List<SubTaskDomain>,
     val isActive: Boolean,
-    val isDone: Boolean
+    val isDone: Boolean,
+    val isDeleted: Boolean,
+    val isArchived: Boolean,
+    val isPinned: Boolean,
+    val priority: String,
 ) : Parcelable

@@ -25,6 +25,7 @@ import com.manuelbena.synkron.presentation.util.ADD_TASK
 import com.manuelbena.synkron.presentation.util.CarouselScrollListener
 import com.manuelbena.synkron.presentation.util.EDIT_TASK
 import com.manuelbena.synkron.presentation.util.TaskDetailBottomSheet
+
 import com.manuelbena.synkron.presentation.util.WeekCalendarManager
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -104,8 +105,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Estructura de inicialización clara: UI, luego Listeners, luego Observadores.
-        // `observe()` se llama desde BaseFragment
+
+
         setupUI()
     }
 
@@ -204,9 +205,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 is HomeEvent.UpdateHeaderText -> binding.textDate.text = event.formattedDate
                 is HomeEvent.UpdateSelectedDate -> binding.tvDateTitle.text = event.formattedDate
                 is HomeEvent.ShareTask -> shareTask(event.task)
-                is HomeEvent.TaskUpdated -> taskDetailBottomSheet?.updateTask(event.task)
                 is HomeEvent.RefreshCalendarUI -> setupWeekCalendar() // Refresca el calendario (ej. a medianoche)
                 is HomeEvent.NavigateToTaskDetail -> {} // Ya gestionado por el clic del adapter
+                else -> {}
             }
         }
     }
@@ -269,7 +270,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
      * Muestra el BottomSheet con el detalle de la tarea.
      */
     private fun showTaskDetail(task: TaskDomain) {
-        taskDetailBottomSheet?.dismiss() // Cierra el anterior si estuviera abierto
+        taskDetailBottomSheet?.dismiss()
         taskDetailBottomSheet = TaskDetailBottomSheet.newInstance(task)
         taskDetailBottomSheet?.show(childFragmentManager, TaskDetailBottomSheet.TAG)
     }

@@ -15,5 +15,9 @@ fun TaskDomain.toData() =
         isActive = isActive,
         isDone = isDone,
         location = place,
-        subTasks = subTasks // <-- AÑADIDO
+        subTasks = subTasks ,
+        isDeleted = isDeleted,
+        isArchived = isArchived,
+        isPinned = isPinned,
+        priority = priority
     )

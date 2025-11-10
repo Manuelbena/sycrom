@@ -44,53 +44,8 @@ class CalendarFragment : Fragment() {
             binding.tvMonthTitle.text = title
         }
 
-        val tasks = listOf(
-            TaskDomain(
-                hour = 10 * 60, // 10:00 AM (en minutos)
-                date = 1728345600000L, // Timestamp para 8 Oct 2025 (ejemplo)
-                title = "Sincronización Semanal del Proyecto",
-                description = "Revisar los avances del sprint actual y planificar las próximas tareas.",
-                typeTask = "Trabajo",
-                place = "Oficina, Sala de Juntas 3",
-                subTasks = listOf(
-                    SubTaskDomain(title = "Preparar métricas de rendimiento", isDone = true), // <-- MODIFICADO
-                    SubTaskDomain(title = "Revisar bloqueos del equipo", isDone = false), // <-- MODIFICADO
-                    SubTaskDomain(title = "Definir próximos pasos", isDone = false) // <-- MODIFICADO
-                ),
-                isActive = true, // La tarea está en curso o es la siguiente
-                isDone = false ,  // Aún no ha sido completada
-                duration = 60 // 60 minutos
-            ),
-            TaskDomain(
-                hour = 15 * 60 + 30, // 15:30 (en minutos)
-                date = 1728518400000L, // Timestamp para 10 Oct 2025 (ejemplo)
-                title = "Cita con el Dentista",
-                description = "Revisión y limpieza anual.",
-                typeTask = "Salud",
-                place = "Clínica Dental 'Sonrisa Sana'",
-                subTasks = emptyList(), // No tiene subtareas
-                isActive = false,
-                isDone = false,
-                duration = 45
-            ),
-            TaskDomain(
-                hour = 9 * 60, // 09:00 (en minutos)
-                date = 1728172800000L, // Timestamp para 6 Oct 2025 (ejemplo, pasada)
-                title = "Estudiar para el examen de Álgebra",
-                description = "Repasar los capítulos 4 y 5.",
-                typeTask = "Estudio",
-                place = "Biblioteca Central",
-                subTasks = listOf(
-                    SubTaskDomain(title = "Resumir capítulo 4", isDone = true), // <-- MODIFICADO
-                    SubTaskDomain(title = "Hacer ejercicios del capítulo 5", isDone = true) // <-- MODIFICADO
-                ),
-                isActive = false, // Ya no está activa porque pasó la fecha
-                isDone = true ,    // La marcamos como completada
-                duration = 180 // 3 horas
-            )
-        )
 
-        // En tu Fragment o Activity (Home)
+
 
 
         viewModel.calendarDays.observe(viewLifecycleOwner) {
