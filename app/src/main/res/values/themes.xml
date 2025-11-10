@@ -36,6 +36,19 @@
             true
         </item>
     </style>
+    <style name="TextAppearance.Sycrom.TaskCard" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="TextAppearance.Sycrom.TaskCard.Title" parent="TextAppearance.Sycrom.TaskCard">
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.Sycrom.TaskCard.Small" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="android:textSize">12sp</item>
+    </style>
 
     <style name="CalendarDayHeader">
         <item name="android:layout_width">36dp</item>

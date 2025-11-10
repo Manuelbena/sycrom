@@ -2,246 +2,235 @@
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="250dp"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/card_margin_vertical"
+    android:layout_height="wrap_content" android:layout_marginTop="@dimen/card_margin_vertical"
     android:layout_marginBottom="@dimen/card_margin_vertical"
     app:cardCornerRadius="@dimen/card_margin_horizontal"
     app:cardElevation="@dimen/card_elevation"
     app:cardBackgroundColor="?attr/colorPrimary">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="330dp"
-        android:orientation="vertical"
+        android:layout_height="wrap_content"
         android:padding="@dimen/card_padding_large">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <TextView
-                android:id="@+id/tvEventType"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/shape_tag_background"
-                android:paddingStart="10dp"
-                android:paddingTop="4dp"
-                android:paddingEnd="10dp"
-                android:paddingBottom="4dp"
-                android:text="@string/event_type_reunion"
-                android:textColor="@color/gold_dark"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:layout_centerVertical="true"
-                android:layout_alignParentStart="true"/>
-
-            <ImageButton
-                android:id="@+id/btnTaskOptions"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/ic_more_vert"
-                app:tint="?attr/colorOnPrimary"/>
-        </RelativeLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvEventType"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            >
+            android:background="@drawable/shape_tag_background"
+            android:paddingStart="10dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="4dp"
+            android:textColor="@color/gold_dark"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Reunión" />
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvEventTitle"
-                    android:maxHeight="@dimen/activity_horizontal_XXL_margin"
-                    android:maxLines="2"
-                    android:ellipsize="end"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/event_title_marketing"
-                    android:textColor="?attr/colorOnPrimary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_location"
-                        app:tint="?attr/colorOnPrimary" />
-                    <TextView
-                        android:maxLines="1"
-                        android:ellipsize="end"
-                        android:id="@+id/tvEventLocation"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:text="@string/event_location_cordoba"
-                        android:textColor="?attr/colorOnPrimary"
-                        android:textSize="14sp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_clock"
-                        app:tint="?attr/colorOnPrimary" />
-                    <TextView
-                        android:id="@+id/tvAttendees"
-                        android:maxLines="1"
-                        android:ellipsize="end"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:text="@string/event_attendees_more"
-                        android:textColor="?attr/colorOnPrimary"
-                        android:textSize="14sp" />
-                </LinearLayout>
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@drawable/ic_timer_duration"
-                        app:tint="?attr/colorOnPrimary" />
-                    <TextView
-                        android:id="@+id/tvDuration"
-                        android:maxLines="1"
-                        android:ellipsize="end"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:text="@string/event_attendees_more"
-                        android:textColor="?attr/colorOnPrimary"
-                        android:textSize="14sp" />
-                </LinearLayout>
-            </LinearLayout>
-
-            <FrameLayout
-                android:id="@+id/progress_circular"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
-                android:layout_marginStart="16dp">
-
-                <ProgressBar
-                    android:id="@+id/pbCircularProgress"
-                    style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:progressDrawable="@drawable/circular_progress_bar"
-                    android:background="@drawable/circular_progress_background"
-                    android:max="100"
-                    android:progress="0"
-                    android:rotation="-90"/>
-
-                <TextView
-                    android:id="@+id/tvProgressPercentage"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="@string/event_progress_60"
-                    android:textColor="?attr/colorOnPrimary"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-            </FrameLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/llSubtasks"
-            android:layout_width="match_parent"
+        <ImageButton
+            android:id="@+id/btnTaskOptions"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_more_vert"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?attr/colorOnPrimary"
+             />
 
-            <TextView
-                android:id="@+id/tvSubtasks"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/event_subtasks_3_5"
-                android:textColor="?attr/colorOnPrimary"
-                android:textSize="12sp"
-                android:textStyle="bold"/>
+        <TextView
+            android:id="@+id/tvEventTitle"
+            style="@style/TextAppearance.Sycrom.TaskCard.Title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:minHeight="40dp" android:textColor="?attr/colorOnPrimary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toStartOf="@+id/progress_circular"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvEventType"
+            tools:text="Reunión de Marketing Estratégico Global" />
+
+        <FrameLayout
+            android:id="@+id/progress_circular"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tvEventTitle"
+            app:layout_constraintBottom_toTopOf="@+id/guideline_progress_separator">
 
             <ProgressBar
-                android:id="@+id/pbLinearProgress"
+                android:id="@+id/pbCircularProgress"
                 style="?android:attr/progressBarStyleHorizontal"
-                android:layout_width="0dp"
-                android:layout_height="8dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:layout_weight="1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/circular_progress_background"
                 android:max="100"
                 android:progress="0"
-                android:progressDrawable="@drawable/linear_progress_drawable"/>
-
-            <FrameLayout
-                android:layout_width="24dp"
-                android:layout_height="24dp">
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:src="@drawable/ic_clock"
-                    android:layout_gravity="center"
-                    app:tint="?attr/colorOnPrimary"/>
-            </FrameLayout>
-
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="horizontal">
+                android:progressDrawable="@drawable/circular_progress_bar"
+                android:rotation="-90" />
 
             <TextView
-                android:id="@+id/tvFinishEvent"
+                android:id="@+id/tvProgressPercentage"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/event_finish"
+                android:layout_gravity="center"
                 android:textColor="?attr/colorOnPrimary"
-                android:textSize="12sp"
-                />
-            <com.google.android.material.checkbox.MaterialCheckBox
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="60%" />
+        </FrameLayout>
 
-                android:id="@+id/cbIsDone"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                 />
-        </LinearLayout>
+        <ImageView
+            android:id="@+id/icon_location"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/ic_location"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvEventTitle"
+            app:tint="?attr/colorOnPrimary" />
+
+        <TextView
+            android:id="@+id/tvEventLocation"
+            style="@style/TextAppearance.Sycrom.TaskCard"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toStartOf="@+id/progress_circular"
+            app:layout_constraintStart_toEndOf="@id/icon_location"
+            app:layout_constraintTop_toTopOf="@id/icon_location"
+            app:layout_constraintBottom_toBottomOf="@id/icon_location"
+            tools:text="Córdoba, Oficina Principal" />
+
+        <ImageView
+            android:id="@+id/icon_time"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginTop="4dp"
+            android:src="@drawable/ic_clock"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/icon_location"
+            app:tint="?attr/colorOnPrimary" />
+
+        <TextView
+            android:id="@+id/tvAttendees" android:layout_width="0dp"
+            style="@style/TextAppearance.Sycrom.TaskCard"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toStartOf="@+id/progress_circular"
+            app:layout_constraintStart_toEndOf="@id/icon_time"
+            app:layout_constraintTop_toTopOf="@id/icon_time"
+            app:layout_constraintBottom_toBottomOf="@id/icon_time"
+            tools:text="10:30" />
+
+        <ImageView
+            android:id="@+id/icon_duration"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginTop="4dp"
+            android:src="@drawable/ic_timer_duration"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/icon_time"
+            app:tint="?attr/colorOnPrimary" />
+
+        <TextView
+            android:id="@+id/tvDuration"
+            android:layout_width="0dp"
+            style="@style/TextAppearance.Sycrom.TaskCard"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toStartOf="@+id/progress_circular"
+            app:layout_constraintStart_toEndOf="@id/icon_duration"
+            app:layout_constraintTop_toTopOf="@id/icon_duration"
+            app:layout_constraintBottom_toBottomOf="@id/icon_duration"
+            tools:text="1 h 30 min" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/guideline_progress_separator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_begin="160dp"/> <LinearLayout
+        android:id="@+id/llSubtasks"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/guideline_progress_separator">
+
+        <TextView
+            android:id="@+id/tvSubtasks"
+            style="@style/TextAppearance.Sycrom.TaskCard.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            tools:text="3/5" />
+
+        <ProgressBar
+            android:id="@+id/pbLinearProgress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="0dp"
+            android:layout_height="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:max="100"
+            android:progress="60"
+            android:progressDrawable="@drawable/linear_progress_drawable" />
+
+    </LinearLayout>
 
         <TextView
             android:id="@+id/tvExpandDetails"
+            style="@style/TextAppearance.Sycrom.TaskCard.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
             android:text="@string/event_expand_details"
             android:textColor="?attr/colorOnPrimary"
             android:textSize="12sp"
-            />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/llSubtasks"
+            android:layout_marginBottom="4dp"/>
 
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/cbIsDone"
+            style="@style/TextAppearance.Sycrom.TaskCard.Small"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="@string/event_finish"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="12sp"
+            app:layout_constraintEnd_toEndOf="parent"
+           app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvExpandDetails"/>
 
-
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>
