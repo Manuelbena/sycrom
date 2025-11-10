@@ -22,7 +22,10 @@ class CarouselScrollListener(
 
     override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
         super.onScrolled(recyclerView, dx, dy)
+        applyEffects(recyclerView)
+    }
 
+    private fun applyEffects(recyclerView: RecyclerView) {
         val centerX = recyclerView.width / 2f
 
         for (i in 0 until recyclerView.childCount) {
@@ -31,7 +34,8 @@ class CarouselScrollListener(
             val distance = abs(centerX - childCenterX)
 
             // Factor de normalización (0 en el centro, 1 en el borde)
-            val effectFactor = distance / centerX
+            // Aseguramos que centerX no sea 0 para evitar dividir por cero
+            val effectFactor = if (centerX > 0) distance / centerX else 0f
 
             // 1. Transformación de Escala
             val scale = max(minScale, 1 - effectFactor)

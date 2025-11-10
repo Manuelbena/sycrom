@@ -79,16 +79,17 @@ class WeekCalendarManager(
 
         if (isSelected) {
             backgroundColorRes = R.drawable.day_selected_backgorund
-            // Usamos los colores que has definido en tu tema
+            // Usamos los colores 'onPrimary' para el día seleccionado (texto blanco)
             textColorPrimary = ContextCompat.getColor(context, R.color.md_theme_onPrimary)
             textColorSecondary = ContextCompat.getColor(context, R.color.md_theme_onPrimary)
         } else {
             // Usamos 'transparent' de Android para el fondo
             backgroundColorRes = android.R.color.transparent
-            // Usamos los colores por defecto del item_calendar_dat.xml
-            // (Asegúrate de que estos colores existen en tu colors.xml)
-            textColorPrimary = ContextCompat.getColor(context, R.color.slate)
-            textColorSecondary = ContextCompat.getColor(context, R.color.black)
+
+            // ¡ESTA ES LA CORRECCIÓN!
+            // Usamos colores del tema que existen en 'values' y 'values-night'
+            textColorPrimary = ContextCompat.getColor(context, R.color.md_theme_onSurfaceVariant) // Color "gris" del tema
+            textColorSecondary = ContextCompat.getColor(context, R.color.md_theme_onSurface) // Color "normal" del tema
         }
 
         // Usamos setBackgroundResource en lugar de .background
