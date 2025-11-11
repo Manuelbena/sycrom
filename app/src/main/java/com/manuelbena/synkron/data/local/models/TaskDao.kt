@@ -1,62 +1,30 @@
 package com.manuelbena.synkron.data.local.models
 
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import com.manuelbena.synkron.domain.models.SubTaskDomain
+@Dao
+interface TaskDao {
 
-/**
- * Esta es la entidad (tabla) para tu evento.
- * Representa un evento en la base de datos.
- *
- * TODO: Adapta los campos (propiedades) de esta data class
- * para que coincidan exactamente con los campos de tu pantalla.
- */
-@Entity(tableName = "events_table")
-data class TaskDao(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0L,
+    // CAMBIO: Opera sobre TaskEntity
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTask(task: TaskEntity)
 
-    @ColumnInfo(name = "title")
-    var title: String,
+    // CAMBIO: Opera sobre TaskEntity
+    @Update
+    suspend fun updateTask(task: TaskEntity)
 
-    @ColumnInfo(name = "description")
-    var description: String?,
+    // --- ¡CAMBIO CRÍTICO! ---
+    // Ya no es 'suspend' y devuelve 'Flow<List<TaskEntity>>'
+    // Room manejará la corrutina y nos notificará de cambios.
+    @Query("SELECT * FROM task_table WHERE date >= :dayStart AND date < :dayEnd")
+    fun getTasksForDay(dayStart: Long, dayEnd: Long): Flow<List<TaskEntity>>
 
-    @ColumnInfo(name = "start_time") // 'date' en TaskDomain
-    var date: Long,
-
-    @ColumnInfo(name = "hour") // 'hour' en TaskDomain (minutos)
-    var hour: Int,
-
-    @ColumnInfo(name = "duration") // <-- AÑADIDO
-    var duration: Int,
-
-    @ColumnInfo(name = "tipy_task")
-    var typeTask: String,
-
-    @ColumnInfo(name = "is_active")
-    var isActive: Boolean = false,
-
-    @ColumnInfo(name = "is_done")
-    var isDone: Boolean = false,
-
-    @ColumnInfo(name = "location")
-    var location: String?,
-
-    @ColumnInfo(name = "is_deleted")
-    var isDeleted: Boolean = false,
-
-    @ColumnInfo(name = "is_archived")
-    var isArchived: Boolean = false,
-
-    @ColumnInfo(name = "is_pinned")
-    var isPinned: Boolean = false,
-
-    @ColumnInfo(name = "priority")
-    var priority: String,
-
-    @ColumnInfo(name = "sub_tasks")
-    var subTasks: List<SubTaskDomain> = emptyList()
-)
+    // (Añade también el delete si lo necesitas)
+    // @Delete
+    // suspend fun deleteTask(task: TaskEntity)
+}

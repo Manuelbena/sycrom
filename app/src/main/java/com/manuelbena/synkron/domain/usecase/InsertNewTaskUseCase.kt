@@ -1,14 +1,15 @@
 package com.manuelbena.synkron.domain.usecase
 
+import TaskDomain
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
-import com.manuelbena.synkron.domain.models.TaskDomain
+
 import javax.inject.Inject
 
 class InsertNewTaskUseCase @Inject constructor(
-    private val tasksRepository: ITaskRepository)
-    {
-
-        suspend operator fun invoke(taskDomain: TaskDomain) {
-            return tasksRepository.insertEvent(taskDomain)
-        }
+    private val repository: ITaskRepository
+) {
+    // CAMBIO: Llama al nuevo método 'insertTask'
+    suspend operator fun invoke(task: TaskDomain) {
+        repository.insertTask(task)
     }
+}

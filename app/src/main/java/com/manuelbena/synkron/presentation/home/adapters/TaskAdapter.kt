@@ -1,10 +1,12 @@
 package com.manuelbena.synkron.presentation.home.adapters
 
+import TaskDomain
 import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -12,7 +14,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseViewHolder
 import com.manuelbena.synkron.databinding.ItemTaskTodayBinding
-import com.manuelbena.synkron.domain.models.TaskDomain
+
+import com.manuelbena.synkron.presentation.util.extensions.toDurationString
+import com.manuelbena.synkron.presentation.util.getDurationInMinutes
+import com.manuelbena.synkron.presentation.util.toHourString
 import java.util.Locale
 
 /**
@@ -61,29 +66,29 @@ class TaskAdapter(
      * ViewHolder que representa la vista de una única tarea (`item_task_today.xml`).
      */
     inner class TaskViewHolder(
-        private val binding: ItemTaskTodayBinding
+        private val binding: ItemTaskTodayBinding // Asumiendo que tu XML se llama item_task_today.xml
     ) : BaseViewHolder<TaskDomain>(binding) {
 
         init {
-            // Gestionamos los clics desde el 'init' del ViewHolder.
-            // Es más eficiente que crearlos en 'onBindViewHolder'.
+            // --- Listeners (Añadimos el del CheckBox de abajo) ---
             binding.root.setOnClickListener {
-                executeIfValidPosition { task ->
-                    onItemClick(task)
+                if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                    onItemClick(getItem(bindingAdapterPosition))
                 }
             }
 
             binding.btnTaskOptions.setOnClickListener {
-                executeIfValidPosition { task ->
-                    showPopupMenu(binding.btnTaskOptions, task)
+                if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                    showPopupMenu(binding.btnTaskOptions, getItem(bindingAdapterPosition))
                 }
             }
 
-            binding.cbIsDone.setOnCheckedChangeListener { _, isChecked ->
-                executeIfValidPosition { task ->
-                    // 1. Actualiza la UI localmente (tachado)
-                    updateStrikeThrough(isChecked)
-                    // 2. Informa al exterior (ViewModel) del cambio
+            binding.cbIsDone.setOnClickListener {
+                if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
+                    val task = getItem(bindingAdapterPosition)
+                    val isChecked = binding.cbIsDone.isChecked
+
+                    // Llamamos a la acción del ViewModel
                     onTaskCheckedChange(task, isChecked)
                 }
             }
@@ -92,52 +97,88 @@ class TaskAdapter(
         /**
          * Rellena la vista con los datos del [item] de la tarea.
          */
+        /**
+         * Rellena la vista con los datos del nuevo TaskDomain.
+         */
         override fun bind(item: TaskDomain) {
             binding.apply {
-                // --- Información Básica ---
-                tvEventTitle.text = item.title
-                tvEventType.text = item.typeTask
-                tvEventLocation.text = item.place.takeIf { it.isNotEmpty() } ?: "Sin ubicación"
 
-                // --- Estado 'Terminado' (CheckBox y Tachado) ---
-                updateStrikeThrough(item.isDone)
+                // --- 1. Mapeo de Título y Categoría ---
+                tvEventTitle.text = item.summary
+                chipCategory.text = item.typeTask
 
-                // Lógica CRÍTICA del CheckBox para evitar bucles de 'bind':
-                // 1. Quitamos el listener para que 'setChecked' no dispare un evento.
-                cbIsDone.setOnCheckedChangeListener(null)
-                // 2. Asignamos el estado del check BASADO EN EL MODELO.
-                cbIsDone.isChecked = item.isDone
-                // 3. Volvemos a poner el listener para futuros clics del usuario.
-                cbIsDone.setOnCheckedChangeListener { _, isChecked ->
-                    executeIfValidPosition { task ->
-                        updateStrikeThrough(isChecked)
-                        onTaskCheckedChange(task, isChecked)
-                    }
+                // --- 2. Mapeo de Contexto (Línea por Línea) ---
+
+                // Ubicación
+                if (item.location.isNullOrEmpty()) {
+                    tvEventLocation.visibility = View.GONE
+                    iconLocation.visibility = View.GONE
+                } else {
+                    tvEventLocation.visibility = View.VISIBLE
+                    iconLocation.visibility = View.VISIBLE
+                    tvEventLocation.text = item.location
                 }
 
-                // --- Formateo de Duración y Hora ---
-                tvDuration.text = formatDuration(item.duration)
-                tvAttendees.text = formatHour(item.hour) // Nota: El ID 'tvAttendees' parece incorrecto, sugiero 'tvEventTime'
+                // Hora (usando el helper .toHourString())
+                if (item.start != null) {
+                    tvEventTime.text = item.start.toHourString()
+                } else {
+                    tvEventTime.text = "--:--"
+                }
 
-                // --- Lógica de Progreso de Subtareas ---
-                val totalSubtasks = item.subTasks.size
-                val completedSubtasks = item.subTasks.count { it.isDone }
+                // Duración (calculada con helpers)
+                val durationInMinutes = getDurationInMinutes(item.start, item.end)
+                if (durationInMinutes > 0) {
+                    tvDuration.visibility = View.VISIBLE
+                    iconDuration.visibility = View.VISIBLE
+                    tvDuration.text = durationInMinutes.toDurationString()
+                } else {
+                    tvDuration.visibility = View.GONE
+                    iconDuration.visibility = View.GONE
+                }
 
-                if (totalSubtasks > 0) {
-                    val progress = (completedSubtasks * 100) / totalSubtasks
-                    showProgress(true)
+                // --- 3. Mapeo de Progreso (Círculo) ---
+                val hasSubtasks = item.subTasks.isNotEmpty()
+                if (hasSubtasks) {
+                    progressCircular.visibility = View.VISIBLE
+                    val total = item.subTasks.size
+                    val completed = item.subTasks.count { it.isDone }
+                    val progress = if (total > 0) (completed * 100) / total else 0
 
                     pbCircularProgress.progress = progress
-
-                    tvSubtasks.text = "$completedSubtasks/$totalSubtasks"
+                    tvProgressPercentage.text = "$progress%"
                 } else {
-                    showProgress(false)
-                    tvSubtasks.visibility = View.GONE
-
+                    progressCircular.visibility = View.INVISIBLE
                 }
+
+                // --- 4. Mapeo de Estado (CheckBox y Estilo) ---
+
+                // Sincronizar el CheckBox de abajo
+                cbIsDone.setOnCheckedChangeListener(null) // Quitar listener
+                cbIsDone.isChecked = item.isDone
+                cbIsDone.setOnCheckedChangeListener { _, isChecked -> // Poner listener
+                    onTaskCheckedChange(item, isChecked)
+                }
+
+                // Aplicar Tachado al Título
+                if (item.isDone) {
+                    tvEventTitle.paintFlags = tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                } else {
+                    tvEventTitle.paintFlags = tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                }
+
+                // Atenuar la tarjeta si está completada
+                cardTaskRoot.alpha = if (item.isDone) 0.6f else 1.0f
+
+                // --- 5. Lógica "Viva" (Prioridad) ---
+                val priorityColorRes = when (item.priority) {
+                    "Alta" -> R.color.priority_high_bg
+                    "Media" -> R.color.priority_medium_bg
+                    else -> R.color.priority_low_bg
+                }
+                cardTaskRoot.strokeColor = ContextCompat.getColor(binding.root.context, priorityColorRes)
             }
         }
-
         /**
          * Muestra u oculta los elementos visuales del progreso.
          */

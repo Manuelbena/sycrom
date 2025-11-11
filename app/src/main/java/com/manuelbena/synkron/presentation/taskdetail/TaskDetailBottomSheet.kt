@@ -22,9 +22,12 @@ import com.manuelbena.synkron.presentation.util.extensions.toDurationString
 import com.manuelbena.synkron.presentation.util.extensions.toHourString
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.net.URLEncoder
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 /**
  * BottomSheet para mostrar el detalle de una Tarea.
@@ -223,6 +226,45 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
                 binding.textViewTaskDetailTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
         }
     }
+    /**
+     * Crea un enlace universal de "Añadir a Google Calendar" a partir de una tarea.
+     *
+     * @param task La tarea de la que extraer los datos.
+     * @return Un String con la URL formateada.
+     */
+    private fun createGoogleCalendarLink(task: TaskDomain): String {
+        // 1. Calcular las fechas de inicio y fin
+        val localCalendar = Calendar.getInstance()
+        localCalendar.timeInMillis = task.date // Establece el día
+        // Añade la hora (minutos desde medianoche)
+        localCalendar.set(Calendar.HOUR_OF_DAY, task.hour / 60)
+        localCalendar.set(Calendar.MINUTE, task.hour % 60)
+        localCalendar.set(Calendar.SECOND, 0)
+
+        val startTimeMillis = localCalendar.timeInMillis
+        val endTimeMillis = startTimeMillis + (task.duration * 60 * 1000) // Añade duración
+
+        // 2. Formatear las fechas a ISO 8601 en UTC (formato que Google Calendar exige)
+        val isoFormatter = SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }
+
+        val startTimeUtc = isoFormatter.format(Date(startTimeMillis))
+        val endTimeUtc = isoFormatter.format(Date(endTimeMillis))
+
+        // 3. Codificar los parámetros para la URL
+        val title = URLEncoder.encode(task.title, "UTF-8")
+        val dates = URLEncoder.encode("$startTimeUtc/$endTimeUtc", "UTF-8")
+        val details = URLEncoder.encode(task.description, "UTF-8")
+        val location = URLEncoder.encode(task.place, "UTF-8")
+
+        // 4. Construir la URL final
+        return "https://www.google.com/calendar/render?action=TEMPLATE" +
+                "&text=$title" +
+                "&dates=$dates" +
+                "&details=$details" +
+                "&location=$location"
+    }
 
     // --- Métodos de Navegación/Acción ---
 
@@ -296,9 +338,14 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
             }
             builder.append("\n")
         }
+        try {
+            val calendarLink = createGoogleCalendarLink(task)
+            builder.append("➕ *¡Añádelo a tu calendario!:*\n")
+            builder.append("$calendarLink\n\n")
+        } catch (e: Exception) {}
 
         // --- Footer de Synkrón ---
-        builder.append("--------------------\n")
+        builder.append("--------------------------------\n")
         builder.append("¡Gestionando mi caos con *Synkrón*! 🚀")
 
         return builder.toString()
