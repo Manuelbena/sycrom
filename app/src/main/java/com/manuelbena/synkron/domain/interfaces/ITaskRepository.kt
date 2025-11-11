@@ -1,7 +1,8 @@
 package com.manuelbena.synkron.domain.interfaces
 
-import TaskDomain
 
+
+import com.manuelbena.synkron.domain.models.TaskDomain
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 

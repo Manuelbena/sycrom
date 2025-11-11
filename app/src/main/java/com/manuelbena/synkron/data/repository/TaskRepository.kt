@@ -1,10 +1,11 @@
 package com.manuelbena.synkron.data.repository
 
-import TaskDomain
+
 import com.manuelbena.synkron.data.local.models.TaskDao
 import com.manuelbena.synkron.data.mappers.toDomain
 import com.manuelbena.synkron.data.mappers.toEntity
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
+import com.manuelbena.synkron.domain.models.TaskDomain
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

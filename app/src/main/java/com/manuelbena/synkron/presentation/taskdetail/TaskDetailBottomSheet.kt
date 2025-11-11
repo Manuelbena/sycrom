@@ -1,6 +1,6 @@
-package com.manuelbena.synkron.presentation.util
+package com.manuelbena.synkron.presentation.taskdetail
 
-import TaskDomain
+
 import android.content.Intent
 import android.graphics.Paint
 import android.os.Bundle
@@ -8,19 +8,24 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.core.util.TimeUtils.formatDuration
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.manuelbena.synkron.R
-import com.manuelbena.synkron.databinding.BottomSheetTaskDetailBinding // <-- IMPORTANTE: El binding cambiará de nombre
+import com.manuelbena.synkron.databinding.BottomSheetTaskDetailBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
+import com.manuelbena.synkron.presentation.util.EDIT_TASK
+import com.manuelbena.synkron.presentation.util.TaskDetailContract
+import com.manuelbena.synkron.presentation.util.TaskDetailViewModel
 import com.manuelbena.synkron.presentation.util.adapters.SubtaskAdapter
-import com.manuelbena.synkron.presentation.util.extensions.toDurationString
-import com.manuelbena.synkron.presentation.util.extensions.toHourString
+
+import com.manuelbena.synkron.presentation.util.getDurationInMinutes
+import com.manuelbena.synkron.presentation.util.toCalendar
+import com.manuelbena.synkron.presentation.util.toDurationString
+import com.manuelbena.synkron.presentation.util.toHourString
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.net.URLEncoder
@@ -30,24 +35,12 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
-/**
- * BottomSheet para mostrar el detalle de una Tarea.
- *
- * Responsabilidades:
- * - Mostrar los detalles de la Tarea (título, desc, subtareas).
- * - Permitir al usuario marcar la tarea o subtareas como completadas.
- * - Enviar eventos de acciones (Editar, Borrar, Compartir) al [TaskDetailViewModel].
- * - Reaccionar a las acciones del ViewModel (Navegar, Cerrar).
- */
 @AndroidEntryPoint
 class TaskDetailBottomSheet : BottomSheetDialogFragment() {
 
     // --- Propiedades ---
 
-    // Inyectamos el ViewModel dedicado
     private val viewModel: TaskDetailViewModel by viewModels()
-
-    // Usamos el nombre de binding generado por el XML renombrado
     private var _binding: BottomSheetTaskDetailBinding? = null
     private val binding get() = _binding!!
 
@@ -66,7 +59,6 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         setupUI()
         setupListeners()
         observeViewModel()
@@ -79,12 +71,8 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
 
     // --- Configuración ---
 
-    /**
-     * Inicializa los componentes de la UI (principalmente el RecyclerView).
-     */
     private fun setupUI() {
         subtaskAdapter = SubtaskAdapter { subtask, isDone ->
-            // Envía el evento al ViewModel
             viewModel.onEvent(TaskDetailContract.TaskDetailEvent.OnSubtaskChecked(subtask, isDone))
         }
 
@@ -94,16 +82,13 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    /**
-     * Configura los listeners de los botones.
-     */
     private fun setupListeners() {
         // 1. Listeners del Toggle de Estado
-        binding.toggleButtonStatus.addOnButtonCheckedListener { group, checkedId, isChecked ->
+        binding.toggleButtonStatus.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (isChecked) {
                 val isDone = (checkedId == binding.buttonStatusDone.id)
                 viewModel.onEvent(TaskDetailContract.TaskDetailEvent.OnTaskChecked(isDone))
-                updateTitleStrikeThrough(isDone) // Actualización visual inmediata
+                updateTitleStrikeThrough(isDone)
             }
         }
 
@@ -112,19 +97,21 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
             viewModel.onEvent(TaskDetailContract.TaskDetailEvent.OnDeleteClicked)
         }
 
-        // 3. Listeners del BottomAppBar (Compartir y Editar)
+        // 3. Listeners del BottomAppBar (Compartir)
         binding.bottomAppBar.setNavigationOnClickListener {
-            // Ícono de Navegación (Compartir)
             viewModel.onEvent(TaskDetailContract.TaskDetailEvent.OnShareClicked)
         }
 
+        // 4. Listener del botón 'X'
         binding.buttonCloseSheet.setOnClickListener {
-            dismiss() // Simplemente cierra el BottomSheet
+            dismiss()
         }
 
+        // 5. Listener del Menú (Editar)
         binding.bottomAppBar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.menu_edit -> {
+                // ¡ID CORREGIDO!
+                R.id.menu_edit_task -> {
                     viewModel.onEvent(TaskDetailContract.TaskDetailEvent.OnEditClicked)
                     true
                 }
@@ -133,29 +120,25 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    /**
-     * Observa el Estado (State) y las Acciones (Action) del ViewModel.
-     */
     private fun observeViewModel() {
         // Observa el ESTADO (los datos a pintar)
         viewModel.state.observe(viewLifecycleOwner) { state ->
+            // Se llama cada vez que el ViewModel actualiza la Tarea
             bindTaskData(state.task)
         }
 
         // Observa las ACCIONES (eventos de un solo uso)
-        viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.action.observe(viewLifecycleOwner) { action ->
-                when (action) {
-                    is TaskDetailContract.TaskDetailAction.NavigateToEdit -> {
-                        navigateToContainerActivity(action.task)
-                        dismiss() // Cierra el sheet después de navegar
-                    }
-                    is TaskDetailContract.TaskDetailAction.ShareTask -> {
-                        shareTask(action.task)
-                    }
-                    is TaskDetailContract.TaskDetailAction.DismissSheet -> {
-                        dismiss()
-                    }
+        viewModel.action.observe(viewLifecycleOwner) { action ->
+            when (action) {
+                is TaskDetailContract.TaskDetailAction.NavigateToEdit -> {
+                    navigateToContainerActivity(action.task)
+                    dismiss()
+                }
+                is TaskDetailContract.TaskDetailAction.ShareTask -> {
+                    shareTask(action.task)
+                }
+                is TaskDetailContract.TaskDetailAction.DismissSheet -> {
+                    dismiss()
                 }
             }
         }
@@ -165,6 +148,7 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
 
     /**
      * Rellena todas las vistas con los datos de la [TaskDomain].
+     * (¡COMPLETAMENTE ACTUALIZADO A TaskDomain NUEVO!)
      */
     private fun bindTaskData(task: TaskDomain) {
 
@@ -175,32 +159,28 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
             binding.toggleButtonStatus.check(R.id.button_status_pending)
         }
 
-        // 2. Título y Tachado
-        binding.textViewTaskDetailTitle.text = task.title
+        // 2. Título y Tachado (CAMBIO: summary)
+        binding.textViewTaskDetailTitle.text = task.summary
         updateTitleStrikeThrough(task.isDone)
 
-        // 3. Rellenar los Chips de Contexto
-        binding.chipContextDate.text = SimpleDateFormat("dd MMMM", Locale.getDefault()).format(
-            Date(
-                task.date
-            )
-        )
-        binding.chipContextTime.text = task.hour.toHourString()
-        binding.chipContextDuration.text = task.duration.toDurationString()
+        // 3. Rellenar los Chips de Contexto (CAMBIOS)
+        val startDateCalendar = task.start.toCalendar() // Helper para obtener un Calendar
+        val durationInMinutes = getDurationInMinutes(task.start, task.end) // Helper
 
-        // Ocultar chips si no hay info
-        binding.chipContextLocation.isVisible = task.place.isNotEmpty()
-        binding.chipContextLocation.text = task.place
+        binding.chipContextDate.text = SimpleDateFormat("dd MMMM", Locale.getDefault()).format(startDateCalendar.time)
+        binding.chipContextTime.text = task.start.toHourString()
+        binding.chipContextDuration.text = durationInMinutes.toDurationString()
 
+        // CAMBIO: location
+        binding.chipContextLocation.isVisible = !task.location.isNullOrEmpty()
+        binding.chipContextLocation.text = task.location
+
+        // CAMBIO: priority
         binding.chipContextPriority.isVisible = task.priority.isNotEmpty()
-        binding.chipContextPriority.text = task.priority
-
+        binding.chipContextPriority.text = "Prioridad ${task.priority}"
 
         // 4. Descripción
-        binding.textViewTaskDetailDescription.text = task.description
-
-        binding.textViewTaskDetailDescription.text = task.description.ifEmpty { "Sin descripción" }
-
+        binding.textViewTaskDetailDescription.text = task.description.takeIf { !it.isNullOrEmpty() } ?: "Sin descripción"
 
         // 5. Progreso de Subtareas
         val totalSubtasks = task.subTasks.size
@@ -215,9 +195,7 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
             subtaskAdapter.submitList(task.subTasks)
         }
     }
-    /**
-     * Aplica o quita el tachado del título.
-     */
+
     private fun updateTitleStrikeThrough(isDone: Boolean) {
         if (isDone) {
             binding.textViewTaskDetailTitle.paintFlags =
@@ -227,37 +205,33 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
                 binding.textViewTaskDetailTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
         }
     }
+
+    // --- Métodos de Navegación/Acción (ACTUALIZADOS) ---
+
     /**
      * Crea un enlace universal de "Añadir a Google Calendar" a partir de una tarea.
-     *
-     * @param task La tarea de la que extraer los datos.
-     * @return Un String con la URL formateada.
+     * (¡COMPLETAMENTE ACTUALIZADO A TaskDomain NUEVO!)
      */
     private fun createGoogleCalendarLink(task: TaskDomain): String {
-        // 1. Calcular las fechas de inicio y fin
-        val localCalendar = Calendar.getInstance()
-        localCalendar.timeInMillis = task.date // Establece el día
-        // Añade la hora (minutos desde medianoche)
-        localCalendar.set(Calendar.HOUR_OF_DAY, task.hour / 60)
-        localCalendar.set(Calendar.MINUTE, task.hour % 60)
-        localCalendar.set(Calendar.SECOND, 0)
+        // 1. Calcular las fechas de inicio y fin (CAMBIO)
+        val startCalendar = task.start.toCalendar()
+        val endCalendar = task.end.toCalendar()
 
-        val startTimeMillis = localCalendar.timeInMillis
-        val endTimeMillis = startTimeMillis + (task.duration * 60 * 1000) // Añade duración
+        val startTimeMillis = startCalendar.timeInMillis
+        val endTimeMillis = endCalendar.timeInMillis
 
-        // 2. Formatear las fechas a ISO 8601 en UTC (formato que Google Calendar exige)
+        // 2. Formatear las fechas a ISO 8601 en UTC
         val isoFormatter = SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US).apply {
             timeZone = TimeZone.getTimeZone("UTC")
         }
-
         val startTimeUtc = isoFormatter.format(Date(startTimeMillis))
         val endTimeUtc = isoFormatter.format(Date(endTimeMillis))
 
-        // 3. Codificar los parámetros para la URL
-        val title = URLEncoder.encode(task.title, "UTF-8")
+        // 3. Codificar los parámetros (CAMBIO)
+        val title = URLEncoder.encode(task.summary, "UTF-8")
         val dates = URLEncoder.encode("$startTimeUtc/$endTimeUtc", "UTF-8")
-        val details = URLEncoder.encode(task.description, "UTF-8")
-        val location = URLEncoder.encode(task.place, "UTF-8")
+        val details = URLEncoder.encode(task.description ?: "", "UTF-8")
+        val location = URLEncoder.encode(task.location ?: "", "UTF-8")
 
         // 4. Construir la URL final
         return "https://www.google.com/calendar/render?action=TEMPLATE" +
@@ -267,31 +241,21 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
                 "&location=$location"
     }
 
-    // --- Métodos de Navegación/Acción ---
-
-    /**
-     * Navega a [ContainerActivity] para editar la tarea.
-     */
     private fun navigateToContainerActivity(task: TaskDomain) {
         val intent = Intent(requireContext(), ContainerActivity::class.java).apply {
-            putExtra(EDIT_TASK, task) // Usamos la constante
+            putExtra(EDIT_TASK, task)
         }
         startActivity(intent)
     }
 
-    /**
-     * Crea un Intent para compartir el contenido de una tarea.
-     */
     private fun shareTask(task: TaskDomain) {
         val shareText = generateShareText(task)
         val sendIntent: Intent = Intent().apply {
-            action = Intent.ACTION_SEND
+            action = Intent.ACTION_SEND // CAMBIO: 'action' en minúscula
             putExtra(Intent.EXTRA_TEXT, shareText)
-            type = "text/plain"
+            type = "text/plain" // CAMBIO: 'type' en minúscula
         }
-
-        // WhatsApp (si está instalado)
-        sendIntent.setPackage("com.whatsapp") // Descomenta esto si quieres ir directo a WhatsApp
+        // sendIntent.setPackage("com.whatsapp") // (Opcional)
 
         val shareIntent = Intent.createChooser(sendIntent, "Compartir tarea")
         startActivity(shareIntent)
@@ -299,25 +263,28 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
 
     /**
      * Genera el texto formateado con emojis para compartir.
+     * (¡COMPLETAMENTE ACTUALIZADO A TaskDomain NUEVO!)
      */
     private fun generateShareText(task: TaskDomain): String {
         val builder = StringBuilder()
+        val startDateCalendar = task.start.toCalendar()
+        val durationInMinutes = getDurationInMinutes(task.start, task.end)
 
         // --- Encabezado y Título ---
         val statusEmoji = if (task.isDone) "✅" else "🎯"
         builder.append("$statusEmoji *¡Ojo a esta tarea!* $statusEmoji\n\n")
-        builder.append("*${task.title.uppercase()}*\n\n")
+        builder.append("*${task.summary.uppercase()}*\n\n") // CAMBIO
 
         // --- Contexto (Fecha, Hora, Lugar...) ---
-        val dateText = SimpleDateFormat("EEEE, dd 'de' MMMM", Locale.getDefault()).format(Date(task.date))
-        builder.append("🗓️ *Cuándo:* ${dateText.capitalize(Locale.getDefault())}\n")
-        builder.append("⏰ *Hora:* ${task.hour.toHourString()}\n")
+        val dateText = SimpleDateFormat("EEEE, dd 'de' MMMM", Locale("es", "ES")).format(startDateCalendar.time)
+        builder.append("🗓️ *Cuándo:* ${dateText.replaceFirstChar { it.titlecase(Locale.getDefault()) }}\n")
+        builder.append("⏰ *Hora:* ${task.start.toHourString()}\n") // CAMBIO
 
-        if (task.duration > 0) {
-            builder.append("⏳ *Duración:* ${task.duration.toDurationString()}\n")
+        if (durationInMinutes > 0) { // CAMBIO
+            builder.append("⏳ *Duración:* ${durationInMinutes.toDurationString()}\n")
         }
-        if (task.place.isNotEmpty()) {
-            builder.append("📍 *Lugar:* ${task.place}\n")
+        if (!task.location.isNullOrEmpty()) { // CAMBIO
+            builder.append("📍 *Lugar:* ${task.location}\n")
         }
         if (task.typeTask.isNotEmpty()) {
             builder.append("🏷️ *Categoría:* ${task.typeTask}\n")
@@ -325,7 +292,7 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
         builder.append("\n") // Separador
 
         // --- Descripción (si existe) ---
-        if (task.description.isNotEmpty()) {
+        if (!task.description.isNullOrEmpty()) { // CAMBIO
             builder.append("🧐 *El plan:*\n")
             builder.append("${task.description}\n\n")
         }
@@ -334,7 +301,7 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
         if (task.subTasks.isNotEmpty()) {
             builder.append("📋 *Los pasos a seguir:*\n")
             task.subTasks.forEach { subtask ->
-                val subtaskStatus = if (subtask.isDone) "✔️" else "◻️" // O "🔘"
+                val subtaskStatus = if (subtask.isDone) "✔️" else "◻️"
                 builder.append("   $subtaskStatus ${subtask.title}\n")
             }
             builder.append("\n")
@@ -357,12 +324,6 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
     companion object {
         const val TAG = "TaskDetailBottomSheet"
 
-        /**
-         * Método factoría para crear una nueva instancia de este BottomSheet.
-         * Pasamos la Tarea completa como argumento Parcelable.
-         *
-         * @param task La Tarea a mostrar.
-         */
         fun newInstance(task: TaskDomain): TaskDetailBottomSheet {
             return TaskDetailBottomSheet().apply {
                 arguments = bundleOf("task" to task)

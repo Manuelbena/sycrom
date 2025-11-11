@@ -1,6 +1,5 @@
 package com.manuelbena.synkron.presentation.home.adapters
 
-import TaskDomain
 import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.View
@@ -13,9 +12,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseViewHolder
 import com.manuelbena.synkron.databinding.ItemTaskTodayBinding
+import com.manuelbena.synkron.domain.models.TaskDomain
 
-import com.manuelbena.synkron.presentation.util.extensions.toDurationString
+
 import com.manuelbena.synkron.presentation.util.getDurationInMinutes
+import com.manuelbena.synkron.presentation.util.toDurationString
 
 import com.manuelbena.synkron.presentation.util.toHourString
 

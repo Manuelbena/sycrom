@@ -1,7 +1,8 @@
 package com.manuelbena.synkron.presentation.home
 
 
-import TaskDomain
+
+import com.manuelbena.synkron.domain.models.TaskDomain
 import java.time.LocalDate
 
 /**

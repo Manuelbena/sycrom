@@ -1,7 +1,8 @@
 package com.manuelbena.synkron.domain.usecase
 
-import TaskDomain
+
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
+import com.manuelbena.synkron.domain.models.TaskDomain
 
 import javax.inject.Inject
 

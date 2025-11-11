@@ -1,6 +1,6 @@
 package com.manuelbena.synkron.presentation.home
 
-import TaskDomain
+
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -23,12 +23,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentHomeBinding
+import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
+import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
 import com.manuelbena.synkron.presentation.util.ADD_TASK
 import com.manuelbena.synkron.presentation.util.CarouselScrollListener
 import com.manuelbena.synkron.presentation.util.EDIT_TASK
-import com.manuelbena.synkron.presentation.util.TaskDetailBottomSheet
+
 import com.manuelbena.synkron.presentation.util.WeekCalendarManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest

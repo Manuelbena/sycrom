@@ -1,8 +1,6 @@
+package com.manuelbena.synkron.domain.models
+
 import android.os.Parcelable
-import com.manuelbena.synkron.domain.models.GoogleEventAttendee
-import com.manuelbena.synkron.domain.models.GoogleEventDateTime
-import com.manuelbena.synkron.domain.models.GoogleEventReminders
-import com.manuelbena.synkron.domain.models.SubTaskDomain
 import kotlinx.parcelize.Parcelize
 
 /**

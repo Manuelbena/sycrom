@@ -3,7 +3,8 @@ package com.manuelbena.synkron.di.repository
 import android.content.Context
 import androidx.room.Room
 import com.manuelbena.synkron.data.local.SykromDataBase
-import com.manuelbena.synkron.data.local.models.EventDao
+import com.manuelbena.synkron.data.local.models.TaskDao
+
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -39,7 +40,7 @@ object DatabaseModule {
      */
     @Provides
     @Singleton
-    fun provideEventDao(database: SykromDataBase): EventDao {
-        return database.eventDao()
+    fun provideEventDao(database: SykromDataBase): TaskDao {
+        return database.taskDao()
     }
 }

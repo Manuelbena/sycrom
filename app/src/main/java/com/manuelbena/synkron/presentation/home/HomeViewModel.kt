@@ -1,6 +1,5 @@
 package com.manuelbena.synkron.presentation.home
 
-import TaskDomain
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.manuelbena.synkron.domain.models.TaskDomain
@@ -21,37 +20,31 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val getTaskTodayUseCase: GetTaskTodayUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
-    private val deleteTaskUseCase: DeleteTaskUseCase
+
 ) : ViewModel() {
 
     // --- ESTADO (StateFlow) ---
-    // MutableStateFlow para el estado interno
     private val _uiState = MutableStateFlow(HomeState())
-    // StateFlow público e inmutable para la UI
     val uiState: StateFlow<HomeState> = _uiState.asStateFlow()
 
     // --- ACCIÓN (SingleLiveEvent) ---
-    // Para eventos de un solo uso (Navegar, Snackbar)
     private val _action = SingleLiveEvent<HomeAction>()
     val action: SingleLiveEvent<HomeAction> = _action
 
-    // Formateador de fecha para la cabecera
     private val headerDateFormatter = DateTimeFormatter
         .ofPattern("EEEE, dd 'de' MMMM", Locale("es", "ES"))
 
 
     init {
         // --- ¡PROGRAMACIÓN REACTIVA! ---
-        // Observamos los cambios en la fecha seleccionada
         viewModelScope.launch {
-            _uiState.map { it.selectedDate } // Solo nos importa la fecha
-                .distinctUntilChanged() // No recargar si la fecha es la misma
-                .flatMapLatest { date -> // Cancela el flow anterior y lanza uno nuevo
+            _uiState.map { it.selectedDate }
+                .distinctUntilChanged()
+                .flatMapLatest { date ->
                     _uiState.update { it.copy(isLoading = true) }
                     getTaskTodayUseCase(date) // Llama al caso de uso con LocalDate
                 }
                 .catch { e ->
-                    // Manejar error de Flow
                     _action.postValue(HomeAction.ShowErrorSnackbar(e.message ?: "Error al cargar tareas"))
                 }
                 .collect { tasks ->
@@ -60,7 +53,9 @@ class HomeViewModel @Inject constructor(
                         it.copy(
                             isLoading = false,
                             tasks = tasks,
-                            headerText = it.selectedDate.format(headerDateFormatter).capitalize(Locale.getDefault())
+                            headerText = it.selectedDate.format(headerDateFormatter).replaceFirstChar {
+                                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                            }
                         )
                     }
                 }
@@ -88,7 +83,6 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 updateTaskUseCase(task.copy(isDone = isDone))
-                // La UI se actualizará automáticamente gracias al Flow
             } catch (e: Exception) {
                 _action.postValue(HomeAction.ShowErrorSnackbar(e.message ?: "Error al actualizar"))
             }
@@ -103,7 +97,7 @@ class HomeViewModel @Inject constructor(
             when (action) {
                 is TaskAdapter.TaskMenuAction.OnDelete -> {
                     try {
-                        deleteTaskUseCase(action.task)
+
                         _action.postValue(HomeAction.ShowErrorSnackbar("Tarea eliminada"))
                     } catch (e: Exception) {
                         _action.postValue(HomeAction.ShowErrorSnackbar(e.message ?: "Error al eliminar"))

@@ -3,7 +3,9 @@ package com.manuelbena.synkron.presentation.util
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 // Formateador para parsear las fechas ISO 8601 que vienen de TaskDomain.
 private val isoFormatter by lazy {
@@ -48,5 +50,54 @@ fun getDurationInMinutes(start: GoogleEventDateTime?, end: GoogleEventDateTime?)
         }
     } catch (e: Exception) {
         0
+    }
+}
+
+/**
+ * Convierte un objeto [Calendar] de Java al objeto [GoogleEventDateTime]
+ * que nuestro TaskDomain (y Google Calendar) espera.
+ */
+fun Calendar.toGoogleEventDateTime(): GoogleEventDateTime {
+    val timeZoneId = this.timeZone.id
+    val tz = TimeZone.getTimeZone(timeZoneId)
+    isoFormatter.timeZone = tz
+
+    return GoogleEventDateTime(
+        dateTime = isoFormatter.format(this.time),
+        timeZone = timeZoneId
+    )
+}
+
+/**
+ * Convierte un [GoogleEventDateTime] a un [Calendar] de Java.
+ * Esencial para que la UI pueda manejar las fechas.
+ */
+fun GoogleEventDateTime?.toCalendar(): Calendar {
+    if (this == null) return Calendar.getInstance()
+    return try {
+        val date = isoFormatter.parse(this.dateTime)
+        Calendar.getInstance().apply {
+            if (date != null) {
+                time = date
+            }
+        }
+    } catch (e: Exception) {
+        Calendar.getInstance() // Devuelve 'now' si falla el parseo
+    }
+}
+
+/**
+ * Convierte un Int (minutos) en un string de duración (ej. "1 h 30 min").
+ */
+fun Int.toDurationString(): String {
+    val durationInMinutes = this
+    return when {
+        durationInMinutes <= 0 -> "Sin Duración"
+        durationInMinutes >= 60 -> {
+            val hours = durationInMinutes / 60
+            val minutes = durationInMinutes % 60
+            if (minutes == 0) "${hours} h" else "${hours} h ${minutes} min"
+        }
+        else -> "${durationInMinutes} min"
     }
 }

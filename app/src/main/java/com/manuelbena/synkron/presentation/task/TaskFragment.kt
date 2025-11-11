@@ -1,6 +1,5 @@
 package com.manuelbena.synkron.presentation.task
 
-import TaskDomain
 import android.os.Bundle
 import android.text.InputType
 import android.view.LayoutInflater
@@ -27,10 +26,11 @@ import com.manuelbena.synkron.domain.models.GoogleEventAttendee
 import com.manuelbena.synkron.domain.models.GoogleEventReminder
 import com.manuelbena.synkron.domain.models.GoogleEventReminders
 import com.manuelbena.synkron.domain.models.SubTaskDomain
-
+import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.task.adapters.SubtaskTouchHelperCallback
 import com.manuelbena.synkron.presentation.task.adapters.TaskCreationSubtaskAdapter
-import com.manuelbena.synkron.presentation.util.toGoogleEventDateTime
+
+import com.manuelbena.synkron.presentation.util.toGoogleEventDateTime // ¡Importante!
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -38,16 +38,6 @@ import java.util.Locale
 import java.util.TimeZone
 import java.util.UUID
 
-/**
- * Fragment para la creación (y futura edición) de una Tarea.
- *
- * Responsabilidades:
- * - Mostrar el formulario [fragment_new_task.xml] usando View Binding.
- * - Gestionar los selectores de fecha, hora y duración.
- * - Recopilar los datos y construir el objeto [TaskDomain] unificado con Google Calendar.
- * - Enviar el evento [TaskContract.TaskEvent.OnSaveTask] al [TaskViewModel].
- * - Observar [TaskViewModel.state] y [TaskViewModel.action].
- */
 @AndroidEntryPoint
 class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
@@ -55,13 +45,8 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     // --- Estado Local de la UI ---
 
-    /** Lista de strings para los títulos de las subtareas. */
     private val subtaskList = mutableListOf<String>()
-
-    /** Adapter para el RecyclerView de subtareas. */
     private lateinit var subtaskAdapter: TaskCreationSubtaskAdapter
-
-    /** Helper para gestionar el drag-and-drop. */
     private lateinit var itemTouchHelper: ItemTouchHelper
 
     /**
@@ -76,7 +61,6 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
     // --- Ciclo de Vida y View Binding ---
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentNewTaskBinding {
-        // View Binding en acción
         return FragmentNewTaskBinding.inflate(inflater, container, false)
     }
 
@@ -96,15 +80,13 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     /**
      * Observa los cambios de Estado (State) y Acciones (Action) del ViewModel.
+     * (Tu 'TaskContract' y 'TaskViewModel' ya estaban correctos)
      */
     override fun observe() {
-        // Observa el ESTADO (Loading, Error, Success)
         viewModel.state.observe(viewLifecycleOwner) { state ->
-            // Usamos binding para acceder al botón
             binding.btnGuardar.isEnabled = state !is TaskContract.TaskState.Loading
         }
 
-        // Observa las ACCIONES (Navegación, SnackBar)
         viewModel.action.observe(viewLifecycleOwner) { action ->
             when (action) {
                 is TaskContract.TaskAction.NavigateBack -> {
@@ -122,13 +104,11 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
      */
     override fun setListener() {
         super.setListener()
-        // Usamos binding.apply para acceder a todas las vistas
         binding.apply {
             btnHora.setOnClickListener { setupTimePicker() }
             btnFecha.setOnClickListener { setupDatePicker() }
             btnDuracion.setOnClickListener { setupDurationPicker() }
 
-            // Limpia el botón de duración si se selecciona un chip
             chipGroupDuration.setOnCheckedStateChangeListener { _, checkedIds ->
                 if (checkedIds.isNotEmpty()) {
                     btnDuracion.text = getString(R.string.duration_button_default)
@@ -136,14 +116,12 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
                 }
             }
 
-            // Listener principal de guardado
             btnGuardar.setOnClickListener {
                 gatherDataAndSave()
             }
 
-            // Listener para el botón de cancelar
             btnCancelar.setOnClickListener {
-                requireActivity().finish() // Cierra la actividad
+                requireActivity().finish()
             }
         }
     }
@@ -194,7 +172,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         )
         val recurrence = emptyList<String>()
 
-        // 6. Construir el TaskDomain (El nuevo modelo anidado)
+        // 6. Construir el TaskDomain (¡El nuevo modelo anidado!)
         val taskToSave = TaskDomain(
             id = 0L,
             summary = summary,
@@ -228,7 +206,6 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
     private fun setupDefaultDateTime() {
         startCalendar = Calendar.getInstance()
 
-        // Actualizar los botones de la UI (usando binding)
         binding.btnFecha.text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(startCalendar.time)
         binding.btnHora.text = String.format(
             Locale.getDefault(),
@@ -276,19 +253,16 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             .build()
 
         datePicker.addOnPositiveButtonClickListener { selection ->
-            // Corrección UTC
             val selectedUtcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
                 timeInMillis = selection
             }
 
-            // Actualizamos SÓLO la fecha en 'startCalendar'
             startCalendar.set(
                 selectedUtcCalendar.get(Calendar.YEAR),
                 selectedUtcCalendar.get(Calendar.MONTH),
                 selectedUtcCalendar.get(Calendar.DAY_OF_MONTH)
             )
 
-            // Actualizar botón (usando binding)
             binding.btnFecha.text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(startCalendar.time)
         }
         datePicker.show(childFragmentManager, "MATERIAL_DATE_PICKER")
@@ -309,11 +283,9 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             .build()
 
         timePicker.addOnPositiveButtonClickListener {
-            // Actualizamos SÓLO la hora y minuto en 'startCalendar'
             startCalendar.set(Calendar.HOUR_OF_DAY, timePicker.hour)
             startCalendar.set(Calendar.MINUTE, timePicker.minute)
 
-            // Actualizar botón (usando binding)
             val horaFormateada = String.format(Locale.getDefault(), "%02d:%02d", timePicker.hour, timePicker.minute)
             binding.btnHora.text = horaFormateada
         }
@@ -327,14 +299,31 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         binding.chipGroupDuration.clearCheck()
         val context = requireContext()
 
-        // (Creación de vistas del diálogo...)
-        val container = LinearLayout(context) //...
-        val textInputLayout = TextInputLayout(context) //...
-        val editText = TextInputEditText(context) //...
-        val radioGroup = RadioGroup(context) //...
-        val radioMinutos = RadioButton(context) //...
-        val radioHoras = RadioButton(context) //...
-        // ... (configuración de vistas del diálogo) ...
+        val container = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            val padding = (20 * resources.displayMetrics.density).toInt()
+            setPadding(padding, 0, padding, 0)
+        }
+        val textInputLayout = TextInputLayout(context)
+        val editText = TextInputEditText(context).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER
+            hint = "Valor"
+        }
+        textInputLayout.addView(editText)
+        container.addView(textInputLayout)
+
+        val radioGroup = RadioGroup(context).apply {
+            orientation = RadioGroup.HORIZONTAL
+        }
+        val radioMinutos = RadioButton(context).apply {
+            text = "Minutos"; id = View.generateViewId(); isChecked = true
+        }
+        val radioHoras = RadioButton(context).apply {
+            text = "Horas"; id = View.generateViewId()
+        }
+        radioGroup.addView(radioMinutos)
+        radioGroup.addView(radioHoras)
+        container.addView(radioGroup)
 
         MaterialAlertDialogBuilder(context)
             .setTitle("Ingresar Duración")
@@ -351,7 +340,6 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
                             valor
                         }
                         selectedDurationInMinutes = minutosTotales
-                        // Actualizar botón (usando binding)
                         binding.btnDuracion.text = "Duración: $minutosTotales min"
                     } catch (e: NumberFormatException) {
                         Toast.makeText(context, "Número inválido", Toast.LENGTH_SHORT).show()
@@ -363,16 +351,13 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     // --- Métodos 'Getter' de UI (usando binding) ---
 
-    /**
-     * Obtiene la duración en minutos, ya sea de los Chips o de la variable de estado.
-     */
     private fun getDurationInMinutes(): Int {
         val checkedChipId = binding.chipGroupDuration.checkedChipId
         if (checkedChipId != View.NO_ID) {
             return when (checkedChipId) {
                 R.id.chip_15_min -> 15
                 R.id.chip_30_min -> 30
-                R.id.chip_60_min -> 45
+                R.id.chip_60_min -> 45 // (Este es el valor de tu XML)
                 R.id.chip_1_hour -> 60
                 R.id.chip_5_hour -> 300
                 R.id.chip_8_hour -> 480
@@ -385,10 +370,6 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         return 0
     }
 
-    /**
-     * Obtiene el string del tipo de tarea (Categoría) Y su
-     * 'colorId' de Google Calendar correspondiente.
-     */
     private fun getTaskTypeAndColorId(): Pair<String, String> {
         return when (binding.chipGroupTypeTask.checkedChipId) {
             R.id.chip_work -> "Trabajo" to "9"
@@ -400,9 +381,6 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         }
     }
 
-    /**
-     * Obtiene el string de la prioridad seleccionada.
-     */
     private fun getSelectedPriority(): String {
         return when {
             binding.chipHight.isChecked -> "Alta"

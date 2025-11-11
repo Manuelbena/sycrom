@@ -1,7 +1,8 @@
 package com.manuelbena.synkron.domain.usecase
 
-import TaskDomain
+
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
+import com.manuelbena.synkron.domain.models.TaskDomain
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 import javax.inject.Inject

@@ -1,8 +1,9 @@
 package com.manuelbena.synkron.data.mappers
 
-import TaskDomain
+
 import com.manuelbena.synkron.data.local.models.TaskEntity
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
+import com.manuelbena.synkron.domain.models.TaskDomain
 
 import java.text.SimpleDateFormat
 import java.util.Calendar
