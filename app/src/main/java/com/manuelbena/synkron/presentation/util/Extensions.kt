@@ -3,39 +3,19 @@ package com.manuelbena.synkron.presentation.util
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
-import java.util.TimeZone
 
-// ... (aquí deben estar tus otras funciones, como toGoogleEventDateTime) ...
-
-/**
- * Formateador para parsear las fechas ISO 8601 que vienen de TaskDomain.
- */
-private val isoFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault())
-
-/**
- * Convierte un [GoogleEventDateTime] a un [Calendar] de Java.
- * Esencial para que la UI pueda manejar las fechas.
- */
-fun GoogleEventDateTime.toCalendar(): Calendar {
-    return try {
-        val date = isoFormatter.parse(this.dateTime)
-        Calendar.getInstance().apply {
-            if (date != null) {
-                time = date
-            }
-        }
-    } catch (e: Exception) {
-        Calendar.getInstance() // Devuelve 'now' si falla el parseo
-    }
+// Formateador para parsear las fechas ISO 8601 que vienen de TaskDomain.
+private val isoFormatter by lazy {
+    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault())
 }
 
 /**
  * Convierte un [GoogleEventDateTime] (que tiene una fecha ISO)
  * en un string de hora simple (ej. "10:30").
  */
-fun GoogleEventDateTime.toHourString(locale: Locale = Locale.getDefault()): String {
+fun GoogleEventDateTime?.toHourString(locale: Locale = Locale.getDefault()): String {
+    if (this == null) return "--:--"
     return try {
         val date = isoFormatter.parse(this.dateTime)
         if (date != null) {

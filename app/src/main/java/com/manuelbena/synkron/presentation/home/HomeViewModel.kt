@@ -1,20 +1,16 @@
 package com.manuelbena.synkron.presentation.home
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import TaskDomain
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.manuelbena.synkron.base.BaseViewModel
-import com.manuelbena.synkron.domain.models.SubTaskDomain
 import com.manuelbena.synkron.domain.models.TaskDomain
-import com.manuelbena.synkron.domain.usecase.GetTasksForDateUseCase
+import com.manuelbena.synkron.domain.usecase.DeleteTaskUseCase
+import com.manuelbena.synkron.domain.usecase.GetTaskTodayUseCase
 import com.manuelbena.synkron.domain.usecase.UpdateTaskUseCase
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
+import com.manuelbena.synkron.presentation.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -23,137 +19,110 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getTaskTodayUseCase: GetTasksForDateUseCase,
-    private val updateTaskUseCase: UpdateTaskUseCase
-) : BaseViewModel<HomeEvent>() {
+    private val getTaskTodayUseCase: GetTaskTodayUseCase,
+    private val updateTaskUseCase: UpdateTaskUseCase,
+    private val deleteTaskUseCase: DeleteTaskUseCase
+) : ViewModel() {
 
-    private val _selectedDate = MutableStateFlow(LocalDate.now())
-    val selectedDate: StateFlow<LocalDate> = _selectedDate.asStateFlow()
+    // --- ESTADO (StateFlow) ---
+    // MutableStateFlow para el estado interno
+    private val _uiState = MutableStateFlow(HomeState())
+    // StateFlow público e inmutable para la UI
+    val uiState: StateFlow<HomeState> = _uiState.asStateFlow()
 
-    override val _event = MutableLiveData<HomeEvent>()
-    override val event: LiveData<HomeEvent> = _event
+    // --- ACCIÓN (SingleLiveEvent) ---
+    // Para eventos de un solo uso (Navegar, Snackbar)
+    private val _action = SingleLiveEvent<HomeAction>()
+    val action: SingleLiveEvent<HomeAction> = _action
 
-    private val headerDateFormatter = DateTimeFormatter.ofPattern("dd 'de' MMMM 'de' yyyy", Locale("es", "ES"))
-    private val selectedDateFormatter = DateTimeFormatter.ofPattern("EEEE, dd 'de' MMMM", Locale("es", "ES"))
+    // Formateador de fecha para la cabecera
+    private val headerDateFormatter = DateTimeFormatter
+        .ofPattern("EEEE, dd 'de' MMMM", Locale("es", "ES"))
 
 
     init {
-        // Carga los datos para el día de hoy al iniciar
-        val today = LocalDate.now()
-        _selectedDate.value = today // Setea la fecha inicial
-        getHeaderDate(today) // Actualiza el texto del header
-        updateSelectedDateHeader(today) // Actualiza el texto de la fecha seleccionada
-
-        // --- INICIO DE CAMBIOS (LÓGICA DE RECOLECCIÓN DE FLOW) ---
-
-        // Lanzamos UNA corrutina que vivirá mientras viva el ViewModel.
+        // --- ¡PROGRAMACIÓN REACTIVA! ---
+        // Observamos los cambios en la fecha seleccionada
         viewModelScope.launch {
-            // Se suscribe a CUALQUIER cambio en _selectedDate
-            _selectedDate.flatMapLatest { date ->
-                // flatMapLatest cancela el Flow anterior (del día viejo)
-                // y se suscribe al Flow nuevo (del día nuevo).
-                getTaskTodayUseCase(date) // Esto devuelve Flow<List<TaskDomain>>
-            }.catch { e ->
-                // Si el Flow de la base de datos falla, lo capturamos aquí
-                _event.value = HomeEvent.ShowErrorSnackbar("Error al cargar las tareas: ${e.message}")
-            }.collect { tasks ->
-                // Cada vez que la lista de tareas para 'date' cambie en Room,
-                // esto se ejecutará y enviará la nueva lista a la UI.
-                _event.value = HomeEvent.ListTasksToday(tasks)
-            }
+            _uiState.map { it.selectedDate } // Solo nos importa la fecha
+                .distinctUntilChanged() // No recargar si la fecha es la misma
+                .flatMapLatest { date -> // Cancela el flow anterior y lanza uno nuevo
+                    _uiState.update { it.copy(isLoading = true) }
+                    getTaskTodayUseCase(date) // Llama al caso de uso con LocalDate
+                }
+                .catch { e ->
+                    // Manejar error de Flow
+                    _action.postValue(HomeAction.ShowErrorSnackbar(e.message ?: "Error al cargar tareas"))
+                }
+                .collect { tasks ->
+                    // Cuando el Flow emite datos, actualizamos el estado
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            tasks = tasks,
+                            headerText = it.selectedDate.format(headerDateFormatter).capitalize(Locale.getDefault())
+                        )
+                    }
+                }
         }
-        // --- FIN DE CAMBIOS ---
     }
 
     /**
-     * Se llama cuando el usuario selecciona una fecha en el calendario.
+     * Llamado por la UI cuando el usuario selecciona una nueva fecha.
      */
     fun onDateSelected(date: LocalDate) {
-        _selectedDate.value = date // Actualiza la fecha seleccionada
-        updateSelectedDateHeader(date)
+        _uiState.update { it.copy(selectedDate = date) }
     }
 
     /**
-     * Esta es la nueva función clave.
-     * Fuerza al ViewModel a refrescarse al día de HOY.
-     * Usado al resumir la app y a medianoche.
+     * Llamado por la UI para refrescar el calendario a "Hoy".
      */
     fun refreshToToday() {
-        val today = LocalDate.now()
-        _selectedDate.value = today
-        getHeaderDate(today)
-        updateSelectedDateHeader(today)
-
-        // Emite el evento para que el Fragment redibuje el calendario
-        _event.value = HomeEvent.RefreshCalendarUI
+        onDateSelected(LocalDate.now())
     }
 
-
-    private fun getHeaderDate(date: LocalDate) {
-        val formattedDate = date.format(headerDateFormatter).replaceFirstChar { it.uppercase() }
-        _event.value = HomeEvent.UpdateHeaderText(formattedDate)
-    }
-
-    private fun updateSelectedDateHeader(date: LocalDate) {
-        val formattedDate = date.format(selectedDateFormatter).replaceFirstChar { it.uppercase() }
-        _event.value = HomeEvent.UpdateSelectedDate(formattedDate)
-    }
-
-    // --- FIN DE CAMBIOS ---
-
+    /**
+     * Llamado cuando el usuario (des)marca una tarea.
+     */
     fun onTaskCheckedChanged(task: TaskDomain, isDone: Boolean) {
         viewModelScope.launch {
             try {
                 updateTaskUseCase(task.copy(isDone = isDone))
-                // Refresca la lista de tareas después de actualizar
-
+                // La UI se actualizará automáticamente gracias al Flow
             } catch (e: Exception) {
-                _event.value = HomeEvent.ShowErrorSnackbar("Error al actualizar la tarea")
+                _action.postValue(HomeAction.ShowErrorSnackbar(e.message ?: "Error al actualizar"))
             }
         }
     }
-    fun onSubtaskCheckedChanged(task: TaskDomain, subtaskToUpdate: SubTaskDomain, isDone: Boolean) {
-        viewModelScope.launch {
-            try {
-                // Creamos una nueva lista de subtareas
-                val newSubtasks = task.subTasks.map { subtask ->
 
-                    if (subtask.id == subtaskToUpdate.id) {
-                        subtask.copy(isDone = isDone)
-                    } else {
-                        subtask
+    /**
+     * Llamado desde el menú de la tarjeta de tarea.
+     */
+    fun onTaskMenuAction(action: TaskAdapter.TaskMenuAction) {
+        viewModelScope.launch {
+            when (action) {
+                is TaskAdapter.TaskMenuAction.OnDelete -> {
+                    try {
+                        deleteTaskUseCase(action.task)
+                        _action.postValue(HomeAction.ShowErrorSnackbar("Tarea eliminada"))
+                    } catch (e: Exception) {
+                        _action.postValue(HomeAction.ShowErrorSnackbar(e.message ?: "Error al eliminar"))
                     }
                 }
-
-                // Creamos la nueva tarea actualizada con la lista de subtareas
-                val updatedTask = task.copy(subTasks = newSubtasks)
-
-                // Llamamos al caso de uso para guardar la tarea (padre) actualizada
-                updateTaskUseCase(updatedTask)
-
-
-                // 2. Emitimos un evento para que el BottomSheet (detalle) se actualice
-                _event.value = HomeEvent.TaskUpdated(updatedTask)
-
-            } catch (e: Exception) {
-                _event.value = HomeEvent.ShowErrorSnackbar("Error al actualizar la subtarea")
+                is TaskAdapter.TaskMenuAction.OnEdit -> {
+                    _action.postValue(HomeAction.NavigateToEditTask(action.task))
+                }
+                is TaskAdapter.TaskMenuAction.OnShare -> {
+                    _action.postValue(HomeAction.ShareTask(action.task))
+                }
             }
         }
     }
-    // --- FIN DE CAMBIOS ---
 
-    fun onTaskMenuAction(action: TaskAdapter.TaskMenuAction) {
-        when (action) {
-            is TaskAdapter.TaskMenuAction.OnDelete -> {
-                // Lógica de borrado (pendiente)
-                _event.value = HomeEvent.ShowErrorSnackbar("Borrar tarea (pendiente)")
-            }
-            is TaskAdapter.TaskMenuAction.OnEdit -> {
-                _event.value = HomeEvent.NavigateToEditTask(action.task)
-            }
-            is TaskAdapter.TaskMenuAction.OnShare -> {
-                _event.value = HomeEvent.ShareTask(action.task)
-            }
-        }
+    // Clase sellada para las Acciones (Eventos de un solo uso)
+    sealed class HomeAction {
+        data class NavigateToEditTask(val task: TaskDomain) : HomeAction()
+        data class ShowErrorSnackbar(val message: String) : HomeAction()
+        data class ShareTask(val task: TaskDomain) : HomeAction()
     }
 }

@@ -20,6 +20,7 @@
         android:layout_height="wrap_content"
         android:padding="@dimen/card_padding_large">
 
+        <!-- CAMBIO: Reemplazado TextView por Chip y ID actualizado -->
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_category"
             style="@style/Widget.Material3.Chip.Assist"
@@ -77,6 +78,7 @@
                 android:progressDrawable="@drawable/circular_progress_bar"
                 android:rotation="-90" />
 
+            <!-- CAMBIO: ID actualizado de tvSubtasks -> tvProgressPercentage -->
             <TextView
                 android:id="@+id/tvProgressPercentage"
                 android:layout_width="wrap_content"
@@ -124,6 +126,7 @@
             app:layout_constraintTop_toBottomOf="@id/icon_location"
             app:tint="?attr/colorOnSurfaceVariant" />
 
+        <!-- CAMBIO: ID actualizado de tvAttendees -> tvEventTime -->
         <TextView
             android:id="@+id/tvEventTime"
             style="@style/TextAppearance.Sycrom.TaskCard"
@@ -172,6 +175,8 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintGuide_begin="160dp" />
+
+        <!-- ELIMINADO: LinearLayout 'llSubtasks' (era redundante) -->
 
         <TextView
             android:id="@+id/tvExpandDetails"

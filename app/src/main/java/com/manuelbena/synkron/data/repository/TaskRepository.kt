@@ -8,10 +8,10 @@ import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map // ¡Importar map!
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import java.time.LocalDate // ¡Importar!
-import java.time.ZoneId    // ¡Importar!
+import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 
 class TaskRepository @Inject constructor(
@@ -49,7 +49,7 @@ class TaskRepository @Inject constructor(
     }
 
     override suspend fun deleteTask(task: TaskDomain) = withContext(Dispatchers.IO) {
-        // (Descomenta cuando añadas 'deleteTask' al DAO)
+        // (Asegúrate de añadir 'deleteTask' al DAO si quieres que esto funcione)
         // taskDao.deleteTask(task.toEntity())
     }
 }

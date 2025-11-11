@@ -1,5 +1,6 @@
 package com.manuelbena.synkron.presentation.util
 
+import TaskDomain
 import android.content.Intent
 import android.graphics.Paint
 import android.os.Bundle

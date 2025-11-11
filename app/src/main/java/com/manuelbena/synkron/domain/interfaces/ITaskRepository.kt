@@ -3,12 +3,11 @@ package com.manuelbena.synkron.domain.interfaces
 import TaskDomain
 
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDate // ¡Correcto!
+import java.time.LocalDate
 
 /**
  * Interfaz (Contrato) para el repositorio de Tareas.
  * Define las operaciones que el Dominio (UseCases) puede realizar.
- * Es agnóstico a la fuente de datos (Room, API, etc.)
  */
 interface ITaskRepository {
 
@@ -28,7 +27,7 @@ interface ITaskRepository {
     fun getTasksForDate(date: LocalDate): Flow<List<TaskDomain>>
 
     /**
-     * Elimina una tarea.
+     * Elimina una tarea. (¡Añadido!)
      */
     suspend fun deleteTask(task: TaskDomain)
 }

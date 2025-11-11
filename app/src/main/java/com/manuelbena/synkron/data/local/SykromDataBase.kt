@@ -4,14 +4,11 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.manuelbena.synkron.data.local.models.TaskDao
-import com.manuelbena.synkron.data.local.models.EventDao
-import com.manuelbena.synkron.data.local.models.TaskEntity
+import com.manuelbena.synkron.data.local.models.TaskEntity // ¡CAMBIO!
 
-/**
- * La clase principal de la base de datos Room.
- * Define las entidades (tablas) y la versión de la BD.
- */
+// CAMBIO: La entidad ahora es 'TaskEntity'
 @Database(entities = [TaskEntity::class], version = 1, exportSchema = false)
+// CAMBIO: Añadimos los nuevos conversores
 @TypeConverters(
     SubTaskConverter::class,
     StringListConverter::class,

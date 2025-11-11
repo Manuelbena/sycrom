@@ -1,6 +1,6 @@
 package com.manuelbena.synkron.presentation.home
 
-import com.manuelbena.synkron.domain.models.TaskDomain
+import TaskDomain
 
 
 // Eventos de un solo uso que el ViewModel puede enviar a la UI
