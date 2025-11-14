@@ -64,11 +64,7 @@ class TaskAdapter(
                 }
             }
 
-            binding.cbIsDone.setOnClickListener {
-                if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
-                    onTaskCheckedChange(getItem(bindingAdapterPosition), binding.cbIsDone.isChecked)
-                }
-            }
+
         }
 
         private fun showPopupMenu(anchorView: View, task: TaskDomain) {
@@ -115,34 +111,29 @@ class TaskAdapter(
                 val durationInMinutes = getDurationInMinutes(item.start, item.end) // CAMBIO
                 if (durationInMinutes > 0) {
                     tvDuration.visibility = View.VISIBLE
-                    iconDuration.visibility = View.VISIBLE
+                    iconRestant.visibility = View.VISIBLE
                     tvDuration.text = durationInMinutes.toDurationString() // CAMBIO
                 } else {
                     tvDuration.visibility = View.GONE
-                    iconDuration.visibility = View.GONE
+                    iconRestant.visibility = View.GONE
+
                 }
 
                 // --- 3. Mapeo de Progreso (Círculo) ---
                 val hasSubtasks = item.subTasks.isNotEmpty()
                 if (hasSubtasks) {
-                    progressCircular.visibility = View.VISIBLE
+                    progressBarTaskDetailProgress.visibility = View.VISIBLE
                     val total = item.subTasks.size
                     val completed = item.subTasks.count { it.isDone }
-                    val progress = if (total > 0) (completed * 100) / total else 0
 
-                    pbCircularProgress.progress = progress
-                    tvProgressPercentage.text = "$progress%"
+                    val progress = (completed * 100) / total
+                    progressBarTaskDetailProgress.progress = progress
+                    textViewTaskDetailProgressText.text = "$completed de $total completadas"
                 } else {
-                    progressCircular.visibility = View.INVISIBLE
+                    progressBarTaskDetailProgress.visibility = View.INVISIBLE
+                    textViewTaskDetailProgressText.visibility = View.INVISIBLE
                 }
 
-                // --- 4. Mapeo de Estado (CheckBox y Estilo) ---
-
-                cbIsDone.setOnCheckedChangeListener(null)
-                cbIsDone.isChecked = item.isDone
-                cbIsDone.setOnCheckedChangeListener { _, isChecked ->
-                    onTaskCheckedChange(item, isChecked)
-                }
 
                 if (item.isDone) {
                     tvEventTitle.paintFlags = tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG

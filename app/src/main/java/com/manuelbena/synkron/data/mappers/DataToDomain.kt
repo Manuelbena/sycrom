@@ -7,15 +7,17 @@ import com.manuelbena.synkron.domain.models.GoogleEventReminder
 import com.manuelbena.synkron.domain.models.GoogleEventReminders
 import com.manuelbena.synkron.domain.models.TaskDomain
 
-import java.text.SimpleDateFormat
+// --- IMPORTACIONES AÑADIDAS ---
+import java.time.Instant
+import java.time.ZonedDateTime
+// --- FIN DE IMPORTACIONES AÑADIDAS ---
+
 import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 import java.util.TimeZone
 
-private val isoFormatter by lazy {
-    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault())
-}
+// --- ¡ELIMINADO! ---
+// private val isoFormatter by lazy { ... }
+// Ya no es necesario y es la fuente del error.
 
 /**
  * Convierte un [TaskEntity] (plano, de BBDD) a un [TaskDomain] (anidado, de UI/Dominio).
@@ -71,18 +73,25 @@ fun TaskEntity.toDomain(): TaskDomain {
     )
 }
 
-// --- Helpers de Mapeo ---
+// --- Helpers de Mapeo (REESCRITOS) ---
 
+/**
+ * Helper REESCRITO para crear un ZonedDateTime a partir de milisegundos.
+ */
 private fun createGoogleEventDateTime(dateMillis: Long, timeZone: String): GoogleEventDateTime {
-    val date = Date(dateMillis)
-    val tz = TimeZone.getTimeZone(timeZone)
-    isoFormatter.timeZone = tz
+    val instant = Instant.ofEpochMilli(dateMillis)
+    val zoneId = TimeZone.getTimeZone(timeZone).toZoneId()
+    val zonedDateTime = ZonedDateTime.ofInstant(instant, zoneId)
+
     return GoogleEventDateTime(
-        dateTime = isoFormatter.format(date),
+        dateTime = zonedDateTime, // Ahora pasamos el objeto ZonedDateTime
         timeZone = timeZone
     )
 }
 
+/**
+ * Helper REESCRITO para crear un ZonedDateTime a partir de fecha + minutos.
+ */
 private fun createGoogleEventDateTime(dateMillis: Long, hourMinutes: Int, timeZone: String): GoogleEventDateTime {
     val calendar = Calendar.getInstance().apply {
         timeInMillis = dateMillis
@@ -91,10 +100,14 @@ private fun createGoogleEventDateTime(dateMillis: Long, hourMinutes: Int, timeZo
         set(Calendar.SECOND, 0)
         set(Calendar.MILLISECOND, 0)
     }
-    val tz = TimeZone.getTimeZone(timeZone)
-    isoFormatter.timeZone = tz
+
+    // Convertimos el Calendar a ZonedDateTime
+    val instant = calendar.toInstant()
+    val zoneId = TimeZone.getTimeZone(timeZone).toZoneId()
+    val zonedDateTime = ZonedDateTime.ofInstant(instant, zoneId)
+
     return GoogleEventDateTime(
-        dateTime = isoFormatter.format(calendar.time),
+        dateTime = zonedDateTime, // Ahora pasamos el objeto ZonedDateTime
         timeZone = timeZone
     )
 }

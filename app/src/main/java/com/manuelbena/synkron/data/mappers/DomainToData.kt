@@ -1,11 +1,17 @@
 package com.manuelbena.synkron.data.mappers
 
-
 import com.manuelbena.synkron.data.local.models.TaskEntity
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
 import com.manuelbena.synkron.domain.models.TaskDomain
 
-import java.text.SimpleDateFormat
+// --- IMPORTACIONES ELIMINADAS ---
+// import java.text.SimpleDateFormat
+
+// --- IMPORTACIONES AÑADIDAS ---
+import java.time.Duration
+import java.time.ZonedDateTime
+// --- FIN IMPORTACIONES ---
+
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
@@ -56,43 +62,47 @@ fun TaskDomain.toEntity(): TaskEntity {
     )
 }
 
-// --- Helpers de Mapeo ---
+// --- Helpers de Mapeo (REESCRITOS) ---
 
-private val isoFormatter by lazy {
-    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault())
-}
+// --- ¡ELIMINADO! ---
+// private val isoFormatter by lazy { ... }
 
+/**
+ * Helper REESCRITO para leer desde ZonedDateTime.
+ */
 private fun parseGoogleEventDateTime(dateTime: GoogleEventDateTime?): Triple<Long, Int, String> {
-    if (dateTime == null || dateTime.dateTime.isEmpty()) {
+    // Usamos el elvis operator (?.), la comprobación es más limpia.
+    // Si dateTime o dateTime.dateTime es null, usamos los valores por defecto.
+    if (dateTime?.dateTime == null) {
         val now = Calendar.getInstance()
+        // Devolvemos los valores por defecto que tenías.
         return Triple(now.timeInMillis, 0, TimeZone.getDefault().id)
     }
 
     return try {
-        val tz = TimeZone.getTimeZone(dateTime.timeZone)
-        isoFormatter.timeZone = tz
-        val date = isoFormatter.parse(dateTime.dateTime)
-        if (date != null) {
-            val calendar = Calendar.getInstance(tz).apply { time = date }
-            val dateMillis = calendar.timeInMillis
-            val hour = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE)
-            Triple(dateMillis, hour, dateTime.timeZone)
-        } else {
-            Triple(0L, 0, dateTime.timeZone)
-        }
+        val zdt: ZonedDateTime = dateTime.dateTime // Obtenemos el objeto
+
+        // Convertimos ZonedDateTime a los tipos primitivos que espera TaskEntity
+        val dateMillis = zdt.toInstant().toEpochMilli()
+        val hour = zdt.hour * 60 + zdt.minute
+        val timeZone = zdt.zone.id // El timeZone del propio ZonedDateTime
+
+        Triple(dateMillis, hour, timeZone)
+
     } catch (e: Exception) {
+        // Fallback en caso de error
         Triple(0L, 0, TimeZone.getDefault().id)
     }
 }
 
+/**
+ * Helper REESCRITO para leer desde ZonedDateTime.
+ */
 private fun calculateDuration(start: GoogleEventDateTime?, end: GoogleEventDateTime?): Int {
-    if (start == null || end == null) return 0
+    if (start?.dateTime == null || end?.dateTime == null) return 0
     return try {
-        val startDate = isoFormatter.parse(start.dateTime)
-        val endDate = isoFormatter.parse(end.dateTime)
-        if (startDate != null && endDate != null) {
-            val diffMillis = endDate.time - startDate.time
-            (diffMillis / (1000 * 60)).toInt()
-        } else 0
+        // Usamos la clase Duration de java.time para calcular
+        val duration = Duration.between(start.dateTime, end.dateTime)
+        duration.toMinutes().toInt()
     } catch (e: Exception) { 0 }
 }

@@ -1,31 +1,31 @@
 package com.manuelbena.synkron.presentation.util
 
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
-import java.text.SimpleDateFormat
+import java.time.Duration
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
-import java.util.Date
+import java.util.GregorianCalendar
 import java.util.Locale
-import java.util.TimeZone
 
-// Formateador para parsear las fechas ISO 8601 que vienen de TaskDomain.
-private val isoFormatter by lazy {
-    SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault())
-}
+// --- ¡ELIMINADO! ---
+// private val isoFormatter by lazy { ... }
+// No lo necesitamos si usamos ZonedDateTime correctamente.
 
 /**
- * Convierte un [GoogleEventDateTime] (que tiene una fecha ISO)
- * en un string de hora simple (ej. "10:30").
+ * Convierte un [GoogleEventDateTime] en un string de hora simple (ej. "10:30").
+ * REESCRITO para usar ZonedDateTime (y quitada la referencia a .date).
  */
 fun GoogleEventDateTime?.toHourString(locale: Locale = Locale.getDefault()): String {
-    if (this == null) return "--:--"
+    // Usamos this?.dateTime que SÍ existe.
+    if (this?.dateTime == null) {
+        return "--:--" // Tu lógica original no manejaba 'date', así que la respetamos.
+    }
     return try {
-        val date = isoFormatter.parse(this.dateTime)
-        if (date != null) {
-            val timeFormatter = SimpleDateFormat("HH:mm", locale)
-            timeFormatter.format(date)
-        } else {
-            "--:--"
-        }
+        // Usamos el formateador moderno
+        val timeFormatter = DateTimeFormatter.ofPattern("HH:mm", locale)
+        this.dateTime.format(timeFormatter)
     } catch (e: Exception) {
         "--:--"
     }
@@ -33,21 +33,16 @@ fun GoogleEventDateTime?.toHourString(locale: Locale = Locale.getDefault()): Str
 
 /**
  * Calcula la duración en minutos entre dos objetos [GoogleEventDateTime].
+ * REESCRITO para usar ZonedDateTime.
  */
 fun getDurationInMinutes(start: GoogleEventDateTime?, end: GoogleEventDateTime?): Int {
-    if (start == null || end == null) {
+    if (start?.dateTime == null || end?.dateTime == null) {
         return 0
     }
     return try {
-        val startDate = isoFormatter.parse(start.dateTime)
-        val endDate = isoFormatter.parse(end.dateTime)
-        if (startDate != null && endDate != null) {
-            val diffMillis = endDate.time - startDate.time
-            // Convertir milisegundos a minutos
-            (diffMillis / (1000 * 60)).toInt()
-        } else {
-            0
-        }
+        // Usamos la clase Duration para calcular la diferencia
+        val duration = Duration.between(start.dateTime, end.dateTime)
+        duration.toMinutes().toInt()
     } catch (e: Exception) {
         0
     }
@@ -55,44 +50,42 @@ fun getDurationInMinutes(start: GoogleEventDateTime?, end: GoogleEventDateTime?)
 
 /**
  * Convierte un objeto [Calendar] de Java al objeto [GoogleEventDateTime]
- * que nuestro TaskDomain (y Google Calendar) espera.
+ * REESCRITO para crear un ZonedDateTime.
  */
 fun Calendar.toGoogleEventDateTime(): GoogleEventDateTime {
-    val timeZoneId = this.timeZone.id
-    val tz = TimeZone.getTimeZone(timeZoneId)
-    isoFormatter.timeZone = tz
+    // Convertimos Calendar a ZonedDateTime
+    val zonedDateTime = this.toInstant().atZone(this.timeZone.toZoneId())
 
     return GoogleEventDateTime(
-        dateTime = isoFormatter.format(this.time),
-        timeZone = timeZoneId
+        dateTime = zonedDateTime,
+        timeZone = zonedDateTime.zone.id
     )
 }
 
 /**
  * Convierte un [GoogleEventDateTime] a un [Calendar] de Java.
- * Esencial para que la UI pueda manejar las fechas.
+ * REESCRITO para leer desde ZonedDateTime.
  */
 fun GoogleEventDateTime?.toCalendar(): Calendar {
-    if (this == null) return Calendar.getInstance()
+    if (this?.dateTime == null) {
+        return Calendar.getInstance() // Devuelve 'now' si no hay nada
+    }
     return try {
-        val date = isoFormatter.parse(this.dateTime)
-        Calendar.getInstance().apply {
-            if (date != null) {
-                time = date
-            }
-        }
+        // Convertimos ZonedDateTime a GregorianCalendar
+        GregorianCalendar.from(this.dateTime)
     } catch (e: Exception) {
-        Calendar.getInstance() // Devuelve 'now' si falla el parseo
+        Calendar.getInstance() // Devuelve 'now' si falla
     }
 }
 
 /**
  * Convierte un Int (minutos) en un string de duración (ej. "1 h 30 min").
+ * (Esta función ya estaba correcta)
  */
 fun Int.toDurationString(): String {
     val durationInMinutes = this
     return when {
-        durationInMinutes <= 0 -> "Sin Duración"
+        durationInMinutes <= 0 -> "" // Cambiado de "Sin Duración" a "" para un look más limpio
         durationInMinutes >= 60 -> {
             val hours = durationInMinutes / 60
             val minutes = durationInMinutes % 60

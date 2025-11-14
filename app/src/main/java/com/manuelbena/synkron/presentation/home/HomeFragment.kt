@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Canvas
 import android.os.Bundle
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
@@ -17,10 +18,13 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.ItemTouchHelper.Callback.getDefaultUIUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentHomeBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
@@ -32,12 +36,20 @@ import com.manuelbena.synkron.presentation.util.CarouselScrollListener
 import com.manuelbena.synkron.presentation.util.EDIT_TASK
 
 import com.manuelbena.synkron.presentation.util.WeekCalendarManager
+import com.manuelbena.synkron.presentation.util.getDurationInMinutes
+import com.manuelbena.synkron.presentation.util.toCalendar
+import com.manuelbena.synkron.presentation.util.toDurationString
+import com.manuelbena.synkron.presentation.util.toHourString
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.net.URLEncoder
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
@@ -237,7 +249,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             }
             .start()
     }
-    // --- Fin Funciones del FAB ---
+
 
     private fun setupRecyclerView() {
         val snapHelper = PagerSnapHelper()
@@ -266,14 +278,99 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun shareTask(task: TaskDomain) {
-        // (Aquí va tu lógica de 'generateShareText' y el Intent)
+        val shareText = generateShareText(task)
         val sendIntent: Intent = Intent().apply {
-            action = Intent.ACTION_SEND
-            putExtra(Intent.EXTRA_TEXT, "¡Echa un vistazo a mi tarea: ${task.summary}!")
-            type = "text/plain"
+            action = Intent.ACTION_SEND // CAMBIO: 'action' en minúscula
+            putExtra(Intent.EXTRA_TEXT, shareText)
+            type = "text/plain" // CAMBIO: 'type' en minúscula
         }
+        // sendIntent.setPackage("com.whatsapp") // (Opcional)
+
         val shareIntent = Intent.createChooser(sendIntent, "Compartir tarea")
         startActivity(shareIntent)
+    }
+
+    private fun generateShareText(task: TaskDomain): String {
+        val builder = StringBuilder()
+        val startDateCalendar = task.start.toCalendar()
+        val durationInMinutes = getDurationInMinutes(task.start, task.end)
+
+        // --- Encabezado y Título ---
+        val statusEmoji = if (task.isDone) "✅" else "🎯"
+        builder.append("$statusEmoji *¡Ojo a esta tarea!* $statusEmoji\n\n")
+        builder.append("*${task.summary.uppercase()}*\n\n") // CAMBIO
+
+        // --- Contexto (Fecha, Hora, Lugar...) ---
+        val dateText = SimpleDateFormat("EEEE, dd 'de' MMMM", Locale("es", "ES")).format(startDateCalendar.time)
+        builder.append("🗓️ *Cuándo:* ${dateText.replaceFirstChar { it.titlecase(Locale.getDefault()) }}\n")
+        builder.append("⏰ *Hora:* ${task.start.toHourString()}\n") // CAMBIO
+
+        if (durationInMinutes > 0) { // CAMBIO
+            builder.append("⏳ *Duración:* ${durationInMinutes.toDurationString()}\n")
+        }
+        if (!task.location.isNullOrEmpty()) { // CAMBIO
+            builder.append("📍 *Lugar:* ${task.location}\n")
+        }
+        if (task.typeTask.isNotEmpty()) {
+            builder.append("🏷️ *Categoría:* ${task.typeTask}\n")
+        }
+        builder.append("\n") // Separador
+
+        // --- Descripción (si existe) ---
+        if (!task.description.isNullOrEmpty()) { // CAMBIO
+            builder.append("🧐 *El plan:*\n")
+            builder.append("${task.description}\n\n")
+        }
+
+        // --- Subtareas (si existen) ---
+        if (task.subTasks.isNotEmpty()) {
+            builder.append("📋 *Los pasos a seguir:*\n")
+            task.subTasks.forEach { subtask ->
+                val subtaskStatus = if (subtask.isDone) "✔️" else "◻️"
+                builder.append("   $subtaskStatus ${subtask.title}\n")
+            }
+            builder.append("\n")
+        }
+        try {
+            val calendarLink = createGoogleCalendarLink(task)
+            builder.append("➕ *¡Añádelo a tu calendario!:*\n")
+            builder.append("$calendarLink\n\n")
+        } catch (e: Exception) {}
+
+        // --- Footer de Synkrón ---
+        builder.append("--------------------------------\n")
+        builder.append("¡Gestionando mi caos con *Synkrón*! 🚀")
+
+        return builder.toString()
+    }
+
+    private fun createGoogleCalendarLink(task: TaskDomain): String {
+        // 1. Calcular las fechas de inicio y fin (CAMBIO)
+        val startCalendar = task.start.toCalendar()
+        val endCalendar = task.end.toCalendar()
+
+        val startTimeMillis = startCalendar.timeInMillis
+        val endTimeMillis = endCalendar.timeInMillis
+
+        // 2. Formatear las fechas a ISO 8601 en UTC
+        val isoFormatter = SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }
+        val startTimeUtc = isoFormatter.format(Date(startTimeMillis))
+        val endTimeUtc = isoFormatter.format(Date(endTimeMillis))
+
+        // 3. Codificar los parámetros (CAMBIO)
+        val title = URLEncoder.encode(task.summary, "UTF-8")
+        val dates = URLEncoder.encode("$startTimeUtc/$endTimeUtc", "UTF-8")
+        val details = URLEncoder.encode(task.description ?: "", "UTF-8")
+        val location = URLEncoder.encode(task.location ?: "", "UTF-8")
+
+        // 4. Construir la URL final
+        return "https://www.google.com/calendar/render?action=TEMPLATE" +
+                "&text=$title" +
+                "&dates=$dates" +
+                "&details=$details" +
+                "&location=$location"
     }
 
     private fun navigateToContainerActivity(task: TaskDomain?) {

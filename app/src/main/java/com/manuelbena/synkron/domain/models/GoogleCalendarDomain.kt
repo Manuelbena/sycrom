@@ -2,6 +2,7 @@ package com.manuelbena.synkron.domain.models // O donde prefieras
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
+import java.time.ZonedDateTime
 
 /**
  * Representa el objeto 'start' o 'end' en un Evento de Google Calendar.
@@ -12,7 +13,8 @@ import kotlinx.parcelize.Parcelize
  */
 @Parcelize
 data class GoogleEventDateTime(
-    val dateTime: String,
+
+    val dateTime: ZonedDateTime? = null,
     val timeZone: String
 ) : Parcelable
 
