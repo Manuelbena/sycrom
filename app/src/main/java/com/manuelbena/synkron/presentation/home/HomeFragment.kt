@@ -5,7 +5,6 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.Canvas
 import android.os.Bundle
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
@@ -18,10 +17,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.ItemTouchHelper.Callback.getDefaultUIUtil
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.manuelbena.synkron.R
@@ -41,7 +38,7 @@ import com.manuelbena.synkron.presentation.util.toCalendar
 import com.manuelbena.synkron.presentation.util.toDurationString
 import com.manuelbena.synkron.presentation.util.toHourString
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.collect // --- CAMBIO IMPORTANTE: NO 'collectLatest' ---
 import kotlinx.coroutines.launch
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
@@ -57,7 +54,15 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     override val viewModel: HomeViewModel by activityViewModels()
     private var isFabMenuOpen = false
     private val fabInterpolator = OvershootInterpolator()
-    private lateinit var weekCalendarManager: WeekCalendarManager
+
+    // --- CAMBIO: Inicialización 'by lazy' ---
+    private val weekCalendarManager: WeekCalendarManager by lazy {
+        WeekCalendarManager(binding.weekDaysContainer) { selectedDate: LocalDate ->
+            shouldScrollToStart = true
+            viewModel.onDateSelected(selectedDate)
+        }
+    }
+
     private var shouldScrollToStart: Boolean = false
     private var taskDetailBottomSheet: TaskDetailBottomSheet? = null
 
@@ -88,13 +93,18 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
-        setupWeekCalendar()
+        // --- CAMBIO: La configuración del calendario se saca de aquí ---
         setupFabAnimation()
     }
 
     override fun onResume() {
         super.onResume()
         shouldScrollToStart = true
+
+        // --- ¡¡¡CAMBIO MÁS IMPORTANTE!!! ---
+        // ¡¡¡LA LÍNEA QUE CAUSA EL BUG HA SIDO ELIMINADA!!!
+        // viewModel.refreshToToday()
+        // --- ¡¡¡FIN DEL CAMBIO!!! ---
 
         val filter = IntentFilter(Intent.ACTION_DATE_CHANGED)
         requireActivity().registerReceiver(midnightUpdateReceiver, filter)
@@ -111,15 +121,22 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
      */
     override fun observe() {
         // --- OBSERVADOR DE ESTADO (StateFlow) ---
-        var isCalendarInitialized = false // El flag que te di antes
+
+        // --- CAMBIO: Flag para inicializar el calendario solo una vez ---
+        var isCalendarInitialized = false
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.uiState.collectLatest { state ->
+
+                // --- CAMBIO: de 'collectLatest' a 'collect' ---
+                viewModel.uiState.collect { state ->
+
+                    // --- CAMBIO: Inicializar el calendario con el estado del VM ---
                     if (!isCalendarInitialized) {
                         weekCalendarManager.setupCalendar(state.selectedDate)
                         isCalendarInitialized = true
                     }
+
                     updateUi(state)
                 }
             }
@@ -145,8 +162,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
      * Función centralizada para actualizar la UI basada en el HomeState.
      */
     private fun updateUi(state: HomeState) {
-        // binding.progressBar.isVisible = state.isLoading // (Si tuvieras una)
-
         binding.textDate.text = state.headerText
         binding.tvDateTitle.text = state.selectedDate.format(
             DateTimeFormatter.ofPattern("dd 'de' MMMM", Locale("es", "ES"))
@@ -157,11 +172,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         binding.tvNoTasks.isVisible = !hasTasks
         binding.recyclerViewTasks.isVisible = hasTasks
 
-
-
         taskAdapter.submitList(state.tasks)
 
+        // --- ¡¡CAMBIO: EL CABLE DE CONEXIÓN!! ---
+        // Sincroniza la UI del calendario con el estado del ViewModel
         weekCalendarManager.selectDate(state.selectedDate)
+        // --- FIN DEL CAMBIO ---
 
         if (hasTasks && shouldScrollToStart) {
             binding.recyclerViewTasks.post {
@@ -248,6 +264,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             .start()
     }
 
+
     private fun hideFab(fab: View) {
         fab.animate()
             .alpha(0f)
@@ -273,13 +290,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         snapHelper.attachToRecyclerView(binding.recyclerViewTasks)
     }
 
-    private fun setupWeekCalendar() {
-        weekCalendarManager = WeekCalendarManager(binding.weekDaysContainer) { selectedDate: LocalDate ->
-            shouldScrollToStart = true
-            viewModel.onDateSelected(selectedDate)
-        }
+    // --- CAMBIO: Esta función se ha eliminado ---
+    // private fun setupWeekCalendar() { ... }
 
-    }
 
     private fun showTaskDetail(task: TaskDomain) {
         taskDetailBottomSheet?.dismiss()
@@ -290,11 +303,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private fun shareTask(task: TaskDomain) {
         val shareText = generateShareText(task)
         val sendIntent: Intent = Intent().apply {
-            action = Intent.ACTION_SEND // CAMBIO: 'action' en minúscula
+            action = Intent.ACTION_SEND
             putExtra(Intent.EXTRA_TEXT, shareText)
-            type = "text/plain" // CAMBIO: 'type' en minúscula
+            type = "text/plain"
         }
-        // sendIntent.setPackage("com.whatsapp") // (Opcional)
 
         val shareIntent = Intent.createChooser(sendIntent, "Compartir tarea")
         startActivity(shareIntent)
@@ -305,34 +317,30 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         val startDateCalendar = task.start.toCalendar()
         val durationInMinutes = getDurationInMinutes(task.start, task.end)
 
-        // --- Encabezado y Título ---
         val statusEmoji = if (task.isDone) "✅" else "🎯"
         builder.append("$statusEmoji *¡Ojo a esta tarea!* $statusEmoji\n\n")
-        builder.append("*${task.summary.uppercase()}*\n\n") // CAMBIO
+        builder.append("*${task.summary.uppercase()}*\n\n")
 
-        // --- Contexto (Fecha, Hora, Lugar...) ---
         val dateText = SimpleDateFormat("EEEE, dd 'de' MMMM", Locale("es", "ES")).format(startDateCalendar.time)
         builder.append("🗓️ *Cuándo:* ${dateText.replaceFirstChar { it.titlecase(Locale.getDefault()) }}\n")
-        builder.append("⏰ *Hora:* ${task.start.toHourString()}\n") // CAMBIO
+        builder.append("⏰ *Hora:* ${task.start.toHourString()}\n")
 
-        if (durationInMinutes > 0) { // CAMBIO
+        if (durationInMinutes > 0) {
             builder.append("⏳ *Duración:* ${durationInMinutes.toDurationString()}\n")
         }
-        if (!task.location.isNullOrEmpty()) { // CAMBIO
+        if (!task.location.isNullOrEmpty()) {
             builder.append("📍 *Lugar:* ${task.location}\n")
         }
         if (task.typeTask.isNotEmpty()) {
             builder.append("🏷️ *Categoría:* ${task.typeTask}\n")
         }
-        builder.append("\n") // Separador
+        builder.append("\n")
 
-        // --- Descripción (si existe) ---
-        if (!task.description.isNullOrEmpty()) { // CAMBIO
+        if (!task.description.isNullOrEmpty()) {
             builder.append("🧐 *El plan:*\n")
             builder.append("${task.description}\n\n")
         }
 
-        // --- Subtareas (si existen) ---
         if (task.subTasks.isNotEmpty()) {
             builder.append("📋 *Los pasos a seguir:*\n")
             task.subTasks.forEach { subtask ->
@@ -347,7 +355,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             builder.append("$calendarLink\n\n")
         } catch (e: Exception) {}
 
-        // --- Footer de Synkrón ---
         builder.append("--------------------------------\n")
         builder.append("¡Gestionando mi caos con *Synkrón*! 🚀")
 
@@ -355,27 +362,23 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun createGoogleCalendarLink(task: TaskDomain): String {
-        // 1. Calcular las fechas de inicio y fin (CAMBIO)
         val startCalendar = task.start.toCalendar()
         val endCalendar = task.end.toCalendar()
 
         val startTimeMillis = startCalendar.timeInMillis
         val endTimeMillis = endCalendar.timeInMillis
 
-        // 2. Formatear las fechas a ISO 8601 en UTC
         val isoFormatter = SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US).apply {
             timeZone = TimeZone.getTimeZone("UTC")
         }
         val startTimeUtc = isoFormatter.format(Date(startTimeMillis))
         val endTimeUtc = isoFormatter.format(Date(endTimeMillis))
 
-        // 3. Codificar los parámetros (CAMBIO)
         val title = URLEncoder.encode(task.summary, "UTF-8")
         val dates = URLEncoder.encode("$startTimeUtc/$endTimeUtc", "UTF-8")
         val details = URLEncoder.encode(task.description ?: "", "UTF-8")
         val location = URLEncoder.encode(task.location ?: "", "UTF-8")
 
-        // 4. Construir la URL final
         return "https://www.google.com/calendar/render?action=TEMPLATE" +
                 "&text=$title" +
                 "&dates=$dates" +
@@ -395,7 +398,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun RecyclerView.applyCarouselPadding() {
-        val itemWidthDp = 300 // (Usando el ancho de 300dp)
+        val itemWidthDp = 300
         val itemWidthPx = resources.displayMetrics.density * itemWidthDp
         val screenWidthPx = resources.displayMetrics.widthPixels
         val padding = (screenWidthPx / 2f - itemWidthPx / 2f).toInt().coerceAtLeast(0)

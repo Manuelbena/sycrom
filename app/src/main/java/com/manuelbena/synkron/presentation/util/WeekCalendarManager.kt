@@ -60,9 +60,6 @@ class WeekCalendarManager(
 
             container.addView(view)
             daysOfWeekViews.add(view)
-
-            // --- CAMBIO: La selección por defecto se quita de aquí ---
-            // El HomeFragment será ahora quien ordene qué seleccionar
         }
     }
 
@@ -114,7 +111,7 @@ class WeekCalendarManager(
      * Actualiza la apariencia visual de un día (seleccionado o no).
      */
     private fun updateDayViewState(view: View, isSelected: Boolean) {
-        val containerView = view.findViewById<LinearLayout>(R.id.dayContainer)
+        val containerView = view.findViewById<LinearLayout>(R.id.dayContainer) // Cambié 'container' a 'containerView'
         val tvDayName = view.findViewById<TextView>(R.id.tvDayName)
         val tvDayNumber = view.findViewById<TextView>(R.id.tvDayNumber)
 
@@ -128,11 +125,8 @@ class WeekCalendarManager(
             textColorSecondary = ContextCompat.getColor(context, R.color.md_theme_onPrimary)
         } else {
             backgroundColorRes = android.R.color.transparent
-            // ¡ESTA ES LA CORRECCIÓN!
-            // Asegúrate de que estos colores existen en tu `colors.xml`
-            // Si no, cámbialos por los colores correctos de tu tema.
-            textColorPrimary = ContextCompat.getColor(context, R.color.md_theme_onSurfaceVariant) // Color "gris"
-            textColorSecondary = ContextCompat.getColor(context, R.color.md_theme_onSurface) // Color "normal"
+            textColorPrimary = ContextCompat.getColor(context, R.color.md_theme_onSurfaceVariant)
+            textColorSecondary = ContextCompat.getColor(context, R.color.md_theme_onSurface)
         }
 
         containerView.setBackgroundResource(backgroundColorRes)
