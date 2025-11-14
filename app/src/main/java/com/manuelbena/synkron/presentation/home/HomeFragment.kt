@@ -95,7 +95,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     override fun onResume() {
         super.onResume()
         shouldScrollToStart = true
-        viewModel.refreshToToday()
+
         val filter = IntentFilter(Intent.ACTION_DATE_CHANGED)
         requireActivity().registerReceiver(midnightUpdateReceiver, filter)
     }
@@ -111,9 +111,15 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
      */
     override fun observe() {
         // --- OBSERVADOR DE ESTADO (StateFlow) ---
+        var isCalendarInitialized = false // El flag que te di antes
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collectLatest { state ->
+                    if (!isCalendarInitialized) {
+                        weekCalendarManager.setupCalendar(state.selectedDate)
+                        isCalendarInitialized = true
+                    }
                     updateUi(state)
                 }
             }
@@ -151,7 +157,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         binding.tvNoTasks.isVisible = !hasTasks
         binding.recyclerViewTasks.isVisible = hasTasks
 
+
+
         taskAdapter.submitList(state.tasks)
+
+        weekCalendarManager.selectDate(state.selectedDate)
 
         if (hasTasks && shouldScrollToStart) {
             binding.recyclerViewTasks.post {
@@ -268,7 +278,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             shouldScrollToStart = true
             viewModel.onDateSelected(selectedDate)
         }
-        weekCalendarManager.setupCalendar()
+
     }
 
     private fun showTaskDetail(task: TaskDomain) {

@@ -25,19 +25,26 @@ class WeekCalendarManager(
     private val context: Context = container.context
     private var selectedView: View? = null
     private val daysOfWeekViews = mutableListOf<View>()
-    private val daysOfWeek = getWeekDays()
+
+    // --- CAMBIO: Guardamos la semana que se está mostrando ---
+    private var currentWeekDays: List<LocalDate> = emptyList()
+
     private val dayNameFormatter = DateTimeFormatter.ofPattern("EEE", Locale("es", "ES"))
     private val dayNumberFormatter = DateTimeFormatter.ofPattern("d", Locale("es", "ES"))
 
     /**
-     * Infla y configura los 7 días de la semana actual.
+     * Infla y configura los 7 días de la semana que contiene 'dateForWeek'.
      */
-    fun setupCalendar() {
+    // --- CAMBIO: La función ahora acepta una fecha para saber qué semana pintar ---
+    fun setupCalendar(dateForWeek: LocalDate) {
         container.removeAllViews()
         daysOfWeekViews.clear()
 
+        // --- CAMBIO: Obtenemos la semana correcta, no solo la de "hoy" ---
+        currentWeekDays = getWeekDaysFor(dateForWeek)
+
         val inflater = LayoutInflater.from(context)
-        for (day in daysOfWeek) {
+        for (day in currentWeekDays) {
             val view = inflater.inflate(R.layout.item_calendar_dat, container, false)
             val tvDayName = view.findViewById<TextView>(R.id.tvDayName)
             val tvDayNumber = view.findViewById<TextView>(R.id.tvDayNumber)
@@ -54,18 +61,17 @@ class WeekCalendarManager(
             container.addView(view)
             daysOfWeekViews.add(view)
 
-            if (day == LocalDate.now()) {
-                selectDay(view) // Selecciona el día de hoy por defecto
-            }
+            // --- CAMBIO: La selección por defecto se quita de aquí ---
+            // El HomeFragment será ahora quien ordene qué seleccionar
         }
     }
 
     /**
-     * Obtiene la lista de 7 días (LocalDate) para la semana actual.
+     * Obtiene la lista de 7 días (LocalDate) para la semana que CONTIENE la fecha dada.
      */
-    private fun getWeekDays(): List<LocalDate> {
-        val today = LocalDate.now()
-        val startOfWeek = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+    // --- CAMBIO: Nueva función (antes 'getWeekDays') ---
+    private fun getWeekDaysFor(date: LocalDate): List<LocalDate> {
+        val startOfWeek = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
         return (0..6).map { startOfWeek.plusDays(it.toLong()) }
     }
 
@@ -78,12 +84,37 @@ class WeekCalendarManager(
         selectedView = view
     }
 
-    // --- INICIO DE LA CORRECCIÓN ---
+    // --- ¡¡NUEVA FUNCIÓN MÁGICA!! ---
+    /**
+     * Permite seleccionar una fecha desde fuera (Fragment).
+     * Si la fecha no pertenece a la semana actual, RECONSTRUYE el calendario
+     * para esa nueva semana y luego la selecciona.
+     */
+    fun selectDate(date: LocalDate) {
+        // Comprobar si la fecha está en la semana que se muestra actualmente
+        if (currentWeekDays.contains(date)) {
+            // Sí está: solo la seleccionamos visualmente
+            val viewToSelect = daysOfWeekViews.find { it.tag as? LocalDate == date }
+            if (viewToSelect != null && viewToSelect != selectedView) {
+                selectDay(viewToSelect)
+            }
+        } else {
+            // No está: hay que RECONSTRUIR el calendario para la nueva semana
+            setupCalendar(date) // Reconstruye para la semana de 'date'
+
+            // Y ahora que está reconstruido, la seleccionamos
+            val viewToSelect = daysOfWeekViews.find { it.tag as? LocalDate == date }
+            if (viewToSelect != null) {
+                selectDay(viewToSelect)
+            }
+        }
+    }
+
     /**
      * Actualiza la apariencia visual de un día (seleccionado o no).
      */
     private fun updateDayViewState(view: View, isSelected: Boolean) {
-        val container = view.findViewById<LinearLayout>(R.id.dayContainer)
+        val containerView = view.findViewById<LinearLayout>(R.id.dayContainer)
         val tvDayName = view.findViewById<TextView>(R.id.tvDayName)
         val tvDayNumber = view.findViewById<TextView>(R.id.tvDayNumber)
 
@@ -93,24 +124,19 @@ class WeekCalendarManager(
 
         if (isSelected) {
             backgroundColorRes = R.drawable.day_selected_backgorund
-            // Usamos los colores 'onPrimary' para el día seleccionado (texto blanco)
             textColorPrimary = ContextCompat.getColor(context, R.color.md_theme_onPrimary)
             textColorSecondary = ContextCompat.getColor(context, R.color.md_theme_onPrimary)
         } else {
-            // Usamos 'transparent' de Android para el fondo
             backgroundColorRes = android.R.color.transparent
-
             // ¡ESTA ES LA CORRECCIÓN!
-            // Usamos colores del tema que existen en 'values' y 'values-night'
-            // Tus `colors.xml` SÍ tienen estos valores.
+            // Asegúrate de que estos colores existen en tu `colors.xml`
+            // Si no, cámbialos por los colores correctos de tu tema.
             textColorPrimary = ContextCompat.getColor(context, R.color.md_theme_onSurfaceVariant) // Color "gris"
             textColorSecondary = ContextCompat.getColor(context, R.color.md_theme_onSurface) // Color "normal"
         }
 
-        // Usamos setBackgroundResource en lugar de .background
-        container.setBackgroundResource(backgroundColorRes)
+        containerView.setBackgroundResource(backgroundColorRes)
         tvDayName.setTextColor(textColorPrimary)
         tvDayNumber.setTextColor(textColorSecondary)
     }
-    // --- FIN DE LA CORRECCIÓN ---
 }

@@ -2,8 +2,7 @@ package com.manuelbena.synkron.presentation.util
 
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
 import java.time.Duration
-import java.time.ZoneId
-import java.time.ZonedDateTime
+
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.GregorianCalendar
