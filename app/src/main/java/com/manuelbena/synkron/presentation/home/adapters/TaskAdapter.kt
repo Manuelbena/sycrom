@@ -1,10 +1,12 @@
 package com.manuelbena.synkron.presentation.home.adapters
 
 import android.graphics.Paint
+import android.os.Build
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -85,6 +87,7 @@ class TaskAdapter(
         /**
          * Rellena la vista con los datos del nuevo TaskDomain.
          */
+        @RequiresApi(Build.VERSION_CODES.P)
         override fun bind(item: TaskDomain) {
             binding.apply {
 
@@ -141,7 +144,7 @@ class TaskAdapter(
                     tvEventTitle.paintFlags = tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 }
 
-                cardTaskRoot.alpha = if (item.isDone) 0.6f else 1.0f
+
 
                 // --- 5. Lógica "Viva" (Prioridad) ---
                 val priorityColorRes = when (item.priority) {
@@ -149,7 +152,10 @@ class TaskAdapter(
                     "Media" -> R.color.priority_medium_bg
                     else -> R.color.priority_low_bg
                 }
+
                 cardTaskRoot.strokeColor = ContextCompat.getColor(binding.root.context, priorityColorRes)
+                cardTaskRoot.outlineSpotShadowColor = ContextCompat.getColor(binding.root.context, priorityColorRes)
+
             }
         }
     }

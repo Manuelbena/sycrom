@@ -38,6 +38,7 @@ class HomeViewModel @Inject constructor(
 
 
     init {
+        _uiState.update { it.copy(selectedDate = LocalDate.now()) }
         // --- ¡PROGRAMACIÓN REACTIVA! ---
         viewModelScope.launch {
             _uiState.map { it.selectedDate }

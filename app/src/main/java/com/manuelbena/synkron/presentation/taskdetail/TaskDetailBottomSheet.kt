@@ -88,7 +88,7 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
             if (isChecked) {
                 val isDone = (checkedId == binding.buttonStatusDone.id)
                 viewModel.onEvent(TaskDetailContract.TaskDetailEvent.OnTaskChecked(isDone))
-                updateTitleStrikeThrough(isDone)
+
             }
         }
 
@@ -255,7 +255,7 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
             putExtra(Intent.EXTRA_TEXT, shareText)
             type = "text/plain" // CAMBIO: 'type' en minúscula
         }
-        // sendIntent.setPackage("com.whatsapp") // (Opcional)
+         sendIntent.setPackage("com.whatsapp") // (Opcional)
 
         val shareIntent = Intent.createChooser(sendIntent, "Compartir tarea")
         startActivity(shareIntent)

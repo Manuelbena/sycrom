@@ -93,7 +93,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
-        // --- CAMBIO: La configuración del calendario se saca de aquí ---
         setupFabAnimation()
     }
 
@@ -101,10 +100,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         super.onResume()
         shouldScrollToStart = true
 
-        // --- ¡¡¡CAMBIO MÁS IMPORTANTE!!! ---
-        // ¡¡¡LA LÍNEA QUE CAUSA EL BUG HA SIDO ELIMINADA!!!
-        // viewModel.refreshToToday()
-        // --- ¡¡¡FIN DEL CAMBIO!!! ---
 
         val filter = IntentFilter(Intent.ACTION_DATE_CHANGED)
         requireActivity().registerReceiver(midnightUpdateReceiver, filter)
