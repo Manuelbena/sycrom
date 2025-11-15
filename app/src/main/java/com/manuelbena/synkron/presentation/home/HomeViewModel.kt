@@ -9,7 +9,9 @@ import com.manuelbena.synkron.domain.usecase.UpdateTaskUseCase
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
 import com.manuelbena.synkron.presentation.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay // ⬅️ NUEVO IMPORT
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.flow // ⬅️ NUEVO IMPORT
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -21,7 +23,7 @@ class HomeViewModel @Inject constructor(
     private val getTaskTodayUseCase: GetTaskTodayUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
 
-) : ViewModel() {
+    ) : ViewModel() {
 
     // --- ESTADO (StateFlow) ---
     private val _uiState = MutableStateFlow(HomeState())
@@ -41,14 +43,25 @@ class HomeViewModel @Inject constructor(
             _uiState.map { it.selectedDate }
                 .distinctUntilChanged()
                 .flatMapLatest { date ->
-                    _uiState.update { it.copy(isLoading = true) }
-                    getTaskTodayUseCase(date) // Llama al caso de uso con LocalDate
+                    _uiState.update { it.copy(isLoading = true) } // 1. Pone isLoading = true
+
+                    // ⬇️ INICIO DEL CAMBIO: Flow con delay ⬇️
+                    // 2. Creamos un flow que espera 300ms
+                    flow {
+                        delay(300L)
+                        // 3. Tras esperar, nos suscribimos al caso de uso
+                        getTaskTodayUseCase(date).collect { tasks ->
+                            emit(tasks) // 4. Emitimos las tareas
+                        }
+                    }
+                    // ⬆️ FIN DEL CAMBIO ⬆️
                 }
                 .catch { e ->
                     _action.postValue(HomeAction.ShowErrorSnackbar(e.message ?: "Error al cargar tareas"))
                 }
                 .collect { tasks ->
-                    // Cuando el Flow emite datos, actualizamos el estado
+                    // 5. Este 'collect' solo se ejecuta después del delay + la
+                    //    llegada de datos, poniendo isLoading = false
                     _uiState.update {
                         it.copy(
                             isLoading = false,

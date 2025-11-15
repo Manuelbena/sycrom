@@ -102,6 +102,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
+                    android:gravity="center"
                     android:clipChildren="false"
                     android:clipToPadding="false"
                     android:paddingBottom="@dimen/activity_horizontal_XL_margin">
@@ -146,6 +147,14 @@
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="10dp" />
 
+                    <com.google.android.material.loadingindicator.LoadingIndicator
+                        android:id="@+id/progress_indicator"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:indeterminate="true"
+                        android:visibility="visible" app:indicatorSize="40dp"
+                        app:trackThickness="4dp" />
+
                     <LinearLayout
                         android:id="@+id/ivNoTasks"
                         android:layout_width="match_parent"
@@ -185,7 +194,7 @@
                         android:orientation="horizontal"
                         android:paddingStart="40dp"
                         android:paddingEnd="40dp"
-                        android:visibility="visible"
+                        android:visibility="gone"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:listitem="@layout/item_task_today" />
 

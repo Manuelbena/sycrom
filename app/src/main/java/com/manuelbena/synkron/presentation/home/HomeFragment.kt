@@ -160,32 +160,49 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     /**
      * Función centralizada para actualizar la UI basada en el HomeState.
+     *
+     * ⬇️ SECCIÓN MODIFICADA ⬇️
      */
     private fun updateUi(state: HomeState) {
+        // Actualizaciones de texto (sin cambios)
         binding.textDate.text = state.headerText
         binding.tvDateTitle.text = state.selectedDate.format(
             DateTimeFormatter.ofPattern("dd 'de' MMMM", Locale("es", "ES"))
         )
 
-        val hasTasks = state.tasks.isNotEmpty()
-        binding.ivNoTasks.isVisible = !hasTasks
-        binding.tvNoTasks.isVisible = !hasTasks
-        binding.recyclerViewTasks.isVisible = hasTasks
+        // --- INICIO DEL CAMBIO: Lógica de Carga ---
 
-        taskAdapter.submitList(state.tasks)
+        // 1. Gestiona la visibilidad del indicador de carga
+        //    (Asegúrate de que este ID 'progressIndicator' exista en tu XML)
+        binding.progressIndicator.isVisible = state.isLoading
 
-        // --- ¡¡CAMBIO: EL CABLE DE CONEXIÓN!! ---
-        // Sincroniza la UI del calendario con el estado del ViewModel
-        weekCalendarManager.selectDate(state.selectedDate)
+        if (state.isLoading) {
+            // 2. Si está cargando, oculta la lista y el mensaje de "vacío"
+            binding.recyclerViewTasks.isVisible = false
+            binding.ivNoTasks.isVisible = false
+            binding.tvNoTasks.isVisible = false
+        } else {
+            // 3. Si NO está cargando, decide qué mostrar
+            val hasTasks = state.tasks.isNotEmpty()
+            binding.ivNoTasks.isVisible = !hasTasks
+            binding.tvNoTasks.isVisible = !hasTasks
+            binding.recyclerViewTasks.isVisible = hasTasks
+
+            // 4. Actualiza el adapter solo cuando no está cargando
+            taskAdapter.submitList(state.tasks)
+
+            // 5. Lógica de scroll (movida aquí para que solo se ejecute
+            //    cuando la carga ha terminado y hay tareas)
+            if (shouldScrollToStart && hasTasks) {
+                binding.recyclerViewTasks.scrollToPosition(0)
+}
+        }
         // --- FIN DEL CAMBIO ---
 
-        if (hasTasks && shouldScrollToStart) {
-            binding.recyclerViewTasks.post {
-                binding.recyclerViewTasks.smoothScrollToPosition(0)
-            }
-            shouldScrollToStart = false
-        }
+        // Sincroniza la UI del calendario con el estado (sin cambios)
+        weekCalendarManager.selectDate(state.selectedDate)
     }
+    // ⬆️ SECCIÓN MODIFICADA ⬆️
 
     override fun setListener() {
         binding.apply {
