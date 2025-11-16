@@ -1,6 +1,7 @@
 package com.manuelbena.synkron.presentation.activitys
 
 import android.view.LayoutInflater
+import androidx.core.view.WindowCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.manuelbena.synkron.R

@@ -2,7 +2,7 @@
 <resources>
 
 
-    <color name="md_theme_primary">#E0E0E0</color>
+    <color name="md_theme_primary">#979797</color>
     <color name="md_theme_onPrimary">#1F1F1F</color>
     <color name="md_theme_primaryContainer">#FFFFFF</color>
     <color name="md_theme_onPrimaryContainer">#042043</color>
@@ -29,7 +29,7 @@
     <color name="md_theme_onSurface">#1A1C1E</color>
 
     <color name="md_theme_surfaceVariant">#FFFFFF</color>
-    <color name="md_theme_onSurfaceVariant">#43474E</color>
+    <color name="md_theme_onSurfaceVariant">#1F1F1F</color>
 
     <color name="md_theme_outline">#73777F</color>
 

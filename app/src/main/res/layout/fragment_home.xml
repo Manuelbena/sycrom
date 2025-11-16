@@ -4,19 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorPrimary">
+    android:background="@drawable/background_primary">
 
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-    android:id="@+id/ly_header"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="?attr/colorPrimary"
-    android:paddingBottom="@dimen/activity_horizontal_XL_margin"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent"
-    tools:ignore="MissingConstraints">
 
     <TextView
         android:id="@+id/textGreeting"
@@ -25,7 +14,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="32dp"
         android:text="Hola, Manuel"
-        android:textColor="?attr/colorOnPrimary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="@dimen/txt_dimen_extra"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -37,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:textColor="?attr/colorOnPrimary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="@dimen/txt_dimen_l"
         android:visibility="visible"
         app:layout_constraintStart_toStartOf="@id/textGreeting"
@@ -54,7 +43,7 @@
         android:src="@drawable/ic_sol"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="?attr/colorOnPrimary" />
+        app:tint="?attr/colorOnSurfaceVariant"/>
 
     <TextView
         android:id="@+id/textTemperature"
@@ -62,15 +51,14 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:text="17°C"
-        android:textColor="?attr/colorOnPrimary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="@dimen/txt_dimen_l"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@id/iconWeather"
         app:layout_constraintStart_toStartOf="@+id/iconWeather"
         app:layout_constraintTop_toBottomOf="@+id/iconWeather"
         tools:ignore="SpUsage" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nested_scroll_view"
@@ -79,7 +67,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/ly_header">
+        app:layout_constraintTop_toBottomOf="@id/textDate">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/ly_body_home"

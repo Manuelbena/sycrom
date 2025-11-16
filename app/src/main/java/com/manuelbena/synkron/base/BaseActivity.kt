@@ -20,7 +20,7 @@ abstract class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = inflateView(layoutInflater)
-
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContentView(_binding?.root)
 
     }
