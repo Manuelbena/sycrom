@@ -5,7 +5,10 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.View
@@ -21,6 +24,7 @@ import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayout
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentHomeBinding
@@ -53,16 +57,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override val viewModel: HomeViewModel by activityViewModels()
     private var isFabMenuOpen = false
+
+    private lateinit var weekCalendarManager: WeekCalendarManager
     private val fabInterpolator = OvershootInterpolator()
 
-    // --- CAMBIO: Inicialización 'by lazy' ---
-    private val weekCalendarManager: WeekCalendarManager by lazy {
-        WeekCalendarManager(binding.weekDaysContainer) { selectedDate: LocalDate ->
-            shouldScrollToStart = true
-            viewModel.onDateSelected(selectedDate)
-        }
-    }
-
+    private var lastSnappedPosition = RecyclerView.NO_POSITION
     private var shouldScrollToStart: Boolean = false
     private var taskDetailBottomSheet: TaskDetailBottomSheet? = null
 
@@ -92,15 +91,18 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        weekCalendarManager = WeekCalendarManager(binding.weekDaysContainer) { selectedDate: LocalDate ->
+            shouldScrollToStart = true
+            viewModel.onDateSelected(selectedDate)
+        }
         setupRecyclerView()
         setupFabAnimation()
+        setupDotIndicatorListener()
     }
 
     override fun onResume() {
         super.onResume()
         shouldScrollToStart = true
-
-
         val filter = IntentFilter(Intent.ACTION_DATE_CHANGED)
         requireActivity().registerReceiver(midnightUpdateReceiver, filter)
     }
@@ -165,26 +167,33 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             DateTimeFormatter.ofPattern("dd 'de' MMMM", Locale("es", "ES"))
         )
 
-        // --- INICIO DEL CAMBIO: Lógica de Carga ---
-
-        // 1. Gestiona la visibilidad del indicador de carga
-        //    (Asegúrate de que este ID 'progressIndicator' exista en tu XML)
+        // Lógica de Carga (sin cambios)
         binding.progressIndicator.isVisible = state.isLoading
 
         if (state.isLoading) {
-            // 2. Si está cargando, oculta la lista y el mensaje de "vacío"
             binding.recyclerViewTasks.isVisible = false
             binding.ivNoTasks.isVisible = false
             binding.tvNoTasks.isVisible = false
+            binding.tabLayoutDots.isVisible = false
         } else {
-            // 3. Si NO está cargando, decide qué mostrar
             val hasTasks = state.tasks.isNotEmpty()
             binding.ivNoTasks.isVisible = !hasTasks
             binding.tvNoTasks.isVisible = !hasTasks
             binding.recyclerViewTasks.isVisible = hasTasks
+            binding.tabLayoutDots.isVisible = hasTasks
 
-            // 4. Actualiza el adapter solo cuando no está cargando
             taskAdapter.submitList(state.tasks)
+
+            if (binding.tabLayoutDots.tabCount != state.tasks.size) {
+                binding.tabLayoutDots.removeAllTabs()
+
+                // Bucle para añadir cada punto como una "vista personalizada"
+                state.tasks.forEach { _ ->
+                    val newTab = binding.tabLayoutDots.newTab()
+                    newTab.setCustomView(R.layout.dot_indicator_layout)
+                    binding.tabLayoutDots.addTab(newTab)
+                }
+            }
 
             // 5. Lógica de scroll (movida aquí para que solo se ejecute
             //    cuando la carga ha terminado y hay tareas)
@@ -293,17 +302,78 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private fun setupRecyclerView() {
         val snapHelper = PagerSnapHelper()
         binding.recyclerViewTasks.apply {
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            val linearLayoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            layoutManager = linearLayoutManager
             adapter = taskAdapter
             applyCarouselPadding()
             addOnScrollListener(CarouselScrollListener())
             itemAnimator = null
+
+            // Lógica de vibración y SINCRONIZACIÓN DE PUNTOS
+            addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                    super.onScrollStateChanged(recyclerView, newState)
+
+                    if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+
+                        val centerView = snapHelper.findSnapView(linearLayoutManager) ?: return
+                        val newPosition = linearLayoutManager.getPosition(centerView)
+
+                        if (newPosition != RecyclerView.NO_POSITION && newPosition != lastSnappedPosition) {
+
+                            // 1. Vibramos (como ya tenías)
+                            vibratePhone(50)
+
+                            // 2. ⬇️ NUEVO: Seleccionamos el punto correspondiente ⬇️
+                            binding.tabLayoutDots.getTabAt(newPosition)?.select()
+
+                            // 3. Actualizamos la posición
+                            lastSnappedPosition = newPosition
+                        }
+                    }
+                }
+            })
         }
         snapHelper.attachToRecyclerView(binding.recyclerViewTasks)
     }
 
-    // --- CAMBIO: Esta función se ha eliminado ---
-    // private fun setupWeekCalendar() { ... }
+    /**
+     * ⬇️ NUEVA FUNCIÓN: Para que el usuario pueda pulsar los puntos ⬇️
+     */
+    private fun setupDotIndicatorListener() {
+        binding.tabLayoutDots.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                tab?.let {
+                    // Verificamos que el RecyclerView está listo
+                    val lm = binding.recyclerViewTasks.layoutManager as? LinearLayoutManager
+                    if (lm != null) {
+                        // Solo hacemos scroll si el usuario pulsó un punto DIFERENTE al actual
+                        val currentPos = lm.findFirstCompletelyVisibleItemPosition()
+                        if (currentPos != it.position) {
+                            binding.recyclerViewTasks.smoothScrollToPosition(it.position)
+                        }
+                    }
+                }
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
+    }
+    /**
+     * Función de vibración (sin cambios)
+     */
+    private fun vibratePhone(duration: Long) {
+        val vibrator = context?.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        vibrator?.let {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                val effect = VibrationEffect.createOneShot(duration, 255)
+                it.vibrate(effect)
+            } else {
+                it.vibrate(duration)
+            }
+        }
+    }
+
 
 
     private fun showTaskDetail(task: TaskDomain) {
@@ -410,7 +480,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun RecyclerView.applyCarouselPadding() {
-        val itemWidthDp = 300
+        val itemWidthDp = 250
         val itemWidthPx = resources.displayMetrics.density * itemWidthDp
         val screenWidthPx = resources.displayMetrics.widthPixels
         val padding = (screenWidthPx / 2f - itemWidthPx / 2f).toInt().coerceAtLeast(0)

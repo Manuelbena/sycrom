@@ -120,7 +120,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Tareas programadas"
-                            android:textColor="?attr/colorPrimary"
+                            android:textColor="?attr/colorOnPrimary"
                             android:textSize="@dimen/txt_dimen_xxl"
                             android:textStyle="bold"
                             tools:ignore="SpUsage" />
@@ -134,7 +134,7 @@
                         android:layout_marginHorizontal="@dimen/txt_dimen_xl"
                         android:layout_marginBottom="@dimen/txt_dimen_l"
                         android:textAlignment="center"
-                        android:textColor="?attr/colorPrimary"
+                        android:textColor="?attr/colorOnPrimary"
                         android:textSize="16sp"
                         android:textStyle="bold"
                         tools:text="12 de mayo de 2025" />
@@ -170,7 +170,7 @@
                             android:gravity="center"
                             android:padding="16dp"
                             android:text="No hay tareas para este día."
-                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textColor="?attr/colorOnPrimary"
                             android:textSize="16sp"
                             android:visibility="gone"
                             tools:visibility="visible" />
@@ -181,7 +181,7 @@
                             android:layout_gravity="center"
                             android:alpha="0.5"
                             android:src="@drawable/ic_no_planifi"
-                            app:tint="?attr/colorOnSurfaceVariant"
+                            android:textColor="?attr/colorOnPrimary"
                             tools:visibility="visible" />
                     </LinearLayout>
 
@@ -197,6 +197,25 @@
                         android:visibility="gone"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:listitem="@layout/item_task_today" />
+                    <com.google.android.material.tabs.TabLayout
+                        android:id="@+id/tabLayoutDots"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent"
+                        app:layout_constraintTop_toBottomOf="@id/recyclerViewTasks"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        android:layout_marginTop="8dp"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        app:tabBackground="@null"
+                        app:tabIndicatorHeight="0dp"
+                        app:tabPaddingStart="0dp"
+                        app:tabPaddingEnd="0dp"
+                        app:tabPaddingTop="0dp"
+                        app:tabPaddingBottom="0dp"
+                        />
+
 
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -231,7 +250,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="0.3"
                             android:text="Te sugiero..."
-                            android:textColor="?attr/colorPrimary"
+                            android:textColor="?attr/colorOnPrimary"
                             android:textSize="@dimen/txt_dimen_xxl"
                             android:textStyle="bold"
                             tools:ignore="SpUsage" />
@@ -255,7 +274,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="12dp"
                             android:text="Tienes una hora libre a las 17:00. ¿Por qué no dar un paseo por el Parque del Retiro?"
-                            android:textColor="?attr/colorPrimary"
+                            android:textColor="?attr/colorOnPrimary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
@@ -279,7 +298,7 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_clock"
-                            app:tint="?attr/colorOnSurfaceVariant" />
+                            app:tint="?attr/colorOnPrimary" />
 
                         <TextView
                             android:id="@+id/textHora"
@@ -287,7 +306,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:text="17:00"
-                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textColor="?attr/colorOnPrimary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
@@ -296,7 +315,7 @@
                             android:layout_height="20dp"
                             android:layout_marginStart="16dp"
                             android:src="@drawable/ic_location"
-                            app:tint="?attr/colorOnSurfaceVariant" />
+                            app:tint="?attr/colorOnPrimary" />
 
                         <TextView
                             android:id="@+id/textLugar"
@@ -304,7 +323,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:text="Parque del Retiro"
-                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textColor="?attr/colorOnPrimary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
@@ -337,7 +356,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
                         android:text="Resumen Cartera"
-                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textColor="?attr/colorOnPrimary"
                         android:textSize="@dimen/txt_dimen_xxl"
                         android:textStyle="bold"
                         app:layout_constraintStart_toStartOf="parent"
@@ -375,7 +394,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
                             android:text="Gastos"
-                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textColor="?attr/colorOnPrimary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
@@ -385,7 +404,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:text="-500€"
-                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textColor="?attr/colorOnPrimary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
                     </LinearLayout>
@@ -411,7 +430,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
                             android:text="Ingresos"
-                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textColor="?attr/colorOnPrimary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
@@ -421,7 +440,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
                             android:text="500€"
-                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:textColor="?attr/colorOnPrimary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
                     </LinearLayout>
@@ -439,10 +458,10 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Tarea"
-        android:textColor="?attr/colorOnSecondaryContainer"
+        android:textColor="?attr/colorOnPrimary"
         android:visibility="gone"
         app:backgroundTint="?attr/colorSecondaryContainer"
-        app:iconTint="?attr/colorOnSecondaryContainer"
+        app:iconTint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toTopOf="@+id/fabMain"
         app:layout_constraintEnd_toEndOf="@+id/fabMain" />
 
@@ -452,10 +471,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Tarea IA"
-        android:textColor="?attr/colorOnSecondaryContainer"
+        android:textColor="?attr/colorOnPrimary"
         android:visibility="gone"
         app:backgroundTint="?attr/colorSecondaryContainer"
-        app:iconTint="?attr/colorOnSecondaryContainer"
+        app:iconTint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddTask"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddTask" />
 
@@ -465,10 +484,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Gasto"
-        android:textColor="?attr/colorOnSecondaryContainer"
+        android:textColor="?attr/colorOnPrimary"
         android:visibility="gone"
         app:backgroundTint="?attr/colorSecondaryContainer"
-        app:iconTint="?attr/colorOnSecondaryContainer"
+        app:iconTint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddIng"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddIng" />
 
@@ -478,10 +497,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Ingreso"
-        android:textColor="?attr/colorOnSecondaryContainer"
+        android:textColor="?attr/colorOnPrimary"
         android:visibility="gone"
         app:backgroundTint="?attr/colorSecondaryContainer"
-        app:iconTint="?attr/colorOnSecondaryContainer"
+        app:iconTint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddSuggestion"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddSuggestion" />
 
@@ -492,12 +511,12 @@
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="100dp"
         android:text="Añadir"
-        android:textColor="@color/background_primary"
+        android:textColor="?attr/colorOnPrimary"
         app:backgroundTint="?attr/colorSecondaryContainer"
         app:icon="@drawable/ic_plus"
-        app:iconTint="@color/background_primary"
+        app:iconTint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:tint="@color/background_primary"/>
+        app:tint="?attr/colorOnPrimary"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

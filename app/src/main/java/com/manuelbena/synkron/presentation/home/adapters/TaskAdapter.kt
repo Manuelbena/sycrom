@@ -1,13 +1,16 @@
 package com.manuelbena.synkron.presentation.home.adapters
 
 import android.graphics.Paint
+import android.graphics.drawable.LayerDrawable
 import android.os.Build
+
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -15,7 +18,8 @@ import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseViewHolder
 import com.manuelbena.synkron.databinding.ItemTaskTodayBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
-
+import android.util.TypedValue // ⬅️ IMPORTANTE
+import com.google.android.material.R as R_Material // ⬅️ IMPORTANTE
 
 import com.manuelbena.synkron.presentation.util.getDurationInMinutes
 import com.manuelbena.synkron.presentation.util.toDurationString
@@ -146,15 +150,35 @@ class TaskAdapter(
 
 
 
-                // --- 5. Lógica "Viva" (Prioridad) ---
-                val priorityColorRes = when (item.priority) {
-                    "Alta" -> R.color.priority_high_bg
-                    "Media" -> R.color.priority_medium_bg
-                    else -> R.color.priority_low_bg
-                }
+                val context = binding.root.context
 
-                cardTaskRoot.strokeColor = ContextCompat.getColor(binding.root.context, priorityColorRes)
-                cardTaskRoot.outlineSpotShadowColor = ContextCompat.getColor(binding.root.context, priorityColorRes)
+                // --- 1. Lógica de Barra de Prioridad (Filo) ---
+                val priorityColorRes = when (item.priority) {
+                    "Alta" -> R.color.priority_high
+                    "Media" -> R.color.priority_medium
+                    "Baja" -> R.color.priority_low
+                    else -> R.color.priority_default
+                }
+                val priorityColor = ContextCompat.getColor(context, priorityColorRes)
+
+                // --- 2. Lógica de Fondo de Tarjeta (SIEMPRE EL DEFECTO) ---
+                // Obtenemos el ?attr/colorSurface (el blanco/gris) del tema
+                val typedValue = TypedValue()
+                context.theme.resolveAttribute(R_Material.attr.colorSurfaceVariant, typedValue, true)
+
+
+                // --- 3. Aplicar AMBOS colores al LayerDrawable ---
+                val layerDrawable = binding.clTask.background.mutate() as LayerDrawable
+
+                // Tinta la barra de prioridad (Filo)
+                val priorityBar = layerDrawable.findDrawableByLayerId(R.id.priority_bar_shape)
+                DrawableCompat.setTint(priorityBar, priorityColor)
+
+                // Tinta el fondo del contenido (Fondo)
+                // Lo tintamos SIEMPRE al color por defecto para
+                // evitar problemas con el reciclaje de vistas.
+                val contentBg = layerDrawable.findDrawableByLayerId(R.id.content_background_shape)
+                DrawableCompat.setTint(contentBg, typedValue.data)
 
             }
         }
