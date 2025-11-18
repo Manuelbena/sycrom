@@ -97,7 +97,6 @@ class TaskAdapter(
 
                 // --- 1. Mapeo de Título y Categoría ---
                 tvEventTitle.text = item.summary // CAMBIO
-                chipCategory.text = item.typeTask // CAMBIO (usando el ID del chip)
 
                 // --- 2. Mapeo de Contexto (Línea por Línea) ---
 
@@ -179,6 +178,30 @@ class TaskAdapter(
                 // evitar problemas con el reciclaje de vistas.
                 val contentBg = layerDrawable.findDrawableByLayerId(R.id.content_background_shape)
                 DrawableCompat.setTint(contentBg, typedValue.data)
+
+                // --- 4. Mapeo de Switch (NUEVO) ---
+
+                // Primero, quitamos el listener para evitar que se dispare
+                // mientras actualizamos su estado (muy importante en RecyclerView).
+                binding.swTaskCompleted.setOnCheckedChangeListener(null)
+
+                // Asignamos el estado actual de la tarea
+                binding.swTaskCompleted.isChecked = item.isDone
+
+                // Volvemos a asignar el listener para que el usuario pueda interactuar
+                binding.swTaskCompleted.setOnCheckedChangeListener { _, isChecked ->
+                    // Usamos la lambda 'onTaskCheckedChange' que pasamos
+                    // al constructor del adapter.
+                    onTaskCheckedChange(item, isChecked)
+                }
+
+                // Esta lógica de tachado ya la tenías y es correcta.
+                // Se complementa bien con el switch.
+                if (item.isDone) {
+                    tvEventTitle.paintFlags = tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                } else {
+                     tvEventTitle.paintFlags = tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                }
 
             }
         }

@@ -125,8 +125,8 @@ class WeekCalendarManager(
             textColorSecondary = ContextCompat.getColor(context, R.color.md_theme_onPrimary)
         } else {
             backgroundColorRes = android.R.color.transparent
-            textColorPrimary = ContextCompat.getColor(context, R.color.md_theme_onSurfaceVariant)
-            textColorSecondary = ContextCompat.getColor(context, R.color.md_theme_onSurface)
+            textColorPrimary = ContextCompat.getColor(context, R.color.md_theme_onPrimary)
+            textColorSecondary = ContextCompat.getColor(context, R.color.md_theme_onPrimary)
         }
 
         containerView.setBackgroundResource(backgroundColorRes)

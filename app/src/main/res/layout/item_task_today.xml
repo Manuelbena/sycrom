@@ -18,8 +18,9 @@
         android:id="@+id/clTask"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_gravity="center"
         android:background="@drawable/bg_task_card_priority"
-        android:paddingStart="24dp"
+        android:paddingStart="20dp"
         android:paddingEnd="16dp"
         android:paddingTop="16dp"
         android:paddingBottom="16dp">
@@ -34,14 +35,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:gravity="center_vertical"
             >
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chip_category"
-                style="@style/Widget.Material3.Chip.Assist"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="Reunión" />
+
+
 
             <ImageButton
                 android:id="@+id/btnTaskOptions"
@@ -197,6 +192,32 @@
                 tools:progress="60" />
 
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvfinish"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:visibility="visible"
+            android:text="¿Evento terminado?"
+            android:maxLines="1"
+            android:textColor="?attr/colorOnPrimary"
+            android:textSize="@dimen/txt_dimen_m"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/sw_task_completed"
+            app:layout_constraintTop_toBottomOf="@+id/layout_subtasks"
+            />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/sw_task_completed"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layout_subtasks"
+            app:thumbIcon="@drawable/ic_switch_thumb_selector"
+            app:thumbIconTint="@color/switch_thumb_icon_tint_selector" />
+
 
 
 

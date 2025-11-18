@@ -157,18 +157,18 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:padding="16dp"
-                            android:text="No hay tareas para este día."
+                            android:text="Relajate hoy no tienes tareas que realizar..."
                             android:textColor="?attr/colorOnPrimary"
                             android:textSize="16sp"
                             android:visibility="gone"
                             tools:visibility="visible" />
 
                         <ImageView
-                            android:layout_width="100dp"
-                            android:layout_height="100dp"
+                            android:layout_width="wrap_content"
+                            android:layout_height="130dp"
                             android:layout_gravity="center"
-                            android:alpha="0.5"
-                            android:src="@drawable/ic_no_planifi"
+
+                            android:src="@drawable/synkrom_sintareas"
                             android:textColor="?attr/colorOnPrimary"
                             tools:visibility="visible" />
                     </LinearLayout>
@@ -270,7 +270,7 @@
                             android:layout_width="80dp"
                             android:layout_height="150dp"
                             android:layout_marginStart="@dimen/txt_dimen_xl"
-                            android:src="@drawable/ic_suggestion" />
+                            android:src="@drawable/synkron_conunatarea" />
                     </LinearLayout>
 
                     <LinearLayout
