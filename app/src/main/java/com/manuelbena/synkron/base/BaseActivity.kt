@@ -1,5 +1,6 @@
 package com.manuelbena.synkron.base
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -20,7 +21,12 @@ abstract class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = inflateView(layoutInflater)
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val isDarkMode = (this.baseContext.resources.configuration.uiMode and
+                Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+
+
+        this.window.decorView.systemUiVisibility = if (!isDarkMode)
+            View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR else 0
         setContentView(_binding?.root)
 
     }

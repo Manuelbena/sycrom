@@ -11,7 +11,7 @@
         android:id="@+id/nav_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="?attr/colorPrimary"
+        app:backgroundTint="?attr/colorPrimary"
         app:horizontalItemTextAppearanceActive="?attr/colorOnSurfaceVariant"
         app:itemGravity="center"
         app:itemIconTint="?attr/colorOnSurfaceVariant"

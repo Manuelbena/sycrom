@@ -102,7 +102,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override fun onResume() {
         super.onResume()
-        shouldScrollToStart = true
+
         val filter = IntentFilter(Intent.ACTION_DATE_CHANGED)
         requireActivity().registerReceiver(midnightUpdateReceiver, filter)
     }
@@ -199,6 +199,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             //    cuando la carga ha terminado y hay tareas)
             if (shouldScrollToStart && hasTasks) {
                 binding.recyclerViewTasks.scrollToPosition(0)
+                shouldScrollToStart = false
 }
         }
         // --- FIN DEL CAMBIO ---

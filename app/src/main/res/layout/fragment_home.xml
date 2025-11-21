@@ -500,7 +500,7 @@
         android:layout_marginBottom="100dp"
         android:text="Añadir"
         android:textColor="?attr/colorOnPrimary"
-        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:backgroundTint="?attr/colorPrimary"
         app:icon="@drawable/ic_plus"
         app:iconTint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toBottomOf="parent"

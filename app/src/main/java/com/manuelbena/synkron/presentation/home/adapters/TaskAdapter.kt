@@ -1,5 +1,6 @@
 package com.manuelbena.synkron.presentation.home.adapters
 
+import android.animation.Animator
 import android.graphics.Paint
 import android.graphics.drawable.LayerDrawable
 import android.os.Build
@@ -49,6 +50,7 @@ class TaskAdapter(
         return TaskViewHolder(binding)
     }
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         holder.bind(getItem(position))
     }
@@ -91,17 +93,20 @@ class TaskAdapter(
         /**
          * Rellena la vista con los datos del nuevo TaskDomain.
          */
+
+
+
         @RequiresApi(Build.VERSION_CODES.P)
         override fun bind(item: TaskDomain) {
             binding.apply {
 
-                // --- 1. Mapeo de Título y Categoría ---
-                tvEventTitle.text = item.summary // CAMBIO
-
-                // --- 2. Mapeo de Contexto (Línea por Línea) ---
+                // =============================================================
+                // 1. MAPEO DE DATOS (Igual que siempre)
+                // =============================================================
+                tvEventTitle.text = item.summary
 
                 // Ubicación
-                if (item.location.isNullOrEmpty()) { // CAMBIO
+                if (item.location.isNullOrEmpty()) {
                     tvEventLocation.visibility = View.GONE
                     iconLocation.visibility = View.GONE
                 } else {
@@ -110,29 +115,26 @@ class TaskAdapter(
                     tvEventLocation.text = item.location
                 }
 
-                // Hora (usando el helper .toHourString())
-                tvEventTime.text = item.start.toHourString() // CAMBIO
-
-                // Duración (calculada con helpers)
-                val durationInMinutes = getDurationInMinutes(item.start, item.end) // CAMBIO
+                // Hora y Duración
+                tvEventTime.text = item.start.toHourString()
+                val durationInMinutes = getDurationInMinutes(item.start, item.end)
                 if (durationInMinutes > 0) {
                     tvDuration.visibility = View.VISIBLE
                     iconRestant.visibility = View.VISIBLE
-                    tvDuration.text = durationInMinutes.toDurationString() // CAMBIO
+                    tvDuration.text = durationInMinutes.toDurationString()
                 } else {
                     tvDuration.visibility = View.GONE
                     iconRestant.visibility = View.GONE
-
                 }
 
-                // --- 3. Mapeo de Progreso (Círculo) ---
+                // Subtareas
                 val hasSubtasks = item.subTasks.isNotEmpty()
                 if (hasSubtasks) {
                     progressBarTaskDetailProgress.visibility = View.VISIBLE
+                    textViewTaskDetailProgressText.visibility = View.VISIBLE
                     val total = item.subTasks.size
                     val completed = item.subTasks.count { it.isDone }
-
-                    val progress = (completed * 100) / total
+                    val progress = if (total > 0) (completed * 100) / total else 0
                     progressBarTaskDetailProgress.progress = progress
                     textViewTaskDetailProgressText.text = "$completed de $total completadas"
                 } else {
@@ -140,18 +142,8 @@ class TaskAdapter(
                     textViewTaskDetailProgressText.visibility = View.INVISIBLE
                 }
 
-
-                if (item.isDone) {
-                    tvEventTitle.paintFlags = tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-                } else {
-                    tvEventTitle.paintFlags = tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                }
-
-
-
+                // Colores y Estilos
                 val context = binding.root.context
-
-                // --- 1. Lógica de Barra de Prioridad (Filo) ---
                 val priorityColorRes = when (item.priority) {
                     "Alta" -> R.color.priority_high
                     "Media" -> R.color.priority_medium
@@ -159,50 +151,87 @@ class TaskAdapter(
                     else -> R.color.priority_default
                 }
                 val priorityColor = ContextCompat.getColor(context, priorityColorRes)
-
-                // --- 2. Lógica de Fondo de Tarjeta (SIEMPRE EL DEFECTO) ---
-                // Obtenemos el ?attr/colorSurface (el blanco/gris) del tema
                 val typedValue = TypedValue()
                 context.theme.resolveAttribute(R_Material.attr.colorSurfaceVariant, typedValue, true)
 
-
-                // --- 3. Aplicar AMBOS colores al LayerDrawable ---
                 val layerDrawable = binding.clTask.background.mutate() as LayerDrawable
+                DrawableCompat.setTint(layerDrawable.findDrawableByLayerId(R.id.priority_bar_shape), priorityColor)
+                DrawableCompat.setTint(layerDrawable.findDrawableByLayerId(R.id.content_background_shape), typedValue.data)
 
-                // Tinta la barra de prioridad (Filo)
-                val priorityBar = layerDrawable.findDrawableByLayerId(R.id.priority_bar_shape)
-                DrawableCompat.setTint(priorityBar, priorityColor)
+                // =============================================================
+                // 2. CONFIGURACIÓN SEGURA DE ANIMACIÓN Y UI
+                // =============================================================
 
-                // Tinta el fondo del contenido (Fondo)
-                // Lo tintamos SIEMPRE al color por defecto para
-                // evitar problemas con el reciclaje de vistas.
-                val contentBg = layerDrawable.findDrawableByLayerId(R.id.content_background_shape)
-                DrawableCompat.setTint(contentBg, typedValue.data)
+                // A) Limpieza TOTAL antes de configurar (Evita crashes por listeners antiguos)
+                swTaskCompleted.setOnCheckedChangeListener(null)
+                lottieCelebration.removeAllAnimatorListeners()
+                lottieCelebration.cancelAnimation() // Detener cualquier cosa pendiente
 
-                // --- 4. Mapeo de Switch (NUEVO) ---
+                // B) Estado visual inicial (según base de datos)
+                swTaskCompleted.isChecked = item.isDone
+                lottieCelebration.visibility = View.GONE
 
-                // Primero, quitamos el listener para evitar que se dispare
-                // mientras actualizamos su estado (muy importante en RecyclerView).
-                binding.swTaskCompleted.setOnCheckedChangeListener(null)
-
-                // Asignamos el estado actual de la tarea
-                binding.swTaskCompleted.isChecked = item.isDone
-
-                // Volvemos a asignar el listener para que el usuario pueda interactuar
-                binding.swTaskCompleted.setOnCheckedChangeListener { _, isChecked ->
-                    // Usamos la lambda 'onTaskCheckedChange' que pasamos
-                    // al constructor del adapter.
-                    onTaskCheckedChange(item, isChecked)
-                }
-
-                // Esta lógica de tachado ya la tenías y es correcta.
-                // Se complementa bien con el switch.
+                // Tachado inicial
                 if (item.isDone) {
                     tvEventTitle.paintFlags = tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 } else {
-                     tvEventTitle.paintFlags = tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                    tvEventTitle.paintFlags = tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 }
 
+                // C) LISTENER CON LÓGICA "PRIMERO UI, LUEGO DB"
+                swTaskCompleted.setOnCheckedChangeListener { buttonView, isChecked ->
+
+                    // 1. Modificaciones UI Inmediatas (Visuales)
+                    if (isChecked) {
+                        tvEventTitle.paintFlags = tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                    } else {
+                        tvEventTitle.paintFlags = tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                    }
+
+                    // Usamos 'post' para evitar errores si el RecyclerView está calculando layout
+                    binding.root.post {
+                        if (isChecked) {
+                            // CASO: MARCAR COMO HECHO (Animación -> Luego Guardar)
+
+                            // Configurar Lottie
+                            lottieCelebration.visibility = View.VISIBLE
+                            lottieCelebration.speed = 1f
+                            lottieCelebration.repeatCount = 0 // Solo una vez
+                            lottieCelebration.progress = 0f   // Desde el inicio
+
+                            lottieCelebration.removeAllAnimatorListeners()
+                            lottieCelebration.addAnimatorListener(object : Animator.AnimatorListener {
+                                override fun onAnimationStart(animation: Animator) {}
+
+                                // AQUÍ ES DONDE GUARDAMOS: AL TERMINAR LA ANIMACIÓN
+                                override fun onAnimationEnd(animation: Animator) {
+                                    try {
+                                        lottieCelebration.visibility = View.GONE
+                                        // Solo guardamos si el usuario no cambió de opinión rápido
+                                        if (swTaskCompleted.isChecked) {
+                                            onTaskCheckedChange(item, true)
+                                        }
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                    }
+                                }
+
+                                override fun onAnimationCancel(animation: Animator) {
+                                    lottieCelebration.visibility = View.GONE
+                                }
+                                override fun onAnimationRepeat(animation: Animator) {}
+                            })
+
+                            lottieCelebration.playAnimation()
+
+                        } else {
+                            // CASO: DESMARCAR (Guardar Inmediatamente)
+                            lottieCelebration.cancelAnimation()
+                            lottieCelebration.visibility = View.GONE
+                            onTaskCheckedChange(item, false)
+                        }
+                    }
+                }
             }
         }
     }
