@@ -190,22 +190,26 @@
             android:visibility="visible"
             android:text="¿Evento terminado?"
             android:maxLines="1"
+            android:layout_marginEnd="@dimen/card_elevation"
             android:textColor="?attr/colorOnPrimary"
-            android:textSize="@dimen/txt_dimen_m"
+            android:textSize="@dimen/txt_dimen_l"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/sw_task_completed"
             app:layout_constraintTop_toBottomOf="@+id/layout_subtasks" />
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
+
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/sw_task_completed"
             android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/layout_subtasks"
+            android:layout_height="wrap_content"
             app:thumbIcon="@drawable/ic_switch_thumb_selector"
             app:thumbIconTint="@color/switch_thumb_icon_tint_selector"
-            app:trackDecorationTint="@color/switch_thumb_icon_tint_selector" />
+            android:scaleX="0.7"
+            android:scaleY="0.7"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layout_subtasks"/>
 
         <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/lottie_celebration"

@@ -50,7 +50,6 @@ class TaskRepository @Inject constructor(
     }
 
     override suspend fun deleteTask(task: TaskDomain) = withContext(Dispatchers.IO) {
-        // (Asegúrate de añadir 'deleteTask' al DAO si quieres que esto funcione)
-        // taskDao.deleteTask(task.toEntity())
+         taskDao.deleteTask(task.toEntity())
     }
 }

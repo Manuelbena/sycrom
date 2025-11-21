@@ -22,7 +22,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val getTaskTodayUseCase: GetTaskTodayUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
-
+    private val deleteTaskUseCase: DeleteTaskUseCase
     ) : ViewModel() {
 
     // --- ESTADO (StateFlow) ---
@@ -111,7 +111,7 @@ class HomeViewModel @Inject constructor(
             when (action) {
                 is TaskAdapter.TaskMenuAction.OnDelete -> {
                     try {
-
+                        deleteTaskUseCase(action.task)
                         _action.postValue(HomeAction.ShowErrorSnackbar("Tarea eliminada"))
                     } catch (e: Exception) {
                         _action.postValue(HomeAction.ShowErrorSnackbar(e.message ?: "Error al eliminar"))

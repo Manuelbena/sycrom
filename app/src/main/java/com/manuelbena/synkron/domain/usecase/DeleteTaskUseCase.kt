@@ -1,4 +1,17 @@
 package com.manuelbena.synkron.domain.usecase
 
-class DeleteTaskUseCase {
+import com.manuelbena.synkron.domain.interfaces.ITaskRepository
+import com.manuelbena.synkron.domain.models.TaskDomain
+import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
+import javax.inject.Inject
+
+class DeleteTaskUseCase @Inject constructor(
+    private val repository: ITaskRepository
+) {
+    // CAMBIO: Ya no es 'suspend' y acepta LocalDate
+    suspend operator fun invoke(task: TaskDomain) {
+        repository.deleteTask(task)
+    }
 }
+
