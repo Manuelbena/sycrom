@@ -39,6 +39,8 @@ data class TaskDomain(
     val isDeleted: Boolean = false,
     val isArchived: Boolean = false,
     val isPinned: Boolean = false,
+    val categoryIcon: String = "ic_label", // Icono por defecto
+    val categoryColor: String = "category_default",
 
     // --- Campos Mapeados 1:1 con Google Calendar ---
 

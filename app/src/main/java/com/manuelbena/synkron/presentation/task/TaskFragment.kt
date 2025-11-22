@@ -324,6 +324,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             priority = getSelectedPriority(),
             isActive = true,
             isDone = false
+
         )
 
         viewModel.onEvent(TaskContract.TaskEvent.OnSaveTask(taskToSave))

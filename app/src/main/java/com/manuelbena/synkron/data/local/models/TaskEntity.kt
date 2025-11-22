@@ -19,6 +19,8 @@ data class TaskEntity(
     val hour: Int,            // -> Mapea a/desde TaskDomain.start
     val timeZone: String,     // -> Mapea a/desde TaskDomain.start.timeZone
     val duration: Int,        // -> Se usa para calcular TaskDomain.end
+    val categoryIcon: String,  // Guardamos "ic_work"
+    val categoryColor: String, // Guardamos "category_work"
 
     // Campos de Texto (planos)
     val summary: String,      // -> Mapea a/desde TaskDomain.summary

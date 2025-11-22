@@ -47,6 +47,8 @@ fun TaskDomain.toEntity(): TaskEntity {
         location = this.location,
         colorId = this.colorId,
         typeTask = this.typeTask,
+        categoryIcon = this.categoryIcon,
+        categoryColor = this.categoryColor,
         priority = this.priority,
         attendeesEmails = attendeesEmails,
         recurrenceRule = recurrenceRule,

@@ -1,6 +1,7 @@
 package com.manuelbena.synkron.presentation.home.adapters
 
 import android.animation.Animator
+import android.content.Context
 import android.graphics.Paint
 import android.graphics.drawable.LayerDrawable
 import android.os.Build
@@ -99,11 +100,20 @@ class TaskAdapter(
         @RequiresApi(Build.VERSION_CODES.P)
         override fun bind(item: TaskDomain) {
             binding.apply {
+                val context = binding.root.context
 
                 // =============================================================
                 // 1. MAPEO DE DATOS (Igual que siempre)
                 // =============================================================
                 tvEventTitle.text = item.summary
+                val iconResId = context.getIconResId(item.categoryIcon)
+                val colorResId = context.getColorResId(item.categoryColor)
+
+                // 1. Configuramos el Icono
+                ivCategoryIcon.setImageResource(iconResId)
+
+                // 2. Configuramos el Fondo del Icono (Tint)
+                ivCategoryIcon.backgroundTintList = ContextCompat.getColorStateList(context, colorResId)
 
                 // Ubicación
                 if (item.location.isNullOrEmpty()) {
@@ -143,7 +153,7 @@ class TaskAdapter(
                 }
 
                 // Colores y Estilos
-                val context = binding.root.context
+
                 val priorityColorRes = when (item.priority) {
                     "Alta" -> R.color.priority_high
                     "Media" -> R.color.priority_medium
@@ -234,6 +244,16 @@ class TaskAdapter(
                 }
             }
         }
+    }
+    private fun Context.getIconResId(resName: String): Int {
+        val resId = resources.getIdentifier(resName, "drawable", packageName)
+        return if (resId != 0) resId else R.drawable.ic_label // Default si falla
+    }
+
+    private fun Context.getColorResId(resName: String): Int {
+        val resId = resources.getIdentifier(resName, "color", packageName)
+        // Ojo: R.color.priority_default debe existir, o usa otro color seguro como R.color.black
+        return if (resId != 0) resId else R.color.priority_default
     }
 
     sealed class TaskMenuAction {
