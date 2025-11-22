@@ -1,10 +1,11 @@
-package com.manuelbena.synkron.presentation.taskIA
+package com.manuelbena.synkron.presentation.task_ia
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.manuelbena.synkron.databinding.BottomSheetTaskIaBinding
@@ -27,22 +28,40 @@ class TaskIaBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupListeners()
+        setupObservers()
+    }
 
+    private fun setupListeners() {
         binding.btnSend.setOnClickListener {
             val text = binding.etInput.text.toString()
-            if (text.isNotEmpty()) {
+            if (text.isNotBlank()) {
                 viewModel.sendInput(text)
             }
         }
 
         binding.btnMic.setOnClickListener {
-            // TODO: Implementar SpeechRecognizer aquí
-            Toast.makeText(context, "Escuchando... (Próximamente)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Próximamente...", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun setupObservers() {
+        // Loading
+        viewModel.isLoading.observe(viewLifecycleOwner) { isLoading ->
+            binding.progressBar.isVisible = isLoading
+            binding.btnSend.isEnabled = !isLoading // Evitar doble click
+            binding.etInput.isEnabled = !isLoading
         }
 
+        // Éxito
         viewModel.onSuccess.observe(viewLifecycleOwner) {
-            Toast.makeText(context, "¡Recibido! Synkrón está procesando...", Toast.LENGTH_SHORT).show()
-            dismiss()
+            Toast.makeText(requireContext(), "¡Recibido! Synkrón está trabajando en ello.", Toast.LENGTH_LONG).show()
+            dismiss() // Cerramos el bottom sheet
+        }
+
+        // Error
+        viewModel.onError.observe(viewLifecycleOwner) { errorMessage ->
+            Toast.makeText(requireContext(), "Error: $errorMessage", Toast.LENGTH_SHORT).show()
         }
     }
 

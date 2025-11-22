@@ -31,4 +31,9 @@ interface ITaskRepository {
      * Elimina una tarea. (¡Añadido!)
      */
     suspend fun deleteTask(task: TaskDomain)
+
+    /**
+     * Promnt que se le pasa al n8n para que me de una tarea
+     */
+    suspend fun sendTaskToAi(message: String): Result<Boolean>
 }

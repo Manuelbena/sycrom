@@ -55,11 +55,17 @@ dependencies {
     implementation("androidx.room:room-ktx:$room_version") // Para usar Coroutines con Room
     ksp("androidx.room:room-compiler:$room_version") // Usamos ksp para el procesador de anotaciones
 
+    implementation(libs.retrofit)
+    implementation(libs.converter.moshi)
+    implementation(libs.moshi.kotlin)
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.hilt.work)
+    kapt(libs.androidx.hilt.compiler)
 
     // --- DEPENDENCIAS DE HILT ---
-    // 3. Añadir la librería principal de Hilt
     implementation("com.google.dagger:hilt-android:2.50")
-    // 4. Añadir el compilador de Hilt usando KAPT
     kapt("com.google.dagger:hilt-compiler:2.50")
 
 

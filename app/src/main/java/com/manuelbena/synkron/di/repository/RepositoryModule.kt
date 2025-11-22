@@ -20,9 +20,9 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindTaskRepository(
-        // --- ¡AQUÍ ESTÁ LA CORRECCIÓN! ---
-        taskRepository: TaskRepository // <-- Este es el nombre correcto de la clase
-        // --- FIN DE LA CORRECCIÓN ---
+        taskRepository: TaskRepository
     ): ITaskRepository
+
+
 }
 

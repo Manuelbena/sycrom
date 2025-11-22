@@ -1,11 +1,22 @@
 package com.manuelbena.synkron.data.repository
 
 
+import android.content.Context
+import androidx.work.BackoffPolicy
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.manuelbena.synkron.data.local.models.TaskDao
 import com.manuelbena.synkron.data.mappers.toDomain
 import com.manuelbena.synkron.data.mappers.toEntity
+import com.manuelbena.synkron.data.remote.n8n.IngestRequest
+import com.manuelbena.synkron.data.remote.n8n.N8nApi
+import com.manuelbena.synkron.data.worker.N8nIngestWorker
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import com.manuelbena.synkron.domain.models.TaskDomain
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -13,10 +24,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.ZoneId
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class TaskRepository @Inject constructor(
-    private val taskDao: TaskDao
+    private val taskDao: TaskDao,
+    @ApplicationContext private val context: Context,
+    private val api: N8nApi
 ) : ITaskRepository {
 
     /**
@@ -51,5 +66,23 @@ class TaskRepository @Inject constructor(
 
     override suspend fun deleteTask(task: TaskDomain) = withContext(Dispatchers.IO) {
          taskDao.deleteTask(task.toEntity())
+    }
+
+    override suspend fun sendTaskToAi(message: String): Result<Boolean> {
+        return try {
+            val request = IngestRequest(
+                idempotencyKey = UUID.randomUUID().toString(),
+                message = message
+            )
+            val response = api.sendEvent(request)
+
+            if (response.isSuccessful) {
+                Result.success(true)
+            } else {
+                Result.failure(Exception("Error: ${response.code()} ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

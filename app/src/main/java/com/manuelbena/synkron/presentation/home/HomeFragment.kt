@@ -31,7 +31,8 @@ import com.manuelbena.synkron.databinding.FragmentHomeBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
-import com.manuelbena.synkron.presentation.taskIA.TaskIaBottomSheet
+import com.manuelbena.synkron.presentation.task_ia.TaskIaBottomSheet
+
 import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
 import com.manuelbena.synkron.presentation.util.ADD_TASK
 import com.manuelbena.synkron.presentation.util.CarouselScrollListener
