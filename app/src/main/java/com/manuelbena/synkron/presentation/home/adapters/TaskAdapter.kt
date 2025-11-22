@@ -5,7 +5,7 @@ import android.content.Context
 import android.graphics.Paint
 import android.graphics.drawable.LayerDrawable
 import android.os.Build
-
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,16 +16,13 @@ import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.R as R_Material
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseViewHolder
 import com.manuelbena.synkron.databinding.ItemTaskTodayBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
-import android.util.TypedValue // ⬅️ IMPORTANTE
-import com.google.android.material.R as R_Material // ⬅️ IMPORTANTE
-
 import com.manuelbena.synkron.presentation.util.getDurationInMinutes
 import com.manuelbena.synkron.presentation.util.toDurationString
-
 import com.manuelbena.synkron.presentation.util.toHourString
 
 class TaskAdapter(
@@ -72,8 +69,6 @@ class TaskAdapter(
                     showPopupMenu(binding.btnTaskOptions, getItem(bindingAdapterPosition))
                 }
             }
-
-
         }
 
         private fun showPopupMenu(anchorView: View, task: TaskDomain) {
@@ -91,28 +86,20 @@ class TaskAdapter(
             popup.show()
         }
 
-        /**
-         * Rellena la vista con los datos del nuevo TaskDomain.
-         */
-
-
-
         @RequiresApi(Build.VERSION_CODES.P)
         override fun bind(item: TaskDomain) {
             binding.apply {
                 val context = binding.root.context
 
                 // =============================================================
-                // 1. MAPEO DE DATOS (Igual que siempre)
+                // 1. MAPEO DE DATOS
                 // =============================================================
                 tvEventTitle.text = item.summary
                 val iconResId = context.getIconResId(item.categoryIcon)
                 val colorResId = context.getColorResId(item.categoryColor)
 
-                // 1. Configuramos el Icono
+                // Icono y Tint
                 ivCategoryIcon.setImageResource(iconResId)
-
-                // 2. Configuramos el Fondo del Icono (Tint)
                 ivCategoryIcon.backgroundTintList = ContextCompat.getColorStateList(context, colorResId)
 
                 // Ubicación
@@ -152,8 +139,11 @@ class TaskAdapter(
                     textViewTaskDetailProgressText.visibility = View.INVISIBLE
                 }
 
-                // Colores y Estilos
+                // =============================================================
+                // 2. COLORES Y ESTADO VISUAL (Tick y Fondo Verde)
+                // =============================================================
 
+                // Color de prioridad (barra lateral)
                 val priorityColorRes = when (item.priority) {
                     "Alta" -> R.color.priority_high
                     "Media" -> R.color.priority_medium
@@ -161,63 +151,81 @@ class TaskAdapter(
                     else -> R.color.priority_default
                 }
                 val priorityColor = ContextCompat.getColor(context, priorityColorRes)
+
+                // Colores de fondo
                 val typedValue = TypedValue()
                 context.theme.resolveAttribute(R_Material.attr.colorSurfaceVariant, typedValue, true)
+                val defaultBackgroundColor = typedValue.data
+                // Usamos priority_low_bg (verde clarito) para las tareas completadas
+                val doneBackgroundColor = ContextCompat.getColor(context, R.color.md_theme_tertiaryContainer)
 
-                val layerDrawable = binding.clTask.background.mutate() as LayerDrawable
-                DrawableCompat.setTint(layerDrawable.findDrawableByLayerId(R.id.priority_bar_shape), priorityColor)
-                DrawableCompat.setTint(layerDrawable.findDrawableByLayerId(R.id.content_background_shape), typedValue.data)
+                /**
+                 * Función local para actualizar el aspecto visual sin lógica de negocio
+                 */
+                fun updateVisualState(isDone: Boolean) {
+                    val layerDrawable = binding.clTask.background.mutate() as LayerDrawable
+                    val bgShape = layerDrawable.findDrawableByLayerId(R.id.content_background_shape)
+                    val priorityShape = layerDrawable.findDrawableByLayerId(R.id.priority_bar_shape)
+
+                    // Tinte barra prioridad
+                    DrawableCompat.setTint(priorityShape, priorityColor)
+
+                    if (isDone) {
+
+                        DrawableCompat.setTint(bgShape, doneBackgroundColor)
+                        tvfinish.text = "Tarea Terminada"
+                        try {
+                            binding.ivDoneBackground.visibility = View.VISIBLE
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                        tvEventTitle.paintFlags = tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                    } else {
+
+                        DrawableCompat.setTint(bgShape, defaultBackgroundColor)
+                        try {
+                            binding.ivDoneBackground.visibility = View.GONE
+                        } catch (e: Exception) { }
+                        tvEventTitle.paintFlags = tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                    }
+                }
 
                 // =============================================================
-                // 2. CONFIGURACIÓN SEGURA DE ANIMACIÓN Y UI
+                // 3. CONFIGURACIÓN DE LISTENERS Y ANIMACIÓN
                 // =============================================================
 
-                // A) Limpieza TOTAL antes de configurar (Evita crashes por listeners antiguos)
+                // Limpieza previa
                 swTaskCompleted.setOnCheckedChangeListener(null)
                 lottieCelebration.removeAllAnimatorListeners()
-                lottieCelebration.cancelAnimation() // Detener cualquier cosa pendiente
+                lottieCelebration.cancelAnimation()
 
-                // B) Estado visual inicial (según base de datos)
+                // Estado inicial
                 swTaskCompleted.isChecked = item.isDone
                 lottieCelebration.visibility = View.GONE
 
-                // Tachado inicial
-                if (item.isDone) {
-                    tvEventTitle.paintFlags = tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-                } else {
-                    tvEventTitle.paintFlags = tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                }
+                // Aplicar estilo visual inicial
+                updateVisualState(item.isDone)
 
-                // C) LISTENER CON LÓGICA "PRIMERO UI, LUEGO DB"
-                swTaskCompleted.setOnCheckedChangeListener { buttonView, isChecked ->
+                // Listener del Switch
+                swTaskCompleted.setOnCheckedChangeListener { _, isChecked ->
 
-                    // 1. Modificaciones UI Inmediatas (Visuales)
-                    if (isChecked) {
-                        tvEventTitle.paintFlags = tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-                    } else {
-                        tvEventTitle.paintFlags = tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                    }
+                    // 1. Cambio visual inmediato
+                    updateVisualState(isChecked)
 
-                    // Usamos 'post' para evitar errores si el RecyclerView está calculando layout
                     binding.root.post {
                         if (isChecked) {
-                            // CASO: MARCAR COMO HECHO (Animación -> Luego Guardar)
-
-                            // Configurar Lottie
+                            // ANIMACIÓN CELEBRACIÓN -> GUARDAR
                             lottieCelebration.visibility = View.VISIBLE
                             lottieCelebration.speed = 1f
-                            lottieCelebration.repeatCount = 0 // Solo una vez
-                            lottieCelebration.progress = 0f   // Desde el inicio
+                            lottieCelebration.repeatCount = 0
+                            lottieCelebration.progress = 0f
 
                             lottieCelebration.removeAllAnimatorListeners()
                             lottieCelebration.addAnimatorListener(object : Animator.AnimatorListener {
                                 override fun onAnimationStart(animation: Animator) {}
-
-                                // AQUÍ ES DONDE GUARDAMOS: AL TERMINAR LA ANIMACIÓN
                                 override fun onAnimationEnd(animation: Animator) {
                                     try {
                                         lottieCelebration.visibility = View.GONE
-                                        // Solo guardamos si el usuario no cambió de opinión rápido
                                         if (swTaskCompleted.isChecked) {
                                             onTaskCheckedChange(item, true)
                                         }
@@ -225,17 +233,15 @@ class TaskAdapter(
                                         e.printStackTrace()
                                     }
                                 }
-
                                 override fun onAnimationCancel(animation: Animator) {
                                     lottieCelebration.visibility = View.GONE
                                 }
                                 override fun onAnimationRepeat(animation: Animator) {}
                             })
-
                             lottieCelebration.playAnimation()
 
                         } else {
-                            // CASO: DESMARCAR (Guardar Inmediatamente)
+                            // DESMARCAR -> GUARDAR INMEDIATO
                             lottieCelebration.cancelAnimation()
                             lottieCelebration.visibility = View.GONE
                             onTaskCheckedChange(item, false)
@@ -245,14 +251,15 @@ class TaskAdapter(
             }
         }
     }
+
+    // Extensiones Helper
     private fun Context.getIconResId(resName: String): Int {
         val resId = resources.getIdentifier(resName, "drawable", packageName)
-        return if (resId != 0) resId else R.drawable.ic_label // Default si falla
+        return if (resId != 0) resId else R.drawable.ic_label
     }
 
     private fun Context.getColorResId(resName: String): Int {
         val resId = resources.getIdentifier(resName, "color", packageName)
-        // Ojo: R.color.priority_default debe existir, o usa otro color seguro como R.color.black
         return if (resId != 0) resId else R.color.priority_default
     }
 

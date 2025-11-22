@@ -75,271 +75,177 @@
                             android:text="No planificado" />
 
                     </com.google.android.material.tabs.TabLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_margin="@dimen/txt_dimen_xl"
+                        android:layout_marginStart="@dimen/txt_dimen_xl"
+                        android:layout_marginEnd="@dimen/txt_dimen_xl"
                         android:orientation="vertical">
 
                         <include
                             android:id="@+id/layoutCategorySelect"
-                            layout="@layout/item_category_row_selector"/>
+                            layout="@layout/item_category_row_selector" />
 
                     </LinearLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/txt_dimen_xl"
+                        android:hint="Título de la tarea"
+                        app:startIconDrawable="@drawable/ic_edit">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/tiet_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textCapWords" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_description"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/txt_dimen_xl"
+                        android:layout_marginTop="16dp"
+                        android:hint="Descripción detallada"
+                        app:startIconDrawable="@drawable/ic_info">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/tiet_description"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="top"
+                            android:inputType="textMultiLine"
+                            android:minLines="3" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_location"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/txt_dimen_xl"
+                        android:hint="Localizacion"
+                        app:startIconDrawable="@drawable/ic_location">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/tiet_location"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="textCapWords" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_sub_task"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/txt_dimen_xl"
+                        android:layout_marginTop="8dp"
+                        android:hint="Nueva subtarea"
+                        app:endIconMode="clear_text">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/tiet_sub_task"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAddSubTask"
+                        style="@style/Widget.Material3.Button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:layout_margin="@dimen/txt_dimen_xl"
+                        android:text="Agregar subtarea"
+                        android:textColor="@color/ivory"
+                        app:icon="@drawable/ic_add" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvSubtareas"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/txt_dimen_xl"
+                        android:clipToPadding="false"
+                        tools:listitem="@layout/item_subtask_new" />
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
                         android:layout_margin="@dimen/txt_dimen_xl"
                         android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Tareas programadas"
-                            android:textColor="@color/background_primary"
-                            android:textSize="@dimen/txt_dimen_xxl"
-                            android:textStyle="bold"
-                            tools:ignore="SpUsage" />
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/til_title"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Título de la tarea"
-                            app:startIconDrawable="@drawable/ic_edit">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/tiet_title"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="textCapWords" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/til_description"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
-                            android:hint="Descripción detallada"
-                            app:startIconDrawable="@drawable/ic_info">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/tiet_description"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="top"
-                                android:inputType="textMultiLine"
-                                android:minLines="3" />
-                        </com.google.android.material.textfield.TextInputLayout>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="@dimen/txt_dimen_xl"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Ubicacion"
-                            android:textColor="@color/background_primary"
-                            android:textSize="@dimen/txt_dimen_xxl"
-                            android:textStyle="bold"
-                            tools:ignore="SpUsage" />
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/til_location"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Localizacion"
-                            app:startIconDrawable="@drawable/ic_location">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/tiet_location"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="textCapWords" />
-                        </com.google.android.material.textfield.TextInputLayout>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="@dimen/txt_dimen_xl"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Subtarea"
-                            android:textColor="@color/background_primary"
-                            android:textSize="@dimen/txt_dimen_xxl"
-                            android:textStyle="bold"
-                            tools:ignore="SpUsage" />
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/til_sub_task"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:hint="Nueva subtarea"
-                            app:endIconMode="clear_text">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/tiet_sub_task"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content" />
-                        </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnAddSubTask"
+                            android:id="@+id/btnFecha"
                             style="@style/Widget.Material3.Button"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="start"
-                            android:layout_marginTop="8dp"
-                            android:text="Agregar subtarea"
+                            android:layout_height="0dp"
+                            android:layout_weight="1"
+                            android:text="Fecha"
                             android:textColor="@color/ivory"
-                            app:icon="@drawable/ic_add" />
-
-                        <androidx.recyclerview.widget.RecyclerView
-                            android:id="@+id/rvSubtareas"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:clipToPadding="false"
-                            tools:listitem="@layout/item_subtask_new" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="@dimen/txt_dimen_xl"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Duracion"
-                            android:textColor="@color/background_primary"
-                            android:textSize="@dimen/txt_dimen_xxl"
-                            android:textStyle="bold"
-                            tools:ignore="SpUsage" />
-
-                        <com.google.android.material.chip.ChipGroup
-                            android:id="@+id/chip_group_duration"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            app:singleSelection="true">
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chip_15_min"
-                                style="@style/Widget.Material3.Chip.Filter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="15 Minitos" />
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chip_30_min"
-                                style="@style/Widget.Material3.Chip.Filter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="30 Minitos" />
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chip_60_min"
-                                style="@style/Widget.Material3.Chip.Filter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="45 Minitos" />
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chip_1_hour"
-                                style="@style/Widget.Material3.Chip.Filter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="1 Hora" />
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chip_5_hour"
-                                style="@style/Widget.Material3.Chip.Filter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="5 Hora" />
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chip_8_hour"
-                                style="@style/Widget.Material3.Chip.Filter"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="8 Hora" />
-                        </com.google.android.material.chip.ChipGroup>
-
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnDuracion"
-                            style="@style/Widget.Material3.Button"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
-                            android:layout_weight="1"
-                            android:text="Duracion"
-                            android:textColor="@color/ivory"
-                            app:icon="@drawable/ic_plus" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="@dimen/txt_dimen_xl"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Fecha y hora"
-                            android:textColor="@color/background_primary"
-                            android:textSize="@dimen/txt_dimen_xxl"
-                            android:textStyle="bold"
-                            tools:ignore="SpUsage" />
+                            app:icon="@drawable/ic_calendar_today" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center_horizontal"
-                            android:layout_marginTop="16dp"
-                            android:orientation="horizontal">
+                            android:layout_height="wrap_content">
 
                             <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnFecha"
+                                android:id="@+id/btnHoraStart"
                                 style="@style/Widget.Material3.Button"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_marginEnd="4dp"
                                 android:layout_weight="1"
-                                android:text="Fecha"
+                                android:text="Hora Inicio"
                                 android:textColor="@color/ivory"
-                                app:icon="@drawable/ic_calendar_today" />
+                                app:icon="@drawable/ic_access_time" />
 
                             <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnHora"
+                                android:id="@+id/btnHoraEnd"
                                 style="@style/Widget.Material3.Button"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="4dp"
                                 android:layout_weight="1"
-                                android:text="Hora"
+                                android:text="Hora Fin"
                                 android:textColor="@color/ivory"
                                 app:icon="@drawable/ic_access_time" />
                         </LinearLayout>
+
                     </LinearLayout>
+
+                    <com.google.android.material.divider.MaterialDivider
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
 
                     <LinearLayout
                         android:layout_width="match_parent"

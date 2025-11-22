@@ -81,7 +81,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
     private fun setupDefaultDateTime() {
         startCalendar = Calendar.getInstance()
         updateDateButtonText()
-        updateTimeButtonText()
+
     }
 
     private fun setupSubtaskManager() {
@@ -139,17 +139,11 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         super.setListener()
         binding.apply {
             // Pickers
-            btnHora.setOnClickListener { showTimePicker() }
+            btnHoraStart.setOnClickListener { showTimePicker() }
+            btnHoraEnd.setOnClickListener { showTimePicker() }
             btnFecha.setOnClickListener { showDatePicker() }
-            btnDuracion.setOnClickListener { showDurationInputDialog() }
 
-            // Resetear duración manual si selecciona un Chip
-            chipGroupDuration.setOnCheckedStateChangeListener { _, checkedIds ->
-                if (checkedIds.isNotEmpty()) {
-                    btnDuracion.text = getString(R.string.duration_button_default)
-                    selectedDurationInMinutes = 0
-                }
-            }
+
 
             // Subtareas
             btnAddSubTask.setOnClickListener { addSubtask() }
@@ -208,54 +202,12 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         timePicker.addOnPositiveButtonClickListener {
             startCalendar.set(Calendar.HOUR_OF_DAY, timePicker.hour)
             startCalendar.set(Calendar.MINUTE, timePicker.minute)
-            updateTimeButtonText()
+
         }
         timePicker.show(childFragmentManager, "TIME_PICKER")
     }
 
-    private fun showDurationInputDialog() {
-        binding.chipGroupDuration.clearCheck()
-        val context = requireContext()
 
-        // Construcción manual del layout del diálogo
-        val container = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            val padding = (20 * resources.displayMetrics.density).toInt()
-            setPadding(padding, 0, padding, 0)
-        }
-        val textInputLayout = TextInputLayout(context)
-        val editText = TextInputEditText(context).apply {
-            inputType = InputType.TYPE_CLASS_NUMBER
-            hint = "Valor"
-        }
-        textInputLayout.addView(editText)
-        container.addView(textInputLayout)
-
-        val radioGroup = RadioGroup(context).apply { orientation = RadioGroup.HORIZONTAL }
-        val radioMinutos = RadioButton(context).apply { text = "Minutos"; id = View.generateViewId(); isChecked = true }
-        val radioHoras = RadioButton(context).apply { text = "Horas"; id = View.generateViewId() }
-        radioGroup.addView(radioMinutos)
-        radioGroup.addView(radioHoras)
-        container.addView(radioGroup)
-
-        MaterialAlertDialogBuilder(context)
-            .setTitle("Ingresar Duración")
-            .setView(container)
-            .setNegativeButton("Cancelar", null)
-            .setPositiveButton("Aceptar") { _, _ ->
-                val input = editText.text.toString()
-                if (input.isNotEmpty()) {
-                    try {
-                        val value = input.toInt()
-                        selectedDurationInMinutes = if (radioGroup.checkedRadioButtonId == radioHoras.id) value * 60 else value
-                        binding.btnDuracion.text = "Duración: $selectedDurationInMinutes min"
-                    } catch (e: NumberFormatException) {
-                        Toast.makeText(context, "Número inválido", Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-            .show()
-    }
 
     private fun addSubtask() {
         val text = binding.tietSubTask.text.toString().trim()
@@ -286,7 +238,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         val location = binding.tietLocation.text.toString().trim()
 
         // 2. Obtener Fechas y Duración
-        val duration = getDurationInMinutes()
+        val duration = 0
         val startDateTime = startCalendar.toGoogleEventDateTime()
         val endCalendar = (startCalendar.clone() as Calendar).apply { add(Calendar.MINUTE, duration) }
         val endDateTime = endCalendar.toGoogleEventDateTime()
@@ -349,30 +301,6 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         binding.btnFecha.text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(startCalendar.time)
     }
 
-    private fun updateTimeButtonText() {
-        binding.btnHora.text = String.format(
-            Locale.getDefault(), "%02d:%02d",
-            startCalendar.get(Calendar.HOUR_OF_DAY),
-            startCalendar.get(Calendar.MINUTE)
-        )
-    }
-
-    private fun getDurationInMinutes(): Int {
-        val checkedId = binding.chipGroupDuration.checkedChipId
-        return if (checkedId != View.NO_ID) {
-            when (checkedId) {
-                R.id.chip_15_min -> 15
-                R.id.chip_30_min -> 30
-                R.id.chip_60_min -> 45
-                R.id.chip_1_hour -> 60
-                R.id.chip_5_hour -> 300
-                R.id.chip_8_hour -> 480
-                else -> 0
-            }
-        } else {
-            selectedDurationInMinutes
-        }
-    }
 
     private fun getSelectedPriority(): String {
         return when {
