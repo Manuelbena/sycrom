@@ -10,11 +10,11 @@
     <color name="md_theme_secondary">#022B3A</color>
     <color name="md_theme_onSecondary">#FFFFFF</color>
     <color name="md_theme_secondaryContainer">#FFFFFF</color>
-    <color name="md_theme_onSecondaryContainer">#241A00</color>
+    <color name="md_theme_onSecondaryContainer">#FBEDD4</color>
 
     <color name="md_theme_tertiary">#006C4C</color>
     <color name="md_theme_onTertiary">#FFFFFF</color>
-    <color name="md_theme_tertiaryContainer">#ECFFE9</color>
+    <color name="md_theme_tertiaryContainer">#F4FFF2</color>
     <color name="md_theme_onTertiaryContainer">#002114</color>
 
     <color name="md_theme_error">#BA1A1A</color>
