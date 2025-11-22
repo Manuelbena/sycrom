@@ -5,3 +5,5 @@ const val ADD_TASK = "addTask"
 const val ADD_MONEY = "addMoney"
 
 const val EDIT_TASK = "EDIT_TASK"
+
+const val TASK_IA = "TASK_IA"

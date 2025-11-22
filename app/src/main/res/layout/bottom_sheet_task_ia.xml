@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/background_primary"
+    android:padding="24dp">
+
+    <View
+        android:id="@+id/drag_handle"
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:background="@drawable/ic_drag_handle"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Synkrón AI"
+        android:fontFamily="@font/inter"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/drag_handle" />
+
+    <TextView
+        android:id="@+id/tvDescriptionIa"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="¿Qué tienes en mente? Cuéntame tus tareas o gastos..."
+        android:fontFamily="@font/inter"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textSize="14sp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <EditText
+        android:id="@+id/etInput"
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:layout_marginTop="24dp"
+        android:background="?attr/colorSurfaceVariant"
+        android:backgroundTint="?attr/colorSurfaceVariant"
+        android:hint="Ej: Recordar llamar a Sergio mañana a las 5..."
+        android:textColorHint="#606060"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:gravity="top|start"
+        android:padding="16dp"
+        android:fontFamily="@font/inter"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvDescriptionIa" />
+
+    <ImageView
+        android:id="@+id/btnMic"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:src="@drawable/ic_mic"
+        android:background="@drawable/shape_circle_background"
+        android:backgroundTint="?attr/colorOnSurfaceVariant"
+        android:padding="12dp"
+        app:tint="@color/white"
+        app:layout_constraintTop_toBottomOf="@id/etInput"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Procesar con IA"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:backgroundTint="?attr/colorSurfaceVariant"
+        app:cornerRadius="20dp"
+
+        app:iconTint="?attr/colorOnSurfaceVariant"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btnMic"
+        app:layout_constraintBottom_toBottomOf="@id/btnMic"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

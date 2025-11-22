@@ -31,6 +31,7 @@ import com.manuelbena.synkron.databinding.FragmentHomeBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
+import com.manuelbena.synkron.presentation.taskIA.TaskIaBottomSheet
 import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
 import com.manuelbena.synkron.presentation.util.ADD_TASK
 import com.manuelbena.synkron.presentation.util.CarouselScrollListener
@@ -223,7 +224,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
             tvFabAddSuggestion.setOnClickListener {
                 closeFabMenu()
-                // Lógica futura
+               showAiButton()
             }
             tvFabAddGasto.setOnClickListener {
                 closeFabMenu()
@@ -231,7 +232,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             }
             tvFabAddIng.setOnClickListener {
                 closeFabMenu()
-                // Lógica futura
+                showAiButton()
             }
         }
     }
@@ -381,6 +382,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         taskDetailBottomSheet?.dismiss()
         taskDetailBottomSheet = TaskDetailBottomSheet.newInstance(task)
         taskDetailBottomSheet?.show(childFragmentManager, TaskDetailBottomSheet.TAG)
+    }
+
+    // Nueva función para configurar el botón
+    private fun showAiButton() {
+
+            val bottomSheet = TaskIaBottomSheet()
+            bottomSheet.show(childFragmentManager, "TaskIaBottomSheet")
+
     }
 
     private fun shareTask(task: TaskDomain) {
