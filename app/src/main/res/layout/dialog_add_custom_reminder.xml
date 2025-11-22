@@ -1,116 +1,224 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+    app:cardBackgroundColor="#1E1E1E"
     app:cardCornerRadius="28dp"
     app:cardElevation="8dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:padding="24dp">
 
         <TextView
+            android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Nuevo recordatorio"
-            android:textAppearance="?attr/textAppearanceTitleLarge"
-            android:layout_marginBottom="16dp"/>
+            android:text="Nuevo Recordatorio"
+            android:textColor="@android:color/white"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvTimeSelector"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_marginTop="16dp"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:text="09:00"
+            android:textColor="?attr/colorOnSecondary"
+            android:textSize="64sp"
+            android:fontFamily="sans-serif-light"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle" />
 
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        <TextView
+            android:id="@+id/tvHintTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Toca para cambiar la hora"
+            android:textColor="?attr/colorOnSecondary"
+            android:textSize="12sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTimeSelector" />
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggleGroupType"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvHintTime"
+            app:singleSelection="true"
+            app:selectionRequired="true"
+            app:checkedButton="@id/btnTypeNotification">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTypeEmail"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginEnd="8dp">
+                android:text="Email"
+                android:textColor="@color/selector_tab_text"
+                app:icon="@drawable/ic_note"
+                app:iconTint="@color/selector_tab_text"
+                app:backgroundTint="@color/selector_tab_background"
+                app:strokeColor="?attr/colorOnSecondary"
+                app:strokeWidth="1dp"/>
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etAmount"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="number"
-                    android:text="10"
-                    android:gravity="center"/>
-            </com.google.android.material.textfield.TextInputLayout>
-
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTypeNotification"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="2">
+                android:layout_weight="1"
+                android:text="Notif."
+                android:textColor="@color/selector_tab_text"
+                app:icon="@drawable/ic_notifications"
+                app:iconTint="@color/selector_tab_text"
+                app:backgroundTint="@color/selector_tab_background"
+                app:strokeColor="?attr/colorOnSecondary"
+                app:strokeWidth="1dp"/>
 
-                <AutoCompleteTextView
-                    android:id="@+id/actvUnit"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none"
-                    android:text="minutos"
-                    app:simpleItems="@array/reminder_units" />
-            </com.google.android.material.textfield.TextInputLayout>
-        </LinearLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Método de aviso"
-            android:textSize="14sp"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:layout_marginBottom="8dp"/>
-
-        <com.google.android.material.chip.ChipGroup
-            android:id="@+id/chipGroupMethod"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:singleSelection="true"
-            app:selectionRequired="true">
-
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipNotification"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnTypeAlarm"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:checked="true"
-                android:text="Notificación"
-                app:chipIcon="@drawable/ic_notifications_black_24dp"/>
+                android:layout_weight="1"
+                android:text="Alarma"
+                android:textColor="@color/selector_tab_text"
+                app:icon="@drawable/ic_clock"
+                app:iconTint="@color/selector_tab_text"
+                app:backgroundTint="@color/selector_tab_background"
+                app:strokeColor="?attr/colorOnSecondary"
+                app:strokeWidth="1dp"/>
+        </com.google.android.material.button.MaterialButtonToggleGroup>
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipEmail"
-                style="@style/Widget.Material3.Chip.Filter"
-                android:layout_width="wrap_content"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilCustomMessage"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:hint="Mensaje del recordatorio"
+            android:textColorHint="#A0A0A0"
+            app:boxStrokeColor="@android:color/white"
+            app:boxStrokeWidth="1dp"
+            app:boxStrokeWidthFocused="2dp"
+            app:hintTextColor="@android:color/white"
+            app:layout_constraintTop_toBottomOf="@id/toggleGroupType"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etCustomMessage"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Correo electrónico" />
-        </com.google.android.material.chip.ChipGroup>
+                android:textColor="@android:color/white"
+                android:inputType="textCapSentences" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
+            android:id="@+id/containerChecks"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="end"
-            android:layout_marginTop="24dp">
+            android:layout_marginTop="16dp"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@id/tilCustomMessage">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCancelAdd"
-                style="@style/Widget.Material3.Button.TextButton"
-                android:layout_width="wrap_content"
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/cbWeekDays"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Cancelar"/>
+                android:text="Repetir días de la semana"
+                android:textColor="#E0E0E0"
+                app:buttonTint="@android:color/white"/>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnConfirmAdd"
-                style="@style/Widget.Material3.Button"
-                android:layout_width="wrap_content"
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/toggleWeekDays"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Hecho"/>
+                android:visibility="gone"
+                app:singleSelection="false">
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnMon" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="L" android:textColor="@android:color/white" app:strokeColor="#505050" android:insetLeft="0dp" android:insetRight="0dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnTue" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="M" android:textColor="@android:color/white" app:strokeColor="#505050" android:insetLeft="0dp" android:insetRight="0dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnWed" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="X" android:textColor="@android:color/white" app:strokeColor="#505050" android:insetLeft="0dp" android:insetRight="0dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnThu" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="J" android:textColor="@android:color/white" app:strokeColor="#505050" android:insetLeft="0dp" android:insetRight="0dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnFri" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="V" android:textColor="@android:color/white" app:strokeColor="#505050" android:insetLeft="0dp" android:insetRight="0dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnSat" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="S" android:textColor="@android:color/white" app:strokeColor="#505050" android:insetLeft="0dp" android:insetRight="0dp"/>
+                <com.google.android.material.button.MaterialButton android:id="@+id/btnSun" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="D" android:textColor="@android:color/white" app:strokeColor="#505050" android:insetLeft="0dp" android:insetRight="0dp"/>
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/cbDaysBefore"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Recordar días antes"
+                android:textColor="#E0E0E0"
+                app:buttonTint="@android:color/white"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilDaysBefore"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:hint="¿Cuántos días?"
+                android:textColorHint="#A0A0A0"
+                app:boxStrokeColor="@android:color/white"
+                app:hintTextColor="@android:color/white"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etDaysBefore"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/white"
+                    android:inputType="number" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/cbAlwaysActive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Siempre activo"
+                android:textColor="#E0E0E0"
+                app:buttonTint="@android:color/white"/>
+
         </LinearLayout>
-    </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Guardar"
+            android:textColor="@android:color/black"
+            app:backgroundTint="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/containerChecks" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancel"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="12dp"
+            android:text="Cancelar"
+            android:textColor="#FF5252"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnSave"
+            app:layout_constraintTop_toBottomOf="@id/containerChecks" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

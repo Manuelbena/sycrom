@@ -15,19 +15,17 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.manuelbena.synkron.R // Asegúrate de que este import sea correcto
+
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentNewTaskBinding
 import com.manuelbena.synkron.domain.models.*
 import com.manuelbena.synkron.presentation.dialogs.AddReminderDialog
 import com.manuelbena.synkron.presentation.dialogs.CategorySelectionDialog
-import com.manuelbena.synkron.presentation.dialogs.ReminderManagerDialog
-import com.manuelbena.synkron.presentation.dialogs.ReminderSelectionDialog
 import com.manuelbena.synkron.presentation.dialogs.adapter.ReminderManagerAdapter
 import com.manuelbena.synkron.presentation.models.CategoryType
 import com.manuelbena.synkron.presentation.models.ReminderItem
 import com.manuelbena.synkron.presentation.models.ReminderMethod
 import com.manuelbena.synkron.presentation.models.ReminderSelection
-import com.manuelbena.synkron.presentation.models.ReminderType
 import com.manuelbena.synkron.presentation.task.adapters.SubtaskTouchHelperCallback
 import com.manuelbena.synkron.presentation.task.adapters.TaskCreationSubtaskAdapter
 import com.manuelbena.synkron.presentation.util.toGoogleEventDateTime
@@ -233,19 +231,21 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
             layoutnotifications.root.setOnClickListener {
 
-                // CORRECCIÓN: Usamos 'AddReminderDialog' (el de crear) en lugar de 'ReminderManagerDialog' (el de listar).
-                // No le pasamos 'currentReminder' porque es un recordatorio nuevo desde cero.
+                val dialog = AddReminderDialog(startCalendar) { reminder ->
 
-                val dialog = AddReminderDialog { newReminder ->
+                    // 1. Guardamos el recordatorio en tu lista lógica
+                    // (Asegúrate de tener: private val remindersList = mutableListOf<ReminderItem>())
+                    remindersList.add(reminder)
 
-                    // 1. Añadir el nuevo recordatorio a tu lista local
-                    remindersList.add(newReminder)
+                    // 2. PINTAMOS LA UI "AQUÍ" (Lo que pediste)
+                    // Actualizamos el texto del botón o creamos un Chip visual
+                    binding.tvReminderInfo.text = "${reminder.displayTime} - ${reminder.message}"
 
-                    // 2. (Opcional) Ordenar por tiempo (minutos)
-                    remindersList.sortBy { it.minutes }
+                    // Opcional: Cambiar icono o color para indicar que ya hay uno puesto
+                    binding.tvReminderInfo.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_notifications_active, 0, 0, 0)
 
-                    // 3. Actualizar la UI
-                    updateReminderUI()
+                    // Si usas un contenedor oculto, hazlo visible:
+                    binding.tvReminderInfo.isVisible = true
                 }
 
                 dialog.show(parentFragmentManager, AddReminderDialog.TAG)

@@ -1,166 +1,218 @@
 package com.manuelbena.synkron.presentation.dialogs
 
-import android.annotation.SuppressLint
-import android.content.Context
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
+import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
-import android.view.inputmethod.InputMethodManager
-import android.widget.ArrayAdapter
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.TimeFormat
 import com.manuelbena.synkron.R
-import com.manuelbena.synkron.databinding.DialogAddNewReminderBinding
+import com.manuelbena.synkron.databinding.DialogAddCustomReminderBinding
 import com.manuelbena.synkron.presentation.models.ReminderItem
 import com.manuelbena.synkron.presentation.models.ReminderMethod
+import java.util.Calendar
+import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 class AddReminderDialog(
-    private val onReminderCreated: (ReminderItem) -> Unit
+    private val taskDueDate: Calendar?,
+    private val onReminderAdded: (ReminderItem) -> Unit
 ) : DialogFragment() {
 
-    private var _binding: DialogAddNewReminderBinding? = null
+    private var _binding: DialogAddCustomReminderBinding? = null
     private val binding get() = _binding!!
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = DialogAddNewReminderBinding.inflate(inflater, container, false)
-        return binding.root
+    // Hora seleccionada por defecto
+    private var selectedHour = 9
+    private var selectedMinute = 0
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState)
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        return dialog
     }
 
-    override fun onStart() {
-        super.onStart()
-        dialog?.window?.apply {
-            setLayout((resources.displayMetrics.widthPixels * 0.90).toInt(), WindowManager.LayoutParams.WRAP_CONTENT)
-            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-        }
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
+        _binding = DialogAddCustomReminderBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupUI()
         setupListeners()
-        setupCustomDropdown()
     }
 
-    private fun setupCustomDropdown() {
-        val defaultUnits = arrayOf("minutos", "horas", "días")
-        val units = try {
-            resources.getStringArray(R.array.reminder_units)
-        } catch (e: Exception) { defaultUnits }
+    private fun setupUI() {
+        updateTimeView()
 
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, units)
-        binding.actvCustomUnit.setAdapter(adapter)
-        // Seleccionamos el primero por defecto pero SIN filtrar (false)
-        binding.actvCustomUnit.setText(units[0], false)
+        // --- LÓGICA POR DEFECTO ---
+        // Marcamos "Siempre activo" al iniciar
+        binding.cbAlwaysActive.isChecked = true
+        binding.cbWeekDays.isChecked = false
+        binding.cbDaysBefore.isChecked = false
+
+        // Ocultamos las vistas dependientes
+        binding.toggleWeekDays.isVisible = false
+        binding.tilDaysBefore.isVisible = false
     }
 
-    // --- ESCONDER TECLADO ---
-    private fun hideKeyboard() {
-        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        // Usamos el token de la ventana actual para asegurar que se cierre
-        binding.etCustomAmount.clearFocus()
-        view?.windowToken?.let { token ->
-            imm.hideSoftInputFromWindow(token, 0)
-        }
-    }
-
-    private fun showDropdownUpwards() {
-        val spinner = binding.actvCustomUnit
-        val adapter = spinner.adapter ?: return
-
-        // 1. Calculamos la altura total de la lista
-        var totalHeight = 0
-        val widthMeasureSpec = View.MeasureSpec.makeMeasureSpec(spinner.width, View.MeasureSpec.AT_MOST)
-        val heightMeasureSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-
-        for (i in 0 until adapter.count) {
-            // CORRECCIÓN AQUÍ: Usamos 'spinner.parent' (TextInputLayout) y lo casteamos a ViewGroup
-            val parentView = spinner.parent as ViewGroup
-            val itemView = adapter.getView(i, null, parentView)
-
-            itemView.measure(widthMeasureSpec, heightMeasureSpec)
-            totalHeight += itemView.measuredHeight
-        }
-
-        // Añadimos un pequeño margen de seguridad (padding del popup)
-        val verticalPadding = 32 // un poco más de margen
-
-        // 2. Movemos el inicio de la lista hacia arriba
-        // (Altura del campo de texto + Altura de la lista + padding)
-        spinner.dropDownVerticalOffset = -(spinner.height + totalHeight + verticalPadding)
-
-        // 3. Mostramos la lista
-        spinner.showDropDown()
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
     private fun setupListeners() {
-        binding.root.setOnClickListener { hideKeyboard() }
+        binding.apply {
+            // 1. Selector de Hora
+            tvTimeSelector.setOnClickListener { showTimePicker() }
 
-        binding.rgTimeOptions.setOnCheckedChangeListener { _, checkedId ->
-            hideKeyboard()
-            binding.layoutCustomInput.isVisible = (checkedId == R.id.rbCustom)
-        }
+            // 2. LÓGICA DE CHECKBOX EXCLUYENTES (Como RadioButtons)
 
-        // LISTENER MODIFICADO: Cierra teclado y fuerza lista HACIA ARRIBA
-        binding.actvCustomUnit.setOnTouchListener { _, event ->
-            if (event.action == android.view.MotionEvent.ACTION_UP) {
-                hideKeyboard()
-                showDropdownUpwards() // <--- Usamos nuestra nueva función
-            }
-            // Devolvemos true para indicar que hemos consumido el evento y evitar el comportamiento por defecto (que abre hacia abajo)
-            true
-        }
+            // A) Opción: Repetir días de la semana
+            cbWeekDays.setOnClickListener {
+                if (cbWeekDays.isChecked) {
+                    // Si se activa, desactivamos los otros dos
+                    cbDaysBefore.isChecked = false
+                    cbAlwaysActive.isChecked = false
 
-        binding.btnCancel.setOnClickListener {
-            hideKeyboard()
-            dismiss()
-        }
-
-        binding.btnSave.setOnClickListener {
-            hideKeyboard()
-            val minutes = getSelectedMinutes()
-            if (minutes != null) {
-                val method = when (binding.tabLayoutType.selectedTabPosition) {
-                    0 -> ReminderMethod.POPUP
-                    1 -> ReminderMethod.EMAIL
-                    2 -> ReminderMethod.ALARM
-                    else -> ReminderMethod.POPUP
+                    // Mostramos su contenido
+                    toggleWeekDays.isVisible = true
+                    tilDaysBefore.isVisible = false
+                } else {
+                    // Si el usuario lo desmarca manualmente y no hay otro activo, volvemos al default
+                    if (!cbDaysBefore.isChecked && !cbAlwaysActive.isChecked) {
+                        cbAlwaysActive.isChecked = true
+                        toggleWeekDays.isVisible = false
+                    }
                 }
-                val newItem = ReminderItem(minutes = minutes, method = method)
-                onReminderCreated(newItem)
-                dismiss()
+            }
+
+            // B) Opción: Recordar días antes
+            cbDaysBefore.setOnClickListener {
+                if (cbDaysBefore.isChecked) {
+                    // Desactivamos los otros
+                    cbWeekDays.isChecked = false
+                    cbAlwaysActive.isChecked = false
+
+                    // UI visual
+                    tilDaysBefore.isVisible = true
+                    toggleWeekDays.isVisible = false
+                    etDaysBefore.requestFocus()
+                } else {
+                    // Si intenta quedarse vacío, forzamos el default
+                    if (!cbWeekDays.isChecked && !cbAlwaysActive.isChecked) {
+                        cbAlwaysActive.isChecked = true
+                        tilDaysBefore.isVisible = false
+                    }
+                }
+            }
+
+            // C) Opción: Siempre activo (Default)
+            cbAlwaysActive.setOnClickListener {
+                if (cbAlwaysActive.isChecked) {
+                    // Desactivamos los otros
+                    cbWeekDays.isChecked = false
+                    cbDaysBefore.isChecked = false
+
+                    // Ocultamos todo
+                    toggleWeekDays.isVisible = false
+                    tilDaysBefore.isVisible = false
+                } else {
+                    // No permitimos desmarcar este si es el único activo
+                    // (Efecto RadioButton obligatorio)
+                    if (!cbWeekDays.isChecked && !cbDaysBefore.isChecked) {
+                        cbAlwaysActive.isChecked = true
+                    }
+                }
+            }
+
+            // 3. Guardar y Cancelar
+            btnCancel.setOnClickListener { dismiss() }
+
+            btnSave.setOnClickListener {
+                if (validateInput()) {
+                    val reminder = buildReminder()
+                    onReminderAdded(reminder)
+                    dismiss()
+                }
             }
         }
     }
 
-    private fun getSelectedMinutes(): Int? {
-        return when (binding.rgTimeOptions.checkedRadioButtonId) {
+    private fun showTimePicker() {
+        val picker = MaterialTimePicker.Builder()
+            .setTimeFormat(TimeFormat.CLOCK_24H)
+            .setHour(selectedHour)
+            .setMinute(selectedMinute)
+            .setTitleText("Hora del aviso")
+            .build()
 
-            R.id.rb15Min -> 15
-            R.id.rb30Min -> 30
-            R.id.rb1Hour -> 60
-            R.id.rb1Day -> 1440
-            R.id.rbCustom -> {
-                val amountStr = binding.etCustomAmount.text.toString()
-                if (amountStr.isEmpty()) {
-                    binding.etCustomAmount.error = "Requerido"
-                    return null
-                }
-                val amount = amountStr.toIntOrNull() ?: 0
-                val unit = binding.actvCustomUnit.text.toString()
-
-                when {
-                    unit.contains("hora") -> amount * 60
-                    unit.contains("día") -> amount * 1440
-                    unit.contains("semana") -> amount * 10080
-                    else -> amount
-                }
-            }
-            else -> 10
+        picker.addOnPositiveButtonClickListener {
+            selectedHour = picker.hour
+            selectedMinute = picker.minute
+            updateTimeView()
         }
+        picker.show(parentFragmentManager, "timePicker")
+    }
+
+    private fun updateTimeView() {
+        binding.tvTimeSelector.text = String.format("%02d:%02d", selectedHour, selectedMinute)
+    }
+
+    private fun validateInput(): Boolean {
+        // Solo validamos el input de días si ese checkbox está activo
+        if (binding.cbDaysBefore.isChecked && binding.etDaysBefore.text.isNullOrEmpty()) {
+            binding.tilDaysBefore.error = "Indica los días"
+            return false
+        }
+        binding.tilDaysBefore.error = null
+        return true
+    }
+
+    private fun buildReminder(): ReminderItem {
+
+        val method = when (binding.toggleGroupType.checkedButtonId) {
+            R.id.btnTypeEmail -> ReminderMethod.EMAIL
+            R.id.btnTypeAlarm -> ReminderMethod.ALARM
+            else -> ReminderMethod.POPUP
+        }
+
+        // 2. Minutos (Lógica matemática)
+        val minutesOffset = calculateMinutesOffset()
+
+        // 3. Textos para la UI (NUEVO)
+        val timeText = String.format("%02d:%02d", selectedHour, selectedMinute)
+        val messageText = binding.etCustomMessage.text.toString().ifEmpty { "Recordatorio" }
+
+        return ReminderItem(
+            minutes = minutesOffset,
+            method = method,
+            displayTime = timeText,  // Guardamos la hora
+            message = messageText    // Guardamos el mensaje
+        )
+    }
+
+    private fun calculateMinutesOffset(): Int {
+        // Si es "Siempre activo" o "Días de semana" (que no tenemos lógica de repetición en ReminderItem aún),
+        // calculamos el offset base o 0. Aquí dejo la lógica de "Días antes" que es la que afecta al tiempo fijo.
+
+        val baseDate = taskDueDate ?: Calendar.getInstance()
+        val reminderDate = baseDate.clone() as Calendar
+
+        if (binding.cbDaysBefore.isChecked) {
+            val daysBefore = binding.etDaysBefore.text.toString().toIntOrNull() ?: 0
+            reminderDate.add(Calendar.DAY_OF_YEAR, -daysBefore)
+        }
+        // NOTA: Para "WeekDays" y "AlwaysActive", la lógica de fecha dependerá de cómo quieras guardarlo.
+        // Por ahora, si está en "AlwaysActive", asumimos que es el mismo día de la tarea a la hora seleccionada.
+
+        reminderDate.set(Calendar.HOUR_OF_DAY, selectedHour)
+        reminderDate.set(Calendar.MINUTE, selectedMinute)
+        reminderDate.set(Calendar.SECOND, 0)
+
+        val diffMillis = baseDate.timeInMillis - reminderDate.timeInMillis
+        return TimeUnit.MILLISECONDS.toMinutes(diffMillis).toInt()
     }
 
     override fun onDestroyView() {

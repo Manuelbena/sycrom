@@ -1,24 +1,13 @@
 package com.manuelbena.synkron.presentation.models
 
-enum class ReminderMethod {
-    POPUP,  // Notificación estándar
-    EMAIL,  // Correo electrónico
-    ALARM   // Alarma (Sonido fuerte/Pantalla completa)
-}
+import java.util.UUID
+
+enum class ReminderMethod { POPUP, EMAIL, ALARM }
 
 data class ReminderItem(
-    val id: String = java.util.UUID.randomUUID().toString(),
-    val minutes: Int, // Siempre guardamos en minutos para ser compatible con Google
-    val method: ReminderMethod = ReminderMethod.POPUP
-) {
-    fun getFormattedText(): String {
-        return when {
-            minutes < 60 -> "$minutes minutos antes"
-            minutes == 60 -> "1 hora antes"
-            minutes % 60 == 0 && minutes < 1440 -> "${minutes / 60} horas antes"
-            minutes == 1440 -> "1 día antes"
-            minutes % 1440 == 0 -> "${minutes / 1440} días antes"
-            else -> "$minutes minutos antes"
-        }
-    }
-}
+    val id: String = UUID.randomUUID().toString(),
+    val minutes: Int,           // Para la lógica interna (Google API)
+    val method: ReminderMethod, // Tipo de aviso
+    val displayTime: String,    // NUEVO: Para mostrar "09:00" en la UI
+    val message: String         // NUEVO: Para mostrar "Llamar a Sergio" en la UI
+)
