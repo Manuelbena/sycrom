@@ -285,16 +285,28 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         val description = binding.tietDescription.text.toString().trim()
         val location = binding.tietLocation.text.toString().trim()
 
-        // 2. Obtener Fechas Google
+        // 2. Obtener Fechas y Duración
         val duration = getDurationInMinutes()
         val startDateTime = startCalendar.toGoogleEventDateTime()
         val endCalendar = (startCalendar.clone() as Calendar).apply { add(Calendar.MINUTE, duration) }
         val endDateTime = endCalendar.toGoogleEventDateTime()
 
-        // 3. Mapear Categoría y Color
-        // Aquí usamos nuestra nueva variable 'selectedCategory'
-        val colorId = getGoogleColorId(selectedCategory)
+        // 3. Mapear Categoría (AQUÍ ESTÁ LA CLAVE 💡)
+        // Usamos 'resources.getResourceEntryName' para convertir el Int (R.drawable.x) a String ("x")
+        val iconNameStr = try {
+            resources.getResourceEntryName(selectedCategory.iconRes)
+        } catch (e: Exception) {
+            "ic_label" // Fallback por seguridad
+        }
+
+        val colorNameStr = try {
+            resources.getResourceEntryName(selectedCategory.colorRes)
+        } catch (e: Exception) {
+            "category_default" // Fallback por seguridad
+        }
+
         val taskType = selectedCategory.title
+        val googleColorId = getGoogleColorId(selectedCategory)
 
         // 4. Construir Modelos Anidados
         val subTasksToSave = subtaskList.map {
@@ -311,7 +323,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             summary = summary,
             description = description,
             location = location,
-            colorId = colorId,
+            colorId = googleColorId,
             start = startDateTime,
             end = endDateTime,
             attendees = emptyList(),
@@ -323,17 +335,16 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             typeTask = taskType,
             priority = getSelectedPriority(),
             isActive = true,
-            isDone = false
+            isDone = false,
 
+            // --- NUEVOS CAMPOS ---
+            // Pasamos los nombres (Strings) que acabamos de extraer
+            categoryIcon = iconNameStr,
+            categoryColor = colorNameStr
         )
 
         viewModel.onEvent(TaskContract.TaskEvent.OnSaveTask(taskToSave))
     }
-
-    // endregion
-
-    // region --- Helpers & Mappers ---
-
     private fun updateDateButtonText() {
         binding.btnFecha.text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(startCalendar.time)
     }

@@ -2,7 +2,7 @@
 <resources>
 
 
-    <color name="md_theme_primary">#CCD8E9</color>
+    <color name="md_theme_primary">#BFC9D7</color>
     <color name="md_theme_onPrimary">#1F1F1F</color>
     <color name="md_theme_primaryContainer">#FFFFFF</color>
     <color name="md_theme_onPrimaryContainer">#042043</color>
