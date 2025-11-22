@@ -5,6 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+
     android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -26,6 +27,7 @@
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:background="@drawable/background_primary"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -71,10 +73,11 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="@android:color/transparent"
-                            app:tabIndicatorColor="?attr/colorPrimary"
+                            app:tabIndicatorColor="?attr/colorOnSurfaceVariant"
                             app:tabIndicatorFullWidth="true"
                             app:tabMode="fixed"
-                            app:tabSelectedTextColor="?attr/colorPrimary"
+                            app:tabIconTint="?attr/colorOnSurfaceVariant"
+                            app:tabSelectedTextColor="?attr/colorOnSurfaceVariant"
                             app:tabTextColor="?attr/colorOnSurfaceVariant">
 
                             <com.google.android.material.tabs.TabItem
@@ -380,7 +383,7 @@
             android:id="@+id/layoutButtons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/colorSurface"
+            android:background="?attr/colorPrimary"
             android:elevation="16dp"
             android:orientation="horizontal"
             android:padding="16dp"

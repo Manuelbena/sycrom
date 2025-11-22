@@ -8,7 +8,7 @@
     <color name="md_theme_onPrimaryContainer">#042043</color>
 
     <color name="md_theme_secondary">#022B3A</color>
-    <color name="md_theme_onSecondary">#FFFFFF</color>
+    <color name="md_theme_onSecondary">#FBEDD4</color>
     <color name="md_theme_secondaryContainer">#FFFFFF</color>
     <color name="md_theme_onSecondaryContainer">#FBEDD4</color>
 
@@ -49,7 +49,7 @@
     <color name="secondary_text">@color/color_primary</color>
     <color name="ivory">#F3F6F7</color>
 
-    <color name="color_tree">#F1D198</color>
+    <color name="color_tree">#BFC9D7</color>
 
 
     <color name="navy">#0F2744</color>

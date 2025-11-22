@@ -448,7 +448,7 @@
         android:text="Tarea"
         android:textColor="?attr/colorOnPrimary"
         android:visibility="gone"
-        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:backgroundTint="?attr/colorPrimary"
         app:iconTint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toTopOf="@+id/fabMain"
         app:layout_constraintEnd_toEndOf="@+id/fabMain" />
@@ -461,7 +461,7 @@
         android:text="Tarea IA"
         android:textColor="?attr/colorOnPrimary"
         android:visibility="gone"
-        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:backgroundTint="?attr/colorPrimary"
         app:iconTint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddTask"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddTask" />
@@ -474,7 +474,7 @@
         android:text="Gasto"
         android:textColor="?attr/colorOnPrimary"
         android:visibility="gone"
-        app:backgroundTint="?attr/colorSecondaryContainer"
+        app:backgroundTint="?attr/colorPrimary"
         app:iconTint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddIng"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddIng" />
@@ -487,8 +487,8 @@
         android:text="Ingreso"
         android:textColor="?attr/colorOnPrimary"
         android:visibility="gone"
-        app:backgroundTint="?attr/colorSecondaryContainer"
-        app:iconTint="?attr/colorOnPrimary"
+        app:backgroundTint="?attr/colorPrimary"
+        app:iconTint="?attr/colorPrimary"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddSuggestion"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddSuggestion" />
 

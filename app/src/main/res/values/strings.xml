@@ -24,4 +24,11 @@
     <string name="currency_format">500</string>
     <string name="currency_format_negative">1500</string>
 
+    <string-array name="reminder_units">
+        <item>minutos antes</item>
+        <item>horas antes</item>
+        <item>días antes</item>
+        <item>semanas antes</item>
+    </string-array>
+
 </resources>

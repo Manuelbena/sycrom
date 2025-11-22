@@ -17,7 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:tint="@color/background_primary"
+        app:tint="?attr/colorOnSurfaceVariant"
         android:src="@drawable/ic_dashboard_black_24dp" />
 
     <TextView
@@ -27,7 +27,7 @@
         android:layout_marginStart="16dp"
         android:text="Categoría"
         android:textSize="16sp"
-        android:textColor="@color/background_primary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:fontFamily="@font/inter"
         app:layout_constraintStart_toEndOf="@+id/ivCategoryLabelIcon"
         app:layout_constraintTop_toTopOf="parent"

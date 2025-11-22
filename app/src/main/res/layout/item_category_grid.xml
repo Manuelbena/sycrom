@@ -48,7 +48,7 @@
         android:fontFamily="@font/inter"
         android:gravity="center"
         android:maxLines="1"
-        android:textColor="?android:attr/textColorPrimary"
+        android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="12sp"
         tools:text="Trabajo" />
 

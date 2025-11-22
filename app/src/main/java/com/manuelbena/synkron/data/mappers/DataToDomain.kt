@@ -41,13 +41,7 @@ fun TaskEntity.toDomain(): TaskDomain {
         GoogleEventAttendee(email = email, responseStatus = "needsAction")
     }
 
-    // 4. Reconstruir 'reminders'
-    val reminders = GoogleEventReminders(
-        useDefault = false,
-        overrides = this.reminderMinutes.map { minutes ->
-            GoogleEventReminder(method = "popup", minutes = minutes)
-        }
-    )
+
 
     return TaskDomain(
         id = this.id,
@@ -59,7 +53,6 @@ fun TaskEntity.toDomain(): TaskDomain {
         end = endDateTime,
         attendees = attendees,
         recurrence = if (this.recurrenceRule != null) listOf(this.recurrenceRule) else emptyList(),
-        reminders = reminders,
         transparency = this.transparency,
         conferenceLink = this.conferenceLink,
         subTasks = this.subTasks,
@@ -71,7 +64,8 @@ fun TaskEntity.toDomain(): TaskDomain {
         isDone = this.isDone,
         isDeleted = this.isDeleted,
         isArchived = this.isArchived,
-        isPinned = this.isPinned
+        isPinned = this.isPinned,
+        reminders = this.reminders ?: GoogleEventReminders(false, emptyList()), // Manejo de nulos seguro
     )
 }
 

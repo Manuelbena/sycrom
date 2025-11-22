@@ -60,7 +60,8 @@ fun TaskDomain.toEntity(): TaskEntity {
         isDone = this.isDone,
         isDeleted = this.isDeleted,
         isArchived = this.isArchived,
-        isPinned = this.isPinned
+        isPinned = this.isPinned,
+        reminders = this.reminders,
     )
 }
 

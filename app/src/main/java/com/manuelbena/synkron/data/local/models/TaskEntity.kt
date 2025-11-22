@@ -2,6 +2,7 @@ package com.manuelbena.synkron.data.local.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.manuelbena.synkron.domain.models.GoogleEventReminders
 import com.manuelbena.synkron.domain.models.SubTaskDomain
 
 /**
@@ -21,6 +22,7 @@ data class TaskEntity(
     val duration: Int,        // -> Se usa para calcular TaskDomain.end
     val categoryIcon: String,  // Guardamos "ic_work"
     val categoryColor: String, // Guardamos "category_work"
+    val reminders: GoogleEventReminders? = null,
 
     // Campos de Texto (planos)
     val summary: String,      // -> Mapea a/desde TaskDomain.summary
