@@ -6,8 +6,8 @@ enum class ReminderMethod { POPUP, EMAIL, ALARM }
 
 data class ReminderItem(
     val id: String = UUID.randomUUID().toString(),
-    val minutes: Int,           // Para la lógica interna (Google API)
-    val method: ReminderMethod, // Tipo de aviso
-    val displayTime: String,    // NUEVO: Para mostrar "09:00" en la UI
-    val message: String         // NUEVO: Para mostrar "Llamar a Sergio" en la UI
+    val minutes: Int,           // Minutos para la API de Google
+    val method: ReminderMethod, // Tipo
+    val displayTime: String,    // EJ: "09:00" (Necesario para pintar la UI)
+    val message: String         // EJ: "Llamar a..." (Necesario para pintar la UI)
 )

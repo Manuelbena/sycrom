@@ -14,8 +14,7 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
-import com.manuelbena.synkron.R // Asegúrate de que este import sea correcto
-
+import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentNewTaskBinding
 import com.manuelbena.synkron.domain.models.*
@@ -25,7 +24,6 @@ import com.manuelbena.synkron.presentation.dialogs.adapter.ReminderManagerAdapte
 import com.manuelbena.synkron.presentation.models.CategoryType
 import com.manuelbena.synkron.presentation.models.ReminderItem
 import com.manuelbena.synkron.presentation.models.ReminderMethod
-import com.manuelbena.synkron.presentation.models.ReminderSelection
 import com.manuelbena.synkron.presentation.task.adapters.SubtaskTouchHelperCallback
 import com.manuelbena.synkron.presentation.task.adapters.TaskCreationSubtaskAdapter
 import com.manuelbena.synkron.presentation.util.toGoogleEventDateTime
@@ -40,7 +38,10 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     // region --- Variables Locales & Estado ---
     private lateinit var inlineRemindersAdapter: ReminderManagerAdapter
+
+    // ESTA es la lista que manda ahora:
     private var remindersList: MutableList<ReminderItem> = mutableListOf()
+
     private val subtaskList = mutableListOf<String>()
     private lateinit var subtaskAdapter: TaskCreationSubtaskAdapter
     private lateinit var itemTouchHelper: ItemTouchHelper
@@ -50,10 +51,6 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     // Categoría seleccionada (Por defecto: Personal)
     private var selectedCategory: CategoryType = CategoryType.PERSONAL
-
-    // Estado del Recordatorio (Nuevo)
-    private var currentReminder: ReminderSelection? = null
-
     // endregion
 
     // region --- Ciclo de Vida & ViewBinding ---
@@ -67,7 +64,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Las llamadas a setUI(), setListener() y observe() las maneja el BaseFragment
+        // BaseFragment llama a setUI(), setListener() y observe()
     }
 
     // endregion
@@ -79,7 +76,6 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         setupDefaultDateTime()
         setupSubtaskManager()
         updateCategoryUI(selectedCategory)
-        currentReminder = ReminderSelection(isEnabled = false, label = "Sin recordatorio")
         setupReminderInlineList()
         updateReminderUI()
     }
@@ -90,19 +86,18 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         updateTimeButtonText()
     }
 
-    // 1. CONFIGURAR EL RECYCLERVIEW EN LINEA
+    // 1. CONFIGURAR EL RECYCLERVIEW DE RECORDATORIOS
     private fun setupReminderInlineList() {
-        // Inicializamos el adapter.
-        // Al pulsar borrar (X) en una fila, lo quitamos de la lista y actualizamos la UI.
+        // Adapter para pintar la lista visualmente
         inlineRemindersAdapter = ReminderManagerAdapter { itemToDelete ->
             remindersList.remove(itemToDelete)
-            updateReminderUI() // Refresca la vista
+            updateReminderUI() // Si borramos uno, refrescamos la UI
         }
 
+        // Aseguramos que el include 'layoutnotifications' tenga el RecyclerView 'rvInlineReminders'
         binding.layoutnotifications.rvInlineReminders.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = inlineRemindersAdapter
-            // Importante para que no pelee con el ScrollView principal
             isNestedScrollingEnabled = false
         }
     }
@@ -132,77 +127,36 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         }
     }
 
-    // 4. Actualizar UI con Badge real
-    // 3. ACTUALIZAR LA UI (Adiós contador, Hola lista)
+    // 3. ACTUALIZAR LA UI DE RECORDATORIOS
     private fun updateReminderUI() {
         val reminderView = binding.layoutnotifications
 
+        // ¿Tenemos recordatorios en la lista?
         if (remindersList.isNotEmpty()) {
-            // A. Hay recordatorios
-
-            // Mostramos la lista
+            // SI: Mostramos la lista y actualizamos cabecera
             reminderView.rvInlineReminders.isVisible = true
             inlineRemindersAdapter.submitList(remindersList.toList())
 
-            // Cambiamos el estilo de la cabecera para que se vea "activo"
-            reminderView.tvHeaderTitle.text = "Recordatorios activos"
-            reminderView.tvHeaderTitle.setTextColor(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.md_theme_onSurfaceVariant
-                )
-            ) // Ajusta tu color
-            reminderView.ivHeaderIcon.setColorFilter(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.md_theme_onSurfaceVariant
-            ))
+            reminderView.tvHeaderTitle.text = "Recordatorios activos (${remindersList.size})"
+            reminderView.tvHeaderTitle.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_theme_primary))
+            reminderView.ivHeaderIcon.setColorFilter(ContextCompat.getColor(requireContext(), R.color.md_theme_primary))
+
+
 
         } else {
-            // B. No hay recordatorios
-
-            // Ocultamos la lista
+            // NO: Ocultamos lista y ponemos cabecera en gris
             reminderView.rvInlineReminders.isVisible = false
 
-            // Estilo por defecto
             reminderView.tvHeaderTitle.text = "Añadir recordatorio"
-            reminderView.tvHeaderTitle.setTextColor(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.md_theme_onSurfaceVariant
-                )
-            ) // Ajusta tu color
-            reminderView.ivHeaderIcon.setColorFilter(
-                ContextCompat.getColor(
-                    requireContext(),
-                    R.color.md_theme_onSurfaceVariant
-                )
-            )
+            reminderView.tvHeaderTitle.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_theme_onSurfaceVariant))
+            reminderView.ivHeaderIcon.setColorFilter(ContextCompat.getColor(requireContext(), R.color.md_theme_onSurfaceVariant))
+  
         }
     }
-
-    // 5. RECORDATORIOS (Corregido)
-    // Mapeamos tu lista local de recordatorios al formato de Google
-    val reminderOverrides = remindersList.map { item ->
-        GoogleEventReminder(
-            // Convertimos tu Enum (POPUP/EMAIL) al String que pide Google ("popup"/"email")
-            method = if (item.method == ReminderMethod.EMAIL) "email" else "popup",
-            // Usamos los minutos directamente (ya no existe timeOffset)
-            minutes = item.minutes
-        )
-    }
-
-    val reminders = GoogleEventReminders(
-        useDefault = false,
-        overrides = reminderOverrides
-    )
 
     override fun observe() {
         viewModel.state.observe(viewLifecycleOwner) { state ->
             binding.btnGuardar.isEnabled = state !is TaskContract.TaskState.Loading
-            if (state is TaskContract.TaskState.Loading) {
-                // Opcional: Mostrar loading
-            }
         }
 
         viewModel.action.observe(viewLifecycleOwner) { action ->
@@ -211,7 +165,6 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
                 is TaskContract.TaskAction.ShowErrorSnackbar -> {
                     Snackbar.make(binding.root, action.message, Snackbar.LENGTH_LONG).show()
                 }
-
                 else -> {}
             }
         }
@@ -229,27 +182,20 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             btnHoraEnd.setOnClickListener { showTimePicker(false) }
             btnFecha.setOnClickListener { showDatePicker() }
 
+            // --- CLICK EN AÑADIR RECORDATORIO ---
             layoutnotifications.root.setOnClickListener {
-
                 val dialog = AddReminderDialog(startCalendar) { reminder ->
-
-                    // 1. Guardamos el recordatorio en tu lista lógica
-                    // (Asegúrate de tener: private val remindersList = mutableListOf<ReminderItem>())
+                    // 1. Añadir a la lista
                     remindersList.add(reminder)
 
-                    // 2. PINTAMOS LA UI "AQUÍ" (Lo que pediste)
-                    // Actualizamos el texto del botón o creamos un Chip visual
-                    binding.tvReminderInfo.text = "${reminder.displayTime} - ${reminder.message}"
+                    // 2. Actualizar la UI
+                    updateReminderUI()
 
-                    // Opcional: Cambiar icono o color para indicar que ya hay uno puesto
-                    binding.tvReminderInfo.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_notifications_active, 0, 0, 0)
 
-                    // Si usas un contenedor oculto, hazlo visible:
-                    binding.tvReminderInfo.isVisible = true
                 }
-
                 dialog.show(parentFragmentManager, AddReminderDialog.TAG)
             }
+
             // Subtareas
             btnAddSubTask.setOnClickListener { addSubtask() }
 
@@ -308,7 +254,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
                 startCalendar.set(Calendar.MINUTE, timePicker.minute)
                 updateTimeButtonText()
             } else {
-                // Lógica para hora fin si la necesitas guardar en otra variable
+                // Lógica para hora fin
             }
         }
         timePicker.show(childFragmentManager, "TIME_PICKER")
@@ -344,21 +290,12 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
         // 2. Fechas
         val startDateTime = startCalendar.toGoogleEventDateTime()
-        // Por simplicidad, añadimos 1 hora si no se define fin
         val endCalendar = (startCalendar.clone() as Calendar).apply { add(Calendar.HOUR_OF_DAY, 1) }
         val endDateTime = endCalendar.toGoogleEventDateTime()
 
         // 3. Recursos de Categoría
-        val iconNameStr = try {
-            resources.getResourceEntryName(selectedCategory.iconRes)
-        } catch (e: Exception) {
-            "ic_label"
-        }
-        val colorNameStr = try {
-            resources.getResourceEntryName(selectedCategory.colorRes)
-        } catch (e: Exception) {
-            "category_default"
-        }
+        val iconNameStr = try { resources.getResourceEntryName(selectedCategory.iconRes) } catch (e: Exception) { "ic_label" }
+        val colorNameStr = try { resources.getResourceEntryName(selectedCategory.colorRes) } catch (e: Exception) { "category_default" }
         val googleColorId = getGoogleColorId(selectedCategory)
 
         // 4. Subtareas
@@ -366,21 +303,21 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             SubTaskDomain(id = UUID.randomUUID().toString(), title = it, isDone = false)
         }
 
-        // 5. RECORDATORIOS (Lógica Dinámica)
-        val reminderOverrides = mutableListOf<GoogleEventReminder>()
-
-        if (currentReminder?.isEnabled == true) {
-            // Convertimos millis a minutos para Google Calendar API
-            val minutes = (currentReminder!!.timeOffset / 60000).toInt()
-
-            // 'popup' es el método estándar para notificaciones en móvil
-            reminderOverrides.add(GoogleEventReminder(minutes = minutes))
+        // 5. RECORDATORIOS (Lógica limpia basada en LISTA)
+        // Si la lista está vacía, podemos mandar null o default.
+        // Si tiene items, los transformamos a GoogleEventReminder.
+        val remindersToSave = if (remindersList.isNotEmpty()) {
+            val overrides = remindersList.map { uiReminder ->
+                GoogleEventReminder(
+                    method = uiReminder.method.name.lowercase(), // "popup", "email"
+                    minutes = uiReminder.minutes
+                )
+            }
+            GoogleEventReminders(useDefault = false, overrides = overrides)
+        } else {
+            // Si no hay recordatorios manuales, usamos el defecto de Google (10 min antes usualmente)
+            GoogleEventReminders(useDefault = true, overrides = emptyList())
         }
-
-        val reminders = GoogleEventReminders(
-            useDefault = false,
-            overrides = reminderOverrides
-        )
 
         // 6. Crear Objeto Final
         val taskToSave = TaskDomain(
@@ -391,7 +328,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             colorId = googleColorId,
             start = startDateTime,
             end = endDateTime,
-            reminders = reminders, // Usamos el dinámico
+            reminders = remindersToSave, // <--- AQUÍ USAMOS LA VARIABLE NUEVA
             transparency = "opaque",
             subTasks = subTasksToSave,
             typeTask = selectedCategory.title,
@@ -400,7 +337,6 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             isDone = false,
             categoryIcon = iconNameStr,
             categoryColor = colorNameStr,
-            // Campos vacíos requeridos por el modelo
             attendees = emptyList(),
             recurrence = emptyList(),
             conferenceLink = null
@@ -438,6 +374,5 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             else -> "2"
         }
     }
-
     // endregion
 }

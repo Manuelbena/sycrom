@@ -16,14 +16,25 @@ class ReminderManagerAdapter(
 
     inner class ViewHolder(private val binding: ItemReminderRowBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: ReminderItem) {
-            binding.tvTime.text = item.getFormattedText()
+            // CORRECCIÓN AQUÍ: Usamos displayTime y message en lugar de getFormattedText()
+            // Se verá así: "09:00 - Mensaje personalizado"
+            binding.tvTime.text = "${item.displayTime} - ${item.message}"
 
-            if (item.method == ReminderMethod.EMAIL) {
-                binding.tvTypeLabel.text = "Correo electrónico"
-                binding.ivTypeIcon.setImageResource(R.drawable.baseline_edit_calendar_24) // Asegúrate de tener este icono
-            } else {
-                binding.tvTypeLabel.text = "Notificación"
-                binding.ivTypeIcon.setImageResource(R.drawable.ic_notifications_black_24dp)
+            // Configuración del icono y etiqueta según el tipo
+            when (item.method) {
+                ReminderMethod.EMAIL -> {
+                    binding.tvTypeLabel.text = "Correo electrónico"
+                    // Asegúrate de que este drawable exista, si no usa ic_note o similar
+                    binding.ivTypeIcon.setImageResource(R.drawable.ic_note)
+                }
+                ReminderMethod.ALARM -> {
+                    binding.tvTypeLabel.text = "Alarma"
+                    binding.ivTypeIcon.setImageResource(R.drawable.ic_clock)
+                }
+                else -> { // POPUP / Notificación
+                    binding.tvTypeLabel.text = "Notificación"
+                    binding.ivTypeIcon.setImageResource(R.drawable.ic_notifications)
+                }
             }
 
             binding.btnDelete.setOnClickListener { onDeleteClick(item) }
