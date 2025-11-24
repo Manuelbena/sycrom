@@ -2,14 +2,14 @@
 <resources>
 
 
-    <color name="md_theme_primary">#BFC9D7</color>
+    <color name="md_theme_primary">#F4F6F8</color>
     <color name="md_theme_onPrimary">#1F1F1F</color>
     <color name="md_theme_primaryContainer">#FFFFFF</color>
     <color name="md_theme_onPrimaryContainer">#042043</color>
 
     <color name="md_theme_secondary">#022B3A</color>
-    <color name="md_theme_onSecondary">#FBEDD4</color>
-    <color name="md_theme_secondaryContainer">#FFFFFF</color>
+    <color name="md_theme_onSecondary">#D3C3AE</color>
+    <color name="md_theme_secondaryContainer">#D3C3AE</color>
     <color name="md_theme_onSecondaryContainer">#FBEDD4</color>
 
     <color name="md_theme_tertiary">#006C4C</color>

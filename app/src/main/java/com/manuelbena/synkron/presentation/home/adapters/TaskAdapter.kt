@@ -157,7 +157,7 @@ class TaskAdapter(
                 context.theme.resolveAttribute(R_Material.attr.colorSurfaceVariant, typedValue, true)
                 val defaultBackgroundColor = typedValue.data
                 // Usamos priority_low_bg (verde clarito) para las tareas completadas
-                val doneBackgroundColor = ContextCompat.getColor(context, R.color.md_theme_tertiaryContainer)
+                val doneBackgroundColor = ContextCompat.getColor(context, R.color.md_theme_surfaceVariant)
 
                 /**
                  * Función local para actualizar el aspecto visual sin lógica de negocio
@@ -171,7 +171,6 @@ class TaskAdapter(
                     DrawableCompat.setTint(priorityShape, priorityColor)
 
                     if (isDone) {
-
                         DrawableCompat.setTint(bgShape, doneBackgroundColor)
                         tvfinish.text = "Tarea Terminada"
                         try {
@@ -181,7 +180,7 @@ class TaskAdapter(
                         }
                         tvEventTitle.paintFlags = tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                     } else {
-
+                        tvfinish.text = "¿Tarea terminada?"
                         DrawableCompat.setTint(bgShape, defaultBackgroundColor)
                         try {
                             binding.ivDoneBackground.visibility = View.GONE

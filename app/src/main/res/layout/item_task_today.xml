@@ -31,7 +31,7 @@
             android:layout_height="0dp"
             android:src="@drawable/ic_check"
             android:alpha="0.15"
-            app:tint="?attr/colorOnPrimary"
+            app:tint="?attr/colorOnSecondary"
             android:scaleType="fitCenter"
             android:visibility="gone"
             android:layout_margin="24dp"
