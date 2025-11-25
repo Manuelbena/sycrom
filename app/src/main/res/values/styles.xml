@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Widget.Synkron.TextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">?attr/colorOnSurfaceVariant</item>
+        <item name="hintTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="startIconTint">?attr/colorOnSurfaceVariant</item>
+        <item name="android:layout_marginBottom">@dimen/spacing_small</item>
+    </style>
+
+    <style name="TextAppearance.Synkron.SectionTitle" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="Widget.Synkron.Divider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/divider_height</item>
+        <item name="android:background">?attr/colorOutlineVariant</item>
+        <item name="android:alpha">0.5</item>
+        <item name="android:layout_marginVertical">@dimen/spacing_small</item>
+        <item name="android:layout_marginHorizontal">@dimen/spacing_medium</item>
+    </style>
+
+</resources>

@@ -17,10 +17,9 @@ class TaskViewModel @Inject constructor(
     private val insertTask: InsertNewTaskUseCase
 ) : BaseViewModel<TaskContract.TaskEvent>() {
 
-    // --- ESTADO DE DATOS (Variables temporales) ---
-    // Estas variables almacenan la selección del usuario mientras crea la tarea
-    var iconNameStr: String = ""
-    var colorNameStr: String = ""
+    // --- ELIMINADO: Estas variables ya no hacen falta y eran la causa del error ---
+    // var iconNameStr: String = ""
+    // var colorNameStr: String = ""
 
     // --- ESTADO (State) ---
     private val _state = MutableLiveData<TaskContract.TaskState>(TaskContract.TaskState.Idle)
@@ -34,44 +33,34 @@ class TaskViewModel @Inject constructor(
     private val _recurrenceState = MutableLiveData<RecurrenceType>(RecurrenceType.NONE)
     val recurrenceState: LiveData<RecurrenceType> get() = _recurrenceState
 
-    // Función para actualizar la recurrencia desde la UI
     fun setRecurrence(type: RecurrenceType) {
         _recurrenceState.value = type
     }
 
-    // Función para recibir la categoría seleccionada desde el Diálogo
-    fun updateCategorySelection(icon: String, color: String) {
-        this.iconNameStr = icon
-        this.colorNameStr = color
-    }
+    // --- ELIMINADO: Ya no la usamos, el Fragment gestiona esto ---
+    // fun updateCategorySelection(icon: String, color: String) { ... }
 
-    /**
-     * Manejador central de eventos provenientes de la UI.
-     */
-     fun onEvent(event: TaskContract.TaskEvent) { // Asegúrate de usar 'override' si BaseViewModel lo requiere
+     fun onEvent(event: TaskContract.TaskEvent) {
         when (event) {
             is TaskContract.TaskEvent.OnSaveTask -> onSaveTask(event.task)
-            // Aquí podrías añadir más eventos, ej: OnCategoryClicked
         }
     }
 
     /**
      * Inicia el proceso de guardado.
-     * AQUÍ OCURRE LA MAGIA: Fusionamos los datos del Fragment con los del ViewModel.
+     * CORRECCIÓN: Respetamos el categoryIcon y categoryColor que vienen del Fragment.
+     * Solo inyectamos la recurrencia porque esa sí vive en el ViewModel.
      */
     private fun onSaveTask(taskFromUI: TaskDomain) {
         viewModelScope.launch {
             _state.value = TaskContract.TaskState.Loading
             try {
                 // 1. ENRIQUECER LA TAREA:
-                // Copiamos la tarea que viene de la UI y le sobreescribimos
-                // la categoría y la recurrencia con lo que tenemos en el ViewModel.
+                // Solo sobrescribimos la recurrencia (que controla el VM).
+                // EL RESTO (Icono, Color, Título) SE RESPETA TAL CUAL VIENE DE LA UI.
                 val taskToSave = taskFromUI.copy(
-                    categoryIcon = iconNameStr,
-                    categoryColor = colorNameStr,
                     synkronRecurrence = _recurrenceState.value ?: RecurrenceType.NONE,
-                    // NOTA: synkronRecurrenceDays debe venir lleno desde 'taskFromUI' (el Fragment)
-                    // ya que el ViewModel no controla directamente los Chips.
+                    // Nota: synkronRecurrenceDays ya viene lleno del Fragment
                 )
 
                 // 2. Insertar en base de datos

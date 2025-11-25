@@ -26,12 +26,13 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:text="Categoría"
-        android:textSize="16sp"
+        android:textSize="@dimen/txt_xl"
         android:textColor="?attr/colorOnSurfaceVariant"
         android:fontFamily="@font/inter"
         app:layout_constraintStart_toEndOf="@+id/ivCategoryLabelIcon"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:ignore="HardcodedText,SpUsage" />
 
     <FrameLayout
         android:id="@+id/flSelectedCategoryIcon"
@@ -62,7 +63,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="12dp"
         tools:text="Tarea"
-        android:textSize="14sp"
+        android:textSize="@dimen/txt_xl"
         android:textStyle="bold"
         android:fontFamily="@font/inter"
         app:layout_constraintEnd_toStartOf="@+id/flSelectedCategoryIcon"

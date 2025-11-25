@@ -5,7 +5,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -21,42 +20,42 @@
             android:layout_height="?attr/actionBarSize"
             app:navigationIcon="@drawable/ic_arrow_back"
             app:navigationIconTint="?attr/colorOnSurface"
-            app:title="Crear Tarea"
+            app:title="@string/title_create_task"
             app:titleCentered="true"
             app:titleTextColor="?attr/colorOnSurface" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:background="@drawable/background_primary"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/background_primary"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:fillViewport="true"
             android:clipToPadding="false"
-            android:paddingBottom="16dp"
-            app:layout_constraintTop_toTopOf="parent"
+            android:fillViewport="true"
+            android:paddingBottom="@dimen/spacing_medium"
             app:layout_constraintBottom_toTopOf="@+id/layoutButtons"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingHorizontal="16dp"
-                android:paddingTop="8dp">
+                android:paddingHorizontal="@dimen/spacing_medium"
+                android:paddingTop="@dimen/spacing_small">
 
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardNewTasks"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="24dp"
+                    android:layout_marginBottom="@dimen/spacing_large"
                     app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                    app:cardCornerRadius="24dp"
+                    app:cardCornerRadius="@dimen/card_corner_radius"
                     app:cardElevation="0dp"
                     app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp">
@@ -64,19 +63,19 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/spacing_large"
                         android:orientation="vertical"
-                        android:layout_margin="@dimen/activity_horizontal_XL_margin"
-                        android:paddingBottom="24dp">
+                        android:paddingBottom="@dimen/spacing_large">
 
                         <com.google.android.material.tabs.TabLayout
                             android:id="@+id/tabLayout_task_type"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:background="@android:color/transparent"
+                            app:tabIconTint="?attr/colorOnSurfaceVariant"
                             app:tabIndicatorColor="?attr/colorOnSurfaceVariant"
                             app:tabIndicatorFullWidth="true"
                             app:tabMode="fixed"
-                            app:tabIconTint="?attr/colorOnSurfaceVariant"
                             app:tabSelectedTextColor="?attr/colorOnSurfaceVariant"
                             app:tabTextColor="?attr/colorOnSurfaceVariant">
 
@@ -84,71 +83,58 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:icon="@drawable/ic_clock"
-                                android:text="Planif." />
+                                android:text="@string/tab_schedule" />
 
                             <com.google.android.material.tabs.TabItem
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:icon="@drawable/ic_calendar_today"
-                                android:text="Todo el día" />
+                                android:text="@string/tab_all_day" />
 
                             <com.google.android.material.tabs.TabItem
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:icon="@drawable/ic_no_planifi"
-                                android:text="Sin fecha" />
+                                android:text="@string/tab_no_date" />
                         </com.google.android.material.tabs.TabLayout>
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            app:boxBackgroundColor="@android:color/black"
-                            android:layout_marginTop="24dp"
-                            android:orientation="vertical"
-                            >
+                            android:layout_marginTop="@dimen/spacing_large"
+                            android:orientation="vertical">
+
                             <include
                                 android:id="@+id/layoutCategorySelect"
                                 layout="@layout/item_category_row_selector" />
                         </LinearLayout>
 
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:layout_marginHorizontal="16dp"
-                            android:layout_marginVertical="8dp"
-                            android:background="?attr/colorOutlineVariant"
-                            android:alpha="0.5"/>
+                        <View style="@style/Widget.Synkron.Divider" />
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/til_title"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                            style="@style/Widget.Synkron.TextInputLayout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Título de la tarea"
-                            app:boxStrokeColor="?attr/colorOnSurfaceVariant"
-                            app:hintTextColor="?attr/colorOnSurfaceVariant"
-                            app:startIconDrawable="@drawable/ic_edit"
-                            app:startIconTint="?attr/colorOnSurfaceVariant">
+                            android:hint="@string/hint_task_title"
+                            app:startIconDrawable="@drawable/ic_edit">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/tiet_title"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textCapSentences"
-                                android:textSize="18sp"
+                                android:textAppearance="?attr/textAppearanceTitleMedium"
                                 android:textStyle="bold" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/til_description"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                            style="@style/Widget.Synkron.TextInputLayout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            app:boxStrokeColor="?attr/colorOnSurfaceVariant"
-                            app:hintTextColor="?attr/colorOnSurfaceVariant"
-                            android:hint="Añadir detalles"
-                            app:startIconDrawable="@drawable/ic_info"
-                            app:startIconTint="?attr/colorOnSurfaceVariant">
+                            android:hint="@string/hint_task_desc"
+                            app:startIconDrawable="@drawable/ic_info">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/tiet_description"
@@ -156,22 +142,18 @@
                                 android:layout_height="wrap_content"
                                 android:gravity="top"
                                 android:inputType="textMultiLine"
-                                android:minLines="1"
                                 android:maxLines="5"
-                                android:paddingStart="0dp"/>
+                                android:minLines="1"
+                                android:paddingStart="0dp" />
                         </com.google.android.material.textfield.TextInputLayout>
-
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/til_location"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                            style="@style/Widget.Synkron.TextInputLayout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            app:boxStrokeColor="?attr/colorOnSurfaceVariant"
-                            app:hintTextColor="?attr/colorOnSurfaceVariant"
-                            android:hint="Ubicación"
-                            app:startIconDrawable="@drawable/ic_location"
-                            app:startIconTint="?attr/colorOnSurfaceVariant">
+                            android:hint="@string/hint_location"
+                            app:startIconDrawable="@drawable/ic_location">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/tiet_location"
@@ -182,22 +164,19 @@
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/til_sub_task"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                            style="@style/Widget.Synkron.TextInputLayout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            app:boxStrokeColor="?attr/colorOnSurfaceVariant"
-                            app:hintTextColor="?attr/colorOnSurfaceVariant"
-                            android:hint="Nueva subtarea"
+                            android:hint="@string/hint_subtask"
                             app:endIconMode="clear_text"
-                            app:startIconDrawable="@drawable/ic_check"
-                            app:startIconTint="?attr/colorOnSurfaceVariant">
+                            app:startIconDrawable="@drawable/ic_check">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/tiet_sub_task"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:imeOptions="actionDone"
-                                android:inputType="textCapSentences"/>
+                                android:inputType="textCapSentences" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.button.MaterialButton
@@ -206,41 +185,33 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_gravity="end"
+                            android:text="@string/action_add_step"
                             android:textColor="?attr/colorOnSurfaceVariant"
-                            app:iconTint="?attr/colorOnSurfaceVariant"
-                            android:text="Agregar paso"
-                            app:icon="@drawable/ic_add" />
+                            app:icon="@drawable/ic_add"
+                            app:iconTint="?attr/colorOnSurfaceVariant" />
 
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/rvSubtareas"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-
                             android:nestedScrollingEnabled="false"
-                            tools:listitem="@layout/item_subtask_new"
-                            tools:itemCount="2"/>
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:layout_marginHorizontal="16dp"
-                            android:layout_marginVertical="8dp"
-                            android:background="?attr/colorOutlineVariant"
-                            android:alpha="0.5"/>
+                            tools:itemCount="2"
+                            tools:listitem="@layout/item_subtask_new" />
+
+                        <View style="@style/Widget.Synkron.Divider" />
+
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="16dp"
-                            android:orientation="vertical"
-                            android:backgroundTint="?attr/colorSurfaceContainerLow"
-                            android:padding="12dp">
+                            android:layout_marginTop="@dimen/spacing_medium"
+                            android:orientation="vertical">
 
                             <TextView
+                                style="@style/TextAppearance.Synkron.SectionTitle"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Planificación"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:layout_marginBottom="8dp"/>
+                                android:layout_marginBottom="@dimen/spacing_small"
+                                android:text="@string/section_planning" />
 
                             <LinearLayout
                                 android:layout_width="match_parent"
@@ -252,89 +223,82 @@
                                     style="@style/Widget.Material3.Button.OutlinedButton"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:text="Hoy"
+                                    android:text="@string/btn_today"
                                     android:textColor="?attr/colorOnSurfaceVariant"
+                                    android:textSize="13sp"
                                     app:icon="@drawable/ic_calendar_today"
-                                    app:iconTint="?attr/colorOnSurfaceVariant"
-                                    android:textSize="13sp"
-                                    app:iconSize="18dp"/>
+                                    app:iconSize="@dimen/icon_size_small"
+                                    app:iconTint="?attr/colorOnSurfaceVariant" />
 
-                                <com.google.android.material.button.MaterialButton
-                                    android:id="@+id/btnHoraStart"
-                                    style="@style/Widget.Material3.Button.OutlinedButton"
+                                <LinearLayout
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    app:iconTint="?attr/colorOnSurfaceVariant"
-                                    android:layout_weight="1"
-                                    android:text="Hora de inicio"
-                                    android:textColor="?attr/colorOnSurfaceVariant"
-                                    android:textSize="13sp"
-                                    app:icon="@drawable/ic_access_time"
-                                    app:iconSize="18dp" />
+                                    android:orientation="horizontal">
 
-                                <com.google.android.material.button.MaterialButton
-                                    android:id="@+id/btnHoraEnd"
-                                    style="@style/Widget.Material3.Button.OutlinedButton"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    app:iconTint="?attr/colorOnSurfaceVariant"
-                                    android:textColor="?attr/colorOnSurfaceVariant"
-                                    android:layout_weight="1"
-                                    android:text="Hora de fin"
-                                    android:textSize="13sp"
-                                    app:icon="@drawable/ic_access_time"
-                                    app:iconSize="18dp" />
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnHoraStart"
+                                        style="@style/Widget.Material3.Button.OutlinedButton"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginEnd="@dimen/spacing_tiny"
+                                        android:layout_weight="1"
+                                        android:text="@string/btn_start_time"
+                                        android:textColor="?attr/colorOnSurfaceVariant"
+                                        android:textSize="13sp"
+                                        app:icon="@drawable/ic_access_time"
+                                        app:iconSize="@dimen/icon_size_small"
+                                        app:iconTint="?attr/colorOnSurfaceVariant" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnHoraEnd"
+                                        style="@style/Widget.Material3.Button.OutlinedButton"
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="@dimen/spacing_tiny"
+                                        android:layout_weight="1"
+                                        android:text="@string/btn_end_time"
+                                        android:textColor="?attr/colorOnSurfaceVariant"
+                                        android:textSize="13sp"
+                                        app:icon="@drawable/ic_access_time"
+                                        app:iconSize="@dimen/icon_size_small"
+                                        app:iconTint="?attr/colorOnSurfaceVariant" />
+                                </LinearLayout>
                             </LinearLayout>
                         </LinearLayout>
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:layout_marginHorizontal="16dp"
-                            android:layout_marginVertical="8dp"
-                            android:background="?attr/colorOutlineVariant"
-                            android:alpha="0.5"/>
+
+                        <View style="@style/Widget.Synkron.Divider" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:clickable="true"
-                            app:boxBackgroundColor="@android:color/black"
-                            android:orientation="vertical"
-                            >
+                            android:focusable="true"
+                            android:orientation="vertical">
+
                             <include
                                 android:id="@+id/layoutnotifications"
                                 layout="@layout/item_recordatory_new_task" />
                         </LinearLayout>
 
-                        <View
-                            android:layout_width="match_parent"
-                            android:layout_height="1dp"
-                            android:layout_marginHorizontal="16dp"
-                            android:layout_marginVertical="8dp"
-                            android:background="?attr/colorOutlineVariant"
-                            android:alpha="0.5"/>
-
+                        <View style="@style/Widget.Synkron.Divider" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginHorizontal="16dp"
-                            android:layout_marginTop="24dp"
+                            android:layout_marginTop="@dimen/spacing_large"
                             android:orientation="vertical">
 
                             <TextView
+                                style="@style/TextAppearance.Synkron.SectionTitle"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Prioridad"
-                                android:textSize="12sp"
-                                android:textColor="?attr/colorOnSurfaceVariant"
-                                android:layout_marginBottom="8dp"/>
+                                android:layout_marginBottom="@dimen/spacing_small"
+                                android:text="@string/section_priority" />
 
                             <com.google.android.material.chip.ChipGroup
                                 android:id="@+id/chip_group_priority_task"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
                                 app:selectionRequired="true"
                                 app:singleSelection="true">
 
@@ -343,7 +307,7 @@
                                     style="@style/Widget.Material3.Chip.Filter"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Alta"
+                                    android:text="@string/priority_high"
                                     android:textColor="@color/priority_high"
                                     app:chipBackgroundColor="@android:color/transparent"
                                     app:chipStrokeColor="@color/priority_high"
@@ -355,127 +319,129 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:checked="true"
-                                    android:text="Media"
+                                    android:text="@string/priority_medium"
                                     android:textColor="@color/priority_medium"
                                     app:chipBackgroundColor="@android:color/transparent"
                                     app:chipStrokeColor="@color/priority_medium"
-                                    app:chipStrokeWidth="1dp"/>
+                                    app:chipStrokeWidth="1dp" />
 
                                 <com.google.android.material.chip.Chip
                                     android:id="@+id/chip_small"
                                     style="@style/Widget.Material3.Chip.Filter"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Baja"
+                                    android:text="@string/priority_low"
                                     android:textColor="@color/priority_low"
                                     app:chipBackgroundColor="@android:color/transparent"
                                     app:chipStrokeColor="@color/priority_low"
-                                    app:chipStrokeWidth="1dp"/>
+                                    app:chipStrokeWidth="1dp" />
                             </com.google.android.material.chip.ChipGroup>
                         </LinearLayout>
+
+                        <View style="@style/Widget.Synkron.Divider" />
+
                         <LinearLayout
                             android:id="@+id/container_recurrence_section"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:layout_marginTop="16dp"
-                            android:layout_marginBottom="8dp">
+                            android:padding="16dp"
+                            android:orientation="vertical">
 
                             <LinearLayout
                                 android:id="@+id/btn_recurrence_selector"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="center_vertical"
                                 android:background="?attr/selectableItemBackground"
-                                android:paddingVertical="8dp">
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="@dimen/spacing_small">
 
                                 <ImageView
-                                    android:layout_width="24dp"
-                                    android:layout_height="24dp"
+                                    android:layout_width="@dimen/spacing_large"
+                                    android:layout_height="@dimen/spacing_large"
+                                    android:contentDescription="@null"
                                     android:src="@drawable/ic_time_restart"
-                                    app:tint="@color/black"
-                                    android:contentDescription="Icono recurrencia"/>
+                                    app:tint="?attr/colorOnSurface" />
 
                                 <TextView
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
+                                    android:layout_marginStart="@dimen/spacing_medium"
                                     android:layout_weight="1"
-                                    android:text="Repetir tarea"
-                                    android:layout_marginStart="12dp"
-                                    android:textColor="@color/black"
-                                    android:textSize="16sp"/>
+                                    android:text="@string/section_recurrence"
+                                    android:textAppearance="?attr/textAppearanceBodyLarge"
+                                    android:textColor="?attr/colorOnSurface" />
 
                                 <TextView
                                     android:id="@+id/tv_recurrence_status"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="No se repite"
-                                    android:textColor="@color/priority_high"
-                                    android:textStyle="bold"
-                                    android:textSize="14sp"/>
+                                    android:text="@string/recurrence_none"
+                                    android:textAppearance="?attr/textAppearanceLabelLarge"
+                                    android:textColor="@color/priority_high" />
                             </LinearLayout>
 
                             <com.google.android.material.chip.ChipGroup
                                 android:id="@+id/chip_group_days"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
+                                android:layout_gravity="center"
+                                android:layout_marginTop="@dimen/spacing_small"
                                 android:visibility="gone"
-                                app:singleSelection="false"
-                                app:selectionRequired="true">
+                                app:selectionRequired="true"
+                                app:singleSelection="false">
 
                                 <com.google.android.material.chip.Chip
                                     android:id="@+id/chip_mon"
                                     style="@style/Widget.MaterialComponents.Chip.Choice"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Lun" android:tag="1"/>
-
+                                    android:tag="1"
+                                    android:text="Lun" />
                                 <com.google.android.material.chip.Chip
                                     android:id="@+id/chip_tue"
                                     style="@style/Widget.MaterialComponents.Chip.Choice"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Mar" android:tag="2"/>
-
+                                    android:tag="2"
+                                    android:text="Mar" />
                                 <com.google.android.material.chip.Chip
                                     android:id="@+id/chip_wed"
                                     style="@style/Widget.MaterialComponents.Chip.Choice"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Mié" android:tag="3"/>
-
+                                    android:tag="3"
+                                    android:text="Mié" />
                                 <com.google.android.material.chip.Chip
                                     android:id="@+id/chip_thu"
                                     style="@style/Widget.MaterialComponents.Chip.Choice"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Jue" android:tag="4"/>
-
+                                    android:tag="4"
+                                    android:text="Jue" />
                                 <com.google.android.material.chip.Chip
                                     android:id="@+id/chip_fri"
                                     style="@style/Widget.MaterialComponents.Chip.Choice"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Vie" android:tag="5"/>
-
+                                    android:tag="5"
+                                    android:text="Vie" />
                                 <com.google.android.material.chip.Chip
                                     android:id="@+id/chip_sat"
                                     style="@style/Widget.MaterialComponents.Chip.Choice"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Sáb" android:tag="6"/>
-
+                                    android:tag="6"
+                                    android:text="Sáb" />
                                 <com.google.android.material.chip.Chip
                                     android:id="@+id/chip_sun"
                                     style="@style/Widget.MaterialComponents.Chip.Choice"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Dom" android:tag="7"/>
+                                    android:tag="7"
+                                    android:text="Dom" />
 
                             </com.google.android.material.chip.ChipGroup>
-
                         </LinearLayout>
 
                     </LinearLayout>
@@ -488,9 +454,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
-            android:elevation="16dp"
+            android:elevation="@dimen/bottom_bar_elevation"
             android:orientation="horizontal"
-            android:padding="16dp"
+            android:padding="@dimen/spacing_medium"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
@@ -499,10 +465,10 @@
                 android:id="@+id/btnCancelar"
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_marginEnd="8dp"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginEnd="@dimen/spacing_small"
                 android:layout_weight="1"
-                android:text="Cancelar"
+                android:text="@string/btn_cancel"
                 android:textColor="?attr/colorError"
                 app:strokeColor="?attr/colorError" />
 
@@ -510,10 +476,10 @@
                 android:id="@+id/btnGuardar"
                 style="@style/Widget.Material3.Button"
                 android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_marginStart="8dp"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginStart="@dimen/spacing_small"
                 android:layout_weight="1"
-                android:text="Guardar"
+                android:text="@string/btn_save"
                 app:backgroundTint="?attr/colorPrimary" />
         </LinearLayout>
 

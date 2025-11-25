@@ -31,4 +31,33 @@
         <item>semanas antes</item>
     </string-array>
 
+
+    <string name="title_create_task">Crear Tarea</string>
+
+    <string name="tab_schedule">Planif.</string>
+    <string name="tab_all_day">Todo el día</string>
+    <string name="tab_no_date">Sin fecha</string>
+
+    <string name="hint_task_title">Título de la tarea</string>
+    <string name="hint_task_desc">Añadir detalles</string>
+    <string name="hint_location">Ubicación</string>
+    <string name="hint_subtask">Nueva subtarea</string>
+    <string name="action_add_step">Agregar paso</string>
+
+    <string name="section_planning">Planificación</string>
+    <string name="section_priority">Prioridad</string>
+    <string name="section_recurrence">Repetir tarea</string>
+
+    <string name="btn_today">Hoy</string>
+    <string name="btn_start_time">Hora de inicio</string>
+    <string name="btn_end_time">Hora de fin</string>
+    <string name="btn_save">Guardar</string>
+    <string name="btn_cancel">Cancelar</string>
+
+    <string name="priority_high">Alta</string>
+    <string name="priority_medium">Media</string>
+    <string name="priority_low">Baja</string>
+
+    <string name="recurrence_none">No se repite</string>
+
 </resources>
