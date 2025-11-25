@@ -6,28 +6,17 @@ import com.manuelbena.synkron.domain.models.GoogleEventDateTime
 import com.manuelbena.synkron.domain.models.GoogleEventReminder
 import com.manuelbena.synkron.domain.models.GoogleEventReminders
 import com.manuelbena.synkron.domain.models.TaskDomain
-
-// --- IMPORTACIONES AÑADIDAS ---
 import java.time.Instant
 import java.time.ZonedDateTime
-// --- FIN DE IMPORTACIONES AÑADIDAS ---
-
 import java.util.Calendar
 import java.util.TimeZone
 
-// --- ¡ELIMINADO! ---
-// private val isoFormatter by lazy { ... }
-// Ya no es necesario y es la fuente del error.
-
-/**
- * Convierte un [TaskEntity] (plano, de BBDD) a un [TaskDomain] (anidado, de UI/Dominio).
- */
 fun TaskEntity.toDomain(): TaskDomain {
 
-    // 1. Reconstruir el objeto 'start'
+    // 1. Reconstruir el objeto 'start' (TU LÓGICA ORIGINAL)
     val startDateTime = createGoogleEventDateTime(this.date, this.hour, this.timeZone)
 
-    // 2. Reconstruir el objeto 'end' (calculado)
+    // 2. Reconstruir el objeto 'end' (TU LÓGICA ORIGINAL)
     val calendar = Calendar.getInstance().apply {
         timeInMillis = this@toDomain.date
         set(Calendar.HOUR_OF_DAY, this@toDomain.hour / 60)
@@ -36,12 +25,18 @@ fun TaskEntity.toDomain(): TaskDomain {
     val endTimeMillis = calendar.timeInMillis + (this.duration * 60 * 1000)
     val endDateTime = createGoogleEventDateTime(endTimeMillis, this.timeZone)
 
-    // 3. Reconstruir 'attendees'
+    // 3. Reconstruir 'attendees' (TU LÓGICA ORIGINAL)
     val attendees = this.attendeesEmails.map { email ->
         GoogleEventAttendee(email = email, responseStatus = "needsAction")
     }
 
-
+    // 4. Reconstruir 'reminders' (TU LÓGICA ORIGINAL)
+    val reminders = GoogleEventReminders(
+        useDefault = false,
+        overrides = this.reminderMinutes.map { minutes ->
+            GoogleEventReminder(method = "popup", minutes = minutes)
+        }
+    )
 
     return TaskDomain(
         id = this.id,
@@ -53,41 +48,33 @@ fun TaskEntity.toDomain(): TaskDomain {
         end = endDateTime,
         attendees = attendees,
         recurrence = if (this.recurrenceRule != null) listOf(this.recurrenceRule) else emptyList(),
+        reminders = reminders,
         transparency = this.transparency,
         conferenceLink = this.conferenceLink,
-        subTasks = this.subTasks,
-        typeTask = this.typeTask,
         categoryIcon = this.categoryIcon,
         categoryColor = this.categoryColor,
+        subTasks = this.subTasks,
+        typeTask = this.typeTask,
         priority = this.priority,
         isActive = this.isActive,
         isDone = this.isDone,
         isDeleted = this.isDeleted,
         isArchived = this.isArchived,
         isPinned = this.isPinned,
-        reminders = this.reminders ?: GoogleEventReminders(false, emptyList()), // Manejo de nulos seguro
+        // NUEVOS MAPEOS
+        synkronRecurrence = this.synkronRecurrence,
+        synkronRecurrenceDays = this.synkronRecurrenceDays
     )
 }
 
-// --- Helpers de Mapeo (REESCRITOS) ---
-
-/**
- * Helper REESCRITO para crear un ZonedDateTime a partir de milisegundos.
- */
+// ... (MANTÉN TUS FUNCIONES PRIVADAS createGoogleEventDateTime EXACTAMENTE COMO ESTABAN) ...
 private fun createGoogleEventDateTime(dateMillis: Long, timeZone: String): GoogleEventDateTime {
     val instant = Instant.ofEpochMilli(dateMillis)
     val zoneId = TimeZone.getTimeZone(timeZone).toZoneId()
     val zonedDateTime = ZonedDateTime.ofInstant(instant, zoneId)
-
-    return GoogleEventDateTime(
-        dateTime = zonedDateTime, // Ahora pasamos el objeto ZonedDateTime
-        timeZone = timeZone
-    )
+    return GoogleEventDateTime(dateTime = zonedDateTime, timeZone = timeZone)
 }
 
-/**
- * Helper REESCRITO para crear un ZonedDateTime a partir de fecha + minutos.
- */
 private fun createGoogleEventDateTime(dateMillis: Long, hourMinutes: Int, timeZone: String): GoogleEventDateTime {
     val calendar = Calendar.getInstance().apply {
         timeInMillis = dateMillis
@@ -96,14 +83,8 @@ private fun createGoogleEventDateTime(dateMillis: Long, hourMinutes: Int, timeZo
         set(Calendar.SECOND, 0)
         set(Calendar.MILLISECOND, 0)
     }
-
-    // Convertimos el Calendar a ZonedDateTime
     val instant = calendar.toInstant()
     val zoneId = TimeZone.getTimeZone(timeZone).toZoneId()
     val zonedDateTime = ZonedDateTime.ofInstant(instant, zoneId)
-
-    return GoogleEventDateTime(
-        dateTime = zonedDateTime, // Ahora pasamos el objeto ZonedDateTime
-        timeZone = timeZone
-    )
+    return GoogleEventDateTime(dateTime = zonedDateTime, timeZone = timeZone)
 }

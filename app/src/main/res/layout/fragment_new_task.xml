@@ -373,6 +373,110 @@
                                     app:chipStrokeWidth="1dp"/>
                             </com.google.android.material.chip.ChipGroup>
                         </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/container_recurrence_section"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginTop="16dp"
+                            android:layout_marginBottom="8dp">
+
+                            <LinearLayout
+                                android:id="@+id/btn_recurrence_selector"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:background="?attr/selectableItemBackground"
+                                android:paddingVertical="8dp">
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:src="@drawable/ic_time_restart"
+                                    app:tint="@color/black"
+                                    android:contentDescription="Icono recurrencia"/>
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Repetir tarea"
+                                    android:layout_marginStart="12dp"
+                                    android:textColor="@color/black"
+                                    android:textSize="16sp"/>
+
+                                <TextView
+                                    android:id="@+id/tv_recurrence_status"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="No se repite"
+                                    android:textColor="@color/priority_high"
+                                    android:textStyle="bold"
+                                    android:textSize="14sp"/>
+                            </LinearLayout>
+
+                            <com.google.android.material.chip.ChipGroup
+                                android:id="@+id/chip_group_days"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:visibility="gone"
+                                app:singleSelection="false"
+                                app:selectionRequired="true">
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_mon"
+                                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Lun" android:tag="1"/>
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_tue"
+                                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Mar" android:tag="2"/>
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_wed"
+                                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Mié" android:tag="3"/>
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_thu"
+                                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Jue" android:tag="4"/>
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_fri"
+                                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Vie" android:tag="5"/>
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_sat"
+                                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Sáb" android:tag="6"/>
+
+                                <com.google.android.material.chip.Chip
+                                    android:id="@+id/chip_sun"
+                                    style="@style/Widget.MaterialComponents.Chip.Choice"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Dom" android:tag="7"/>
+
+                            </com.google.android.material.chip.ChipGroup>
+
+                        </LinearLayout>
 
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>

@@ -5,11 +5,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.chip.Chip
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.timepicker.MaterialTimePicker
@@ -78,6 +80,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         updateCategoryUI(selectedCategory)
         setupReminderInlineList()
         updateReminderUI()
+        setupRecurrenceLogic()
     }
 
     private fun setupDefaultDateTime() {
@@ -339,10 +342,79 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             categoryColor = colorNameStr,
             attendees = emptyList(),
             recurrence = emptyList(),
-            conferenceLink = null
+            conferenceLink = null,
+            synkronRecurrence = viewModel.recurrenceState.value ?: RecurrenceType.NONE,
+            synkronRecurrenceDays = if (viewModel.recurrenceState.value == RecurrenceType.WEEKLY) getSelectedDays() else emptyList()
         )
 
         viewModel.onEvent(TaskContract.TaskEvent.OnSaveTask(taskToSave))
+
+    }
+    // --- LÓGICA DE RECURRENCIA ---
+    private fun setupRecurrenceLogic() {
+        // 1. Click en el selector
+        binding.btnRecurrenceSelector.setOnClickListener { view ->
+            showRecurrenceMenu(view)
+        }
+
+        // 2. Observar cambios para actualizar UI
+        viewModel.recurrenceState.observe(viewLifecycleOwner) { type ->
+            binding.tvRecurrenceStatus.text = when(type) {
+                RecurrenceType.NONE -> "No se repite"
+                RecurrenceType.DAILY -> "Todos los días"
+                RecurrenceType.WEEKLY -> "Semanalmente"
+                RecurrenceType.MONTHLY -> "Mensualmente"
+                RecurrenceType.YEARLY -> "Anualmente"
+                else -> "No se repite"
+            }
+
+            // Mostrar/Ocultar Chips de días
+            if (type == RecurrenceType.WEEKLY) {
+                binding.chipGroupDays.visibility = View.VISIBLE
+            } else {
+                binding.chipGroupDays.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun showRecurrenceMenu(view: View) {
+        val popup = PopupMenu(requireContext(), binding.tvRecurrenceStatus)
+        // Añadimos las opciones
+        popup.menu.add(0, 0, 0, "No se repite")
+        popup.menu.add(0, 1, 1, "Todos los días")
+        popup.menu.add(0, 2, 2, "Semanalmente") // Esta activa los chips
+        popup.menu.add(0, 3, 3, "Mensualmente")
+        popup.menu.add(0, 4, 4, "Anualmente")
+
+        popup.setOnMenuItemClickListener { item ->
+            val selected = when(item.itemId) {
+                1 -> RecurrenceType.DAILY
+                2 -> RecurrenceType.WEEKLY
+                3 -> RecurrenceType.MONTHLY
+                4 -> RecurrenceType.YEARLY
+                else -> RecurrenceType.NONE
+            }
+            viewModel.setRecurrence(selected)
+            true
+        }
+        popup.show()
+    }
+
+    // Función auxiliar para sacar los días seleccionados de los Chips
+    private fun getSelectedDays(): List<Int> {
+        val days = mutableListOf<Int>()
+        // checkedChipIds devuelve los IDs de las vistas seleccionadas
+        binding.chipGroupDays.checkedChipIds.forEach { id ->
+            val chip = binding.chipGroupDays.findViewById<Chip>(id)
+            // Convertimos el tag "1" a entero.
+            // IMPORTANTE: Definimos android:tag="1" en el XML
+            try {
+                days.add(chip.tag.toString().toInt())
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+        return days
     }
 
     private fun updateDateButtonText() {

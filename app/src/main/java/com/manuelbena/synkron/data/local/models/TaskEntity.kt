@@ -2,48 +2,50 @@ package com.manuelbena.synkron.data.local.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.manuelbena.synkron.domain.models.GoogleEventReminders
+import com.manuelbena.synkron.domain.models.RecurrenceType
 import com.manuelbena.synkron.domain.models.SubTaskDomain
 
-/**
- * Representa la tabla 'task_table' en la base de datos Room.
- * Es una representación "plana" de una tarea, optimizada para almacenamiento local.
- * La lógica de "Mappers" la convertirá a/desde TaskDomain.
- */
 @Entity(tableName = "task_table")
 data class TaskEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0L,
 
-    // Campos de Fecha/Hora (planos)
-    val date: Long,           // -> Mapea a/desde TaskDomain.start
-    val hour: Int,            // -> Mapea a/desde TaskDomain.start
-    val timeZone: String,     // -> Mapea a/desde TaskDomain.start.timeZone
-    val duration: Int,        // -> Se usa para calcular TaskDomain.end
-    val categoryIcon: String,  // Guardamos "ic_work"
-    val categoryColor: String, // Guardamos "category_work"
-    val reminders: GoogleEventReminders? = null,
+    // Campos de Fecha/Hora
+    val date: Long,
+    val hour: Int,
+    val timeZone: String,
+    val duration: Int,
 
-    // Campos de Texto (planos)
-    val summary: String,      // -> Mapea a/desde TaskDomain.summary
-    val description: String?, // -> Mapea a/desde TaskDomain.description
-    val location: String?,    // -> Mapea a/desde TaskDomain.location
-    val colorId: String?,     // -> Mapea a/desde TaskDomain.colorId
-    val typeTask: String,     // -> Mapea a/desde TaskDomain.typeTask
-    val priority: String,     // -> Mapea a/desde TaskDomain.priority
+    // Campos de Texto
+    val summary: String,
+    val description: String?,
+    val location: String?,
+    val colorId: String?,
+    val typeTask: String,
 
-    // Campos de Google Calendar (planos, convertidos)
-    val attendeesEmails: List<String>,    // -> Mapea a/desde TaskDomain.attendees
-    val recurrenceRule: String?,        // -> Mapea a/desde TaskDomain.recurrence
-    val reminderMinutes: List<Int>,     // -> Mapea a/desde TaskDomain.reminders
-    val transparency: String,           // -> Mapea a/desde TaskDomain.transparency
-    val conferenceLink: String?,        // -> Mapea a/desde TaskDomain.conferenceLink
+    // --- ¡NUEVAS COLUMNAS! ---
+    val categoryIcon: String = "",
+    val categoryColor: String = "",
+    // -------------------------
 
-    // Campos de Estado (planos)
+    val priority: String,
+
+    // Campos de Google Calendar
+    val attendeesEmails: List<String>,
+    val recurrenceRule: String?,
+    val reminderMinutes: List<Int>,
+    val transparency: String,
+    val conferenceLink: String?,
+
+    // Campos de Estado
     val subTasks: List<SubTaskDomain>,
     val isActive: Boolean,
     val isDone: Boolean,
     val isDeleted: Boolean,
     val isArchived: Boolean,
-    val isPinned: Boolean
+    val isPinned: Boolean,
+
+    // Recurrencia Interna
+    val synkronRecurrence: RecurrenceType = RecurrenceType.NONE,
+    val synkronRecurrenceDays: List<Int> = emptyList()
 )
