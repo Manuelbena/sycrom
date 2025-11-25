@@ -2,6 +2,8 @@ package com.manuelbena.synkron.di
 
 import android.util.Base64
 import com.manuelbena.synkron.data.remote.n8n.N8nApi
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -63,10 +65,16 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideN8nApi(client: OkHttpClient): N8nApi {
+        // 1. Creamos la instancia de Moshi con soporte para Kotlin
+        val moshi = Moshi.Builder()
+            .add(KotlinJsonAdapterFactory())
+            .build()
+
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(client)
-            .addConverterFactory(MoshiConverterFactory.create())
+            // 2. Pasamos nuestra instancia configurada de Moshi aquí
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
             .create(N8nApi::class.java)
     }

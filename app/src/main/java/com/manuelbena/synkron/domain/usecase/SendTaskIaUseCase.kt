@@ -1,13 +1,18 @@
+// Archivo: app/src/main/java/com/manuelbena/synkron/domain/usecase/SendTaskIaUseCase.kt
+
 package com.manuelbena.synkron.domain.usecase
 
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
+import com.manuelbena.synkron.data.remote.n8n.models.N8nChatResponse
 import javax.inject.Inject
 
 class SendTaskIaUseCase @Inject constructor(
     private val repository: ITaskRepository
 ) {
-    suspend operator fun invoke(message: String): Result<Boolean> {
+    suspend operator fun invoke(message: String): Result<N8nChatResponse> {
+        // Aquí podrías añadir lógica extra antes de enviar (ej. validar mensaje vacío)
         if (message.isBlank()) return Result.failure(Exception("El mensaje no puede estar vacío"))
-        return repository.sendTaskToAi(message)
+
+        return repository.sendIaMessage(message)
     }
 }

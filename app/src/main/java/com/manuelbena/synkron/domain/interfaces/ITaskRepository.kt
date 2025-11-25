@@ -2,6 +2,7 @@ package com.manuelbena.synkron.domain.interfaces
 
 
 
+import com.manuelbena.synkron.data.remote.n8n.models.N8nChatResponse
 import com.manuelbena.synkron.domain.models.TaskDomain
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -35,5 +36,7 @@ interface ITaskRepository {
     /**
      * Promnt que se le pasa al n8n para que me de una tarea
      */
-    suspend fun sendTaskToAi(message: String): Result<Boolean>
+    suspend fun sendIaMessage(message: String): Result<N8nChatResponse>
+
+
 }

@@ -5,8 +5,10 @@ import com.manuelbena.synkron.data.local.models.TaskDao
 import com.manuelbena.synkron.data.mappers.toDomain
 import com.manuelbena.synkron.data.mappers.toEntity
 // --- CAMBIO AQUÍ: Importamos el modelo desde el paquete correcto (.models) ---
-import com.manuelbena.synkron.data.remote.n8n.models.IngestRequest
+
 import com.manuelbena.synkron.data.remote.n8n.N8nApi
+import com.manuelbena.synkron.data.remote.n8n.models.N8nChatRequest
+import com.manuelbena.synkron.data.remote.n8n.models.N8nChatResponse
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import com.manuelbena.synkron.domain.models.TaskDomain
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -59,20 +61,19 @@ class TaskRepository @Inject constructor(
         taskDao.deleteTask(task.toEntity())
     }
 
-    override suspend fun sendTaskToAi(message: String): Result<Boolean> {
+    override suspend fun sendIaMessage(message: String): Result<N8nChatResponse> {
         return try {
-            val request = IngestRequest(
-                idempotencyKey = UUID.randomUUID().toString(),
-                message = message
-            )
-            val response = api.sendEvent(request)
+            val response = api.sendChatMessage(N8nChatRequest(message))
 
-            if (response.isSuccessful) {
-                Result.success(true)
+            if (response.isSuccessful && response.body() != null) {
+                // Éxito: Devolvemos el cuerpo parseado
+                Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Error: ${response.code()} ${response.message()}"))
+                // Error del servidor (4xx, 5xx)
+                Result.failure(Exception("Error en n8n: ${response.code()} ${response.message()}"))
             }
         } catch (e: Exception) {
+            // Error de red o parsing
             Result.failure(e)
         }
     }
