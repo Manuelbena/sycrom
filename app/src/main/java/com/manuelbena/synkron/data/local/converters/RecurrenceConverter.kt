@@ -14,7 +14,7 @@ class RecurrenceConverter {
         return try {
             RecurrenceType.valueOf(value)
         } catch (e: Exception) {
-            RecurrenceType.NONE
+            RecurrenceType.NOTIFICATION
         }
     }
 

@@ -46,6 +46,6 @@ data class TaskEntity(
     val isPinned: Boolean,
 
     // Recurrencia Interna
-    val synkronRecurrence: RecurrenceType = RecurrenceType.NONE,
+    val synkronRecurrence: RecurrenceType = RecurrenceType.NOTIFICATION,
     val synkronRecurrenceDays: List<Int> = emptyList()
 )

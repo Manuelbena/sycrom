@@ -93,3 +93,7 @@ fun Int.toDurationString(): String {
         else -> "${durationInMinutes} min"
     }
 }
+
+fun formatTime(hour: Int, minute: Int): String {
+    return String.format(Locale.getDefault(), "%02d:%02d", hour, minute)
+}

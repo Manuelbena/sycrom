@@ -30,7 +30,7 @@ class TaskViewModel @Inject constructor(
     val action: LiveData<TaskContract.TaskAction> = _action
 
     // --- ESTADO DE RECURRENCIA ---
-    private val _recurrenceState = MutableLiveData<RecurrenceType>(RecurrenceType.NONE)
+    private val _recurrenceState = MutableLiveData<RecurrenceType>(RecurrenceType.NOTIFICATION)
     val recurrenceState: LiveData<RecurrenceType> get() = _recurrenceState
 
     fun setRecurrence(type: RecurrenceType) {
@@ -59,7 +59,7 @@ class TaskViewModel @Inject constructor(
                 // Solo sobrescribimos la recurrencia (que controla el VM).
                 // EL RESTO (Icono, Color, Título) SE RESPETA TAL CUAL VIENE DE LA UI.
                 val taskToSave = taskFromUI.copy(
-                    synkronRecurrence = _recurrenceState.value ?: RecurrenceType.NONE,
+                    synkronRecurrence = _recurrenceState.value ?: RecurrenceType.NOTIFICATION,
                     // Nota: synkronRecurrenceDays ya viene lleno del Fragment
                 )
 

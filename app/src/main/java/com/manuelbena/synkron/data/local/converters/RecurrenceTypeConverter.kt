@@ -10,9 +10,9 @@ class RecurrenceTypeConverter {
     @TypeConverter
     fun toRecurrenceType(value: String?): RecurrenceType {
         return try {
-            if (value != null) RecurrenceType.valueOf(value) else RecurrenceType.NONE
+            if (value != null) RecurrenceType.valueOf(value) else RecurrenceType.NOTIFICATION
         } catch (e: Exception) {
-            RecurrenceType.NONE
+            RecurrenceType.NOTIFICATION
         }
     }
 }

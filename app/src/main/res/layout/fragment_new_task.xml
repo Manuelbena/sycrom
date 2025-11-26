@@ -309,12 +309,37 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:clickable="true"
-                            android:focusable="true"
+                            android:layout_margin="@dimen/txt_dimen_xl"
                             android:orientation="vertical">
-                            <include
-                                android:id="@+id/layoutnotifications"
-                                layout="@layout/item_recordatory_new_task" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Recordatorios"
+                                android:textColor="@color/background_primary"
+                                android:textSize="@dimen/text_caption"
+                                android:textStyle="bold"
+                                tools:ignore="SpUsage" />
+
+                            <androidx.recyclerview.widget.RecyclerView
+                                android:id="@+id/rvReminders"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:clipToPadding="false"
+                                tools:listitem="@layout/item_reminder_row"
+                                tools:itemCount="1"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnAddReminder"
+                                style="@style/Widget.Material3.Button.TonalButton"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="Añadir aviso"
+                                app:icon="@drawable/ic_notifications" />
+
                         </LinearLayout>
 
                         <View
