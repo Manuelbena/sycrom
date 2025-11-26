@@ -5,37 +5,44 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
 import com.google.android.material.datepicker.MaterialDatePicker
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
-import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentNewTaskBinding
-import com.manuelbena.synkron.databinding.ItemCategoryRowSelectorBinding // Para el include
+import com.manuelbena.synkron.databinding.ItemCategoryRowSelectorBinding
+import com.manuelbena.synkron.presentation.dialogs.AddReminderDialog
+import com.manuelbena.synkron.presentation.dialogs.CategorySelectionDialog
+import com.manuelbena.synkron.presentation.dialogs.adapter.ReminderManagerAdapter
+import com.manuelbena.synkron.presentation.models.CategoryType
+import com.manuelbena.synkron.presentation.models.ReminderItem
+import com.manuelbena.synkron.presentation.models.ReminderMethod
+import com.manuelbena.synkron.presentation.task.adapters.SubtaskTouchHelperCallback
 import com.manuelbena.synkron.presentation.task.adapters.TaskCreationSubtaskAdapter
-import com.manuelbena.synkron.presentation.dialogs.adapter.ReminderManagerAdapter // Asumiendo que existe o reutilizas uno
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import java.util.UUID
 
 @AndroidEntryPoint
 class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     override val viewModel: TaskViewModel by viewModels()
 
-    // Adaptadores
-    private val subtaskAdapter by lazy { TaskCreationSubtaskAdapter(mutableListOf()) { /* Drag handle logic */ } }
-    // Necesitarás un adaptador simple para recordatorios
-    // private val reminderAdapter by lazy { ... }
+    private lateinit var subtaskAdapter: TaskCreationSubtaskAdapter
 
-    // Binding para el include de categorías
+    // NUEVO: Declaramos el adaptador de recordatorios aquí
+    private lateinit var reminderAdapter: ReminderManagerAdapter
+
+    private lateinit var itemTouchHelper: ItemTouchHelper
     private lateinit var categoryBinding: ItemCategoryRowSelectorBinding
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentNewTaskBinding {
@@ -44,156 +51,253 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     override fun setUI() {
         super.setUI()
-        // Vincular el include
         categoryBinding = ItemCategoryRowSelectorBinding.bind(binding.layoutCategorySelect.root)
 
         setupRecyclers()
-        setupInputs()
+        setupListeners()
         setupDateTimePickers()
         setupTabsAndChips()
     }
 
     private fun setupRecyclers() {
-        // Subtareas
+        // 1. Subtareas
+        subtaskAdapter = TaskCreationSubtaskAdapter(
+            items = mutableListOf(),
+            onStartDrag = { holder -> itemTouchHelper.startDrag(holder) },
+            onRemove = { item -> viewModel.onEvent(TaskEvent.OnRemoveSubTask(item)) }
+        )
+
         binding.rvSubtareas.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = subtaskAdapter
         }
-        // Recordatorios
+
+        val callback = SubtaskTouchHelperCallback(subtaskAdapter)
+        itemTouchHelper = ItemTouchHelper(callback)
+        itemTouchHelper.attachToRecyclerView(binding.rvSubtareas)
+
+        // 2. NUEVO: Configurar Adaptador de Recordatorios (rvReminders)
+        reminderAdapter = ReminderManagerAdapter { reminderItem ->
+            // Lógica para eliminar un recordatorio al hacer click en la papelera
+            val domainMethod = when (reminderItem.method) {
+                ReminderMethod.WHATSAPP -> "email"
+                ReminderMethod.ALARM -> "alarm"
+                else -> "popup"
+            }
+
+            val domainReminder = com.manuelbena.synkron.domain.models.GoogleEventReminder(
+                method = domainMethod,
+                minutes = reminderItem.offsetMinutes
+            )
+
+            viewModel.onEvent(TaskEvent.OnRemoveReminder(domainReminder))
+        }
+
         binding.rvReminders.apply {
             layoutManager = LinearLayoutManager(requireContext())
-            // adapter = reminderAdapter
+            adapter = reminderAdapter
         }
     }
 
-    private fun setupInputs() {
+    private fun setupListeners() {
         binding.apply {
-            // Text Watchers
             tietTitle.doAfterTextChanged { viewModel.onEvent(TaskEvent.OnTitleChange(it.toString())) }
             tietDescription.doAfterTextChanged { viewModel.onEvent(TaskEvent.OnDescriptionChange(it.toString())) }
             tietLocation.doAfterTextChanged { viewModel.onEvent(TaskEvent.OnLocationChange(it.toString())) }
 
-            // Subtarea con botón
+            // NUEVO: Limpiar error de subtarea cuando el usuario escriba
+            tietSubTask.doAfterTextChanged {
+                if (!it.isNullOrBlank()) tilSubTask.error = null
+            }
+
+            // CORREGIDO: Validación al añadir Subtarea
             btnAddSubTask.setOnClickListener {
                 val text = tietSubTask.text.toString()
                 if (text.isNotBlank()) {
                     viewModel.onEvent(TaskEvent.OnAddSubTask(text))
                     tietSubTask.text?.clear()
+                    tilSubTask.error = null // Asegurar que se borra el error
+                } else {
+                    // Mostrar error visual en el TextInputLayout
+                    tilSubTask.error = "Escribe algo primero"
                 }
             }
 
-            // Acciones principales
             btnGuardar.setOnClickListener { viewModel.onEvent(TaskEvent.OnSaveClicked) }
             btnCancelar.setOnClickListener { viewModel.onEvent(TaskEvent.OnCancelClicked) }
 
-            // Recordatorio
             btnAddReminder.setOnClickListener { viewModel.onEvent(TaskEvent.OnAddReminderClicked) }
 
-            // Recurrencia
-            btnRecurrenceSelector.setOnClickListener { viewModel.onEvent(TaskEvent.OnRecurrenceSelectorClicked) }
+            binding.btnRecurrenceSelector.setOnClickListener {
+                viewModel.onEvent(TaskEvent.OnRecurrenceSelectorClicked)
+            }
+
+            categoryBinding.containerCategorySelector.setOnClickListener {
+                viewModel.onEvent(TaskEvent.OnCategorySelectorClicked)
+            }
         }
     }
 
+    // ... (setupDateTimePickers y setupTabsAndChips se mantienen igual) ...
     private fun setupDateTimePickers() {
         binding.btnFecha.setOnClickListener {
-            val picker = MaterialDatePicker.Builder.datePicker().setTitleText("Fecha de tarea").build()
+            val picker = MaterialDatePicker.Builder.datePicker().setTitleText("Fecha").build()
             picker.addOnPositiveButtonClickListener { selection ->
                 viewModel.onEvent(TaskEvent.OnDateSelected(selection))
             }
             picker.show(childFragmentManager, "DATE")
         }
-
-        binding.btnHoraStart.setOnClickListener {
-            showTimePicker { h, m -> viewModel.onEvent(TaskEvent.OnStartTimeSelected(h, m)) }
-        }
-
-        binding.btnHoraEnd.setOnClickListener {
-            showTimePicker { h, m -> viewModel.onEvent(TaskEvent.OnEndTimeSelected(h, m)) }
-        }
+        binding.btnHoraStart.setOnClickListener { showTimePicker { h, m -> viewModel.onEvent(TaskEvent.OnStartTimeSelected(h, m)) } }
+        binding.btnHoraEnd.setOnClickListener { showTimePicker { h, m -> viewModel.onEvent(TaskEvent.OnEndTimeSelected(h, m)) } }
     }
 
     private fun setupTabsAndChips() {
-        // Tabs: Planificado, Todo el día, Sin fecha
         binding.tabLayoutTaskType.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                tab?.position?.let { viewModel.onEvent(TaskEvent.OnTaskTypeChanged(it)) }
-            }
+            override fun onTabSelected(tab: TabLayout.Tab?) { tab?.position?.let { viewModel.onEvent(TaskEvent.OnTaskTypeChanged(it)) } }
             override fun onTabUnselected(tab: TabLayout.Tab?) {}
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
 
-        // Prioridad
         binding.chipGroupPriorityTask.setOnCheckedStateChangeListener { _, checkedIds ->
             val priority = when (checkedIds.firstOrNull()) {
-                R.id.chip_hight -> "Alta"
-                R.id.chip_small -> "Baja"
+                com.manuelbena.synkron.R.id.chip_hight -> "Alta"
+                com.manuelbena.synkron.R.id.chip_small -> "Baja"
                 else -> "Media"
             }
             viewModel.onEvent(TaskEvent.OnPrioritySelected(priority))
         }
 
-        // Días de Recurrencia (L, M, X...)
-        // Iteramos por los hijos del ChipGroup para asignar listeners
         for (i in 0 until binding.chipGroupDays.childCount) {
             val chip = binding.chipGroupDays.getChildAt(i) as? Chip
             chip?.setOnCheckedChangeListener { _, isChecked ->
-                val dayId = chip.tag.toString().toInt() // Asegúrate de poner tag="2" para Monday en XML, etc
+                val dayId = chip.tag.toString().toIntOrNull() ?: 0
                 viewModel.onEvent(TaskEvent.OnRecurrenceDayToggled(dayId, isChecked))
             }
         }
     }
 
-    // --- State Rendering ---
-
     override fun observe() {
         viewModel.state.observe(viewLifecycleOwner) { state ->
             renderState(state)
         }
+
         viewModel.effect.observe(viewLifecycleOwner) { effect ->
-            when(effect) {
-                is TaskEffect.NavigateBack -> requireActivity().onBackPressedDispatcher.onBackPressed()
+            when (effect) {
+                is TaskEffect.NavigateBack -> requireActivity().finish()
                 is TaskEffect.ShowMessage -> Snackbar.make(binding.root, effect.msg, Snackbar.LENGTH_SHORT).show()
-                is TaskEffect.ShowReminderDialog -> { /* Mostrar tu diálogo de recordatorios */ }
-                is TaskEffect.ShowRecurrenceDialog -> { /* Mostrar diálogo selección recurrencia */ }
+
+                is TaskEffect.ShowCategoryDialog -> {
+                    CategorySelectionDialog { selectedCategory ->
+                        viewModel.onEvent(TaskEvent.OnCategorySelected(selectedCategory.title, selectedCategory.googleColorId))
+                    }.show(childFragmentManager, CategorySelectionDialog.TAG)
+                }
+
+                is TaskEffect.ShowReminderDialog -> {
+                    // 1. Obtenemos la hora de inicio actual del ViewModel
+                    val taskStart = viewModel.state.value?.startTime ?: Calendar.getInstance()
+
+                    // 2. Se la pasamos al constructor del Diálogo
+                    AddReminderDialog(taskStart) { reminderItem -> // <--- CAMBIO AQUÍ
+
+                        val methodString = when (reminderItem.method) {
+                            ReminderMethod.WHATSAPP -> "email"
+                            ReminderMethod.ALARM -> "alarm"
+                            else -> "popup"
+                        }
+
+                        val domainReminder = com.manuelbena.synkron.domain.models.GoogleEventReminder(
+                            method = methodString,
+                            minutes = reminderItem.offsetMinutes // Ya viene calculado automáticamente
+                        )
+
+                        viewModel.onEvent(TaskEvent.OnAddReminder(domainReminder))
+
+                    }.show(childFragmentManager, "AddReminderDialog")
+                }
+
+                is TaskEffect.ShowRecurrenceDialog -> showRecurrenceOptionsDialog()
             }
         }
     }
 
     private fun renderState(state: TaskState) {
-        val dateFormatter = SimpleDateFormat("EEE, dd MMM yyyy", Locale.getDefault())
+        val dateFormatter = SimpleDateFormat("EEE, dd MMM", Locale.getDefault())
         val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
 
         binding.apply {
-            // Textos Botones Fecha/Hora
             btnFecha.text = dateFormatter.format(state.selectedDate.time)
             btnHoraStart.text = timeFormatter.format(state.startTime.time)
             btnHoraEnd.text = timeFormatter.format(state.endTime.time)
 
-            // Visibilidad según TABS
-            // Si es "No Fecha" (tab 2), ocultamos todo el contenedor de planificación
             containerDuration.isVisible = !state.isNoDate
-
-            // Si es "Todo el día" (tab 1), ocultamos las horas, solo dejamos la fecha
             containerDatetime.isVisible = !state.isAllDay && !state.isNoDate
 
-            // Si es "Todo el día", cambiamos el texto del botón fecha para que ocupe todo o se centre
-            // (Opcional, según diseño visual)
+            // Categoría (Visual)
+            val currentCategoryType = CategoryType.getAll()
+                .find { it.title == state.category }
+                ?: CategoryType.PERSONAL
 
-            // Recurrencia: Mostrar chips si es Custom (ejemplo)
-            chipGroupDays.isVisible = state.recurrenceType == RecurrenceType.CUSTOM
-            tvRecurrenceStatus.text = when(state.recurrenceType) {
-                RecurrenceType.NONE -> "No se repite"
-                RecurrenceType.DAILY -> "Todos los días"
-                RecurrenceType.WEEKLY -> "Semanalmente"
-                RecurrenceType.CUSTOM -> "Personalizado"
+            with(categoryBinding) {
+                tvSelectedCategoryName.text = currentCategoryType.title
+                ivSelectedCategoryIcon.setImageResource(currentCategoryType.iconRes)
+                val colorInt = androidx.core.content.ContextCompat.getColor(requireContext(), currentCategoryType.colorRes)
+                viewSelectedCategoryBackground.background.setTint(colorInt)
             }
+
+            // Subtareas
+            subtaskAdapter.updateItems(state.subTasks)
+
+            // NUEVO: Actualizar lista de Recordatorios
+            // Mapeamos de Domain (GoogleEventReminder) a UI (ReminderItem) para que el adaptador entienda
+            val uiReminders = state.reminders.map { domainReminder ->
+                // Calculamos la hora de visualización (Hora Inicio Tarea - Minutos Offset)
+                val displayTimeCalendar = (state.startTime.clone() as Calendar).apply {
+                    add(Calendar.MINUTE, -domainReminder.minutes)
+                }
+
+                val methodEnum = when(domainReminder.method) {
+                    "email" -> ReminderMethod.WHATSAPP
+                    "alarm" -> ReminderMethod.ALARM
+                    else -> ReminderMethod.NOTIFICATION
+                }
+
+                ReminderItem(
+                    id = UUID.randomUUID().toString(), // Generamos ID temporal para UI
+                    hour = displayTimeCalendar.get(Calendar.HOUR_OF_DAY),
+                    minute = displayTimeCalendar.get(Calendar.MINUTE),
+                    method = methodEnum,
+                    offsetMinutes = domainReminder.minutes,
+                    displayTime = timeFormatter.format(displayTimeCalendar.time),
+                    message = "Recordatorio" // Mensaje genérico si no lo guardamos en dominio
+                )
+            }
+            // ¡Aquí está la magia!
+            reminderAdapter.submitList(uiReminders)
+
+            // Recurrencia
+            chipGroupDays.isVisible = state.recurrenceType == RecurrenceType.CUSTOM
+            tvRecurrenceStatus.text = state.recurrenceType.name
         }
+    }
+
+    private fun showRecurrenceOptionsDialog() {
+        val options = arrayOf("No se repite", "Todos los días", "Semanalmente", "Personalizado")
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Repetir")
+            .setItems(options) { _, which ->
+                val type = when(which) {
+                    1 -> RecurrenceType.DAILY
+                    2 -> RecurrenceType.WEEKLY
+                    3 -> RecurrenceType.CUSTOM
+                    else -> RecurrenceType.NONE
+                }
+                viewModel.onEvent(TaskEvent.OnRecurrenceTypeSelected(type))
+            }
+            .show()
     }
 
     private fun showTimePicker(onTimeSelected: (Int, Int) -> Unit) {
         val cal = Calendar.getInstance()
-        TimePickerDialog(requireContext(), { _, h, m ->
-            onTimeSelected(h, m)
-        }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
+        TimePickerDialog(requireContext(), { _, h, m -> onTimeSelected(h, m) }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
     }
 }

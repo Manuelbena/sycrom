@@ -67,40 +67,20 @@
             app:chipIcon="@drawable/ic_share" />
     </com.google.android.material.chip.ChipGroup>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tilOffset"
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="8dp"
-        app:boxStrokeColor="?attr/colorOnSurfaceVariant"
-        app:hintTextColor="?attr/colorOnSurfaceVariant"
-        android:hint="Antelación (minutos)"
-        app:layout_constraintEnd_toStartOf="@+id/cardTime"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chipGroupType">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/etOffset"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:text="10" />
-    </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardTime"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         app:cardCornerRadius="8dp"
         app:boxStrokeColor="?attr/colorOnSurfaceVariant"
         app:hintTextColor="?attr/colorOnSurfaceVariant"
         app:strokeWidth="1dp"
         app:cardBackgroundColor="@android:color/transparent"
-        app:layout_constraintBottom_toBottomOf="@+id/tilOffset"
+
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/tilOffset">
+        app:layout_constraintTop_toBottomOf="@+id/chipGroupType">
 
         <TextView
             android:id="@+id/tvTime"
@@ -125,7 +105,7 @@
         app:boxStrokeColor="?attr/colorOnSurfaceVariant"
         app:hintTextColor="?attr/colorOnSurfaceVariant"
         android:hint="Mensaje del recordatorio"
-        app:layout_constraintTop_toBottomOf="@+id/tilOffset">
+        app:layout_constraintTop_toBottomOf="@+id/cardTime">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etMessage"
