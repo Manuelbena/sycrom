@@ -16,11 +16,29 @@
     <dimen name="txt_dimen_extra">24dp</dimen>
 
 
-
     <dimen name="card_margin_horizontal">16dp</dimen>
     <dimen name="card_margin_vertical">8dp</dimen>
     <dimen name="card_elevation">4dp</dimen>
     <dimen name="card_padding_large">16dp</dimen>
+
+
+    <dimen name="spacing_2xs">4dp</dimen>
+    <dimen name="spacing_xs">8dp</dimen>
+    <dimen name="spacing_s">12dp</dimen>
+    <dimen name="spacing_m">16dp</dimen>
+    <dimen name="spacing_l">24dp</dimen>
+    <dimen name="spacing_xl">32dp</dimen>
+    <dimen name="spacing_2xl">48dp</dimen>
+    <dimen name="text_caption">12sp</dimen>
+    <dimen name="text_body">14sp</dimen>
+    <dimen name="text_body_large">14sp</dimen>
+    <dimen name="text_h6">20sp</dimen>
+    <dimen name="text_h5">24sp</dimen>
+    <dimen name="icon_small">18dp</dimen>
+    <dimen name="icon_medium">24dp</dimen>
+    <dimen name="card_radius">24dp</dimen>
+
+
 
     <dimen name="spacing_tiny">4dp</dimen>
     <dimen name="spacing_small">8dp</dimen>

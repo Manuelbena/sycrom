@@ -141,8 +141,8 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             inlineRemindersAdapter.submitList(remindersList.toList())
 
             reminderView.tvHeaderTitle.text = "Recordatorios activos (${remindersList.size})"
-            reminderView.tvHeaderTitle.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_theme_primary))
-            reminderView.ivHeaderIcon.setColorFilter(ContextCompat.getColor(requireContext(), R.color.md_theme_primary))
+            reminderView.tvHeaderTitle.setTextColor(ContextCompat.getColor(requireContext(), R.color.md_theme_onSurfaceVariant))
+            reminderView.ivHeaderIcon.setColorFilter(ContextCompat.getColor(requireContext(), R.color.md_theme_onSurfaceVariant))
 
 
 

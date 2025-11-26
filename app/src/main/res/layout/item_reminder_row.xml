@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             tools:text="10 minutos antes"
             android:textColor="?attr/colorOnSurface"
-            android:textSize="16sp"/>
+            android:textSize="@dimen/text_body_large"/>
 
         <TextView
             android:id="@+id/tvTypeLabel"
@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             tools:text="Notificación"
             android:textColor="?attr/colorOnSurfaceVariant"
-            android:textSize="12sp"/>
+            android:textSize="@dimen/spacing_s"/>
     </LinearLayout>
 
     <ImageView

@@ -36,7 +36,7 @@
             android:layout_height="0dp"
             android:clipToPadding="false"
             android:fillViewport="true"
-            android:paddingBottom="@dimen/spacing_medium"
+            android:paddingBottom="@dimen/button_height"
             app:layout_constraintBottom_toTopOf="@+id/layoutButtons"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -46,16 +46,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingHorizontal="@dimen/spacing_medium"
-                android:paddingTop="@dimen/spacing_small">
+                android:paddingHorizontal="@dimen/spacing_m"
+                android:paddingTop="@dimen/spacing_xs">
 
                 <androidx.cardview.widget.CardView
                     android:id="@+id/cardNewTasks"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/spacing_large"
+                    android:layout_marginBottom="@dimen/spacing_l"
                     app:cardBackgroundColor="?attr/colorSurfaceVariant"
-                    app:cardCornerRadius="@dimen/card_corner_radius"
+                    app:cardCornerRadius="@dimen/card_radius"
                     app:cardElevation="0dp"
                     app:strokeColor="?attr/colorOutlineVariant"
                     app:strokeWidth="1dp">
@@ -63,14 +63,14 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_margin="@dimen/spacing_large"
-                        android:orientation="vertical"
-                        android:paddingBottom="@dimen/spacing_large">
+                        android:layout_margin="@dimen/spacing_l"
+                        android:orientation="vertical">
 
                         <com.google.android.material.tabs.TabLayout
                             android:id="@+id/tabLayout_task_type"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/spacing_l"
                             android:background="@android:color/transparent"
                             app:tabIconTint="?attr/colorOnSurfaceVariant"
                             app:tabIndicatorColor="?attr/colorOnSurfaceVariant"
@@ -101,40 +101,48 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_large"
                             android:orientation="vertical">
-
                             <include
                                 android:id="@+id/layoutCategorySelect"
                                 layout="@layout/item_category_row_selector" />
                         </LinearLayout>
 
-                        <View style="@style/Widget.Synkron.Divider" />
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/divider_height"
+                            android:layout_marginVertical="@dimen/spacing_m"
+                            android:alpha="0.5"
+                            android:background="?attr/colorOutlineVariant" />
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/til_title"
-                            style="@style/Widget.Synkron.TextInputLayout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/spacing_s"
                             android:hint="@string/hint_task_title"
-                            app:startIconDrawable="@drawable/ic_edit">
+                            app:boxStrokeColor="?attr/colorOnSurfaceVariant"
+                            app:hintTextColor="?attr/colorOnSurfaceVariant"
+                            app:startIconDrawable="@drawable/ic_edit"
+                            app:startIconTint="?attr/colorOnSurfaceVariant">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/tiet_title"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textCapSentences"
-                                android:textAppearance="?attr/textAppearanceTitleMedium"
-                                android:textStyle="bold" />
+                                android:textSize="@dimen/text_body_large"/>
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/til_description"
-                            style="@style/Widget.Synkron.TextInputLayout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/spacing_s"
                             android:hint="@string/hint_task_desc"
-                            app:startIconDrawable="@drawable/ic_info">
+                            app:boxStrokeColor="?attr/colorOnSurfaceVariant"
+                            app:hintTextColor="?attr/colorOnSurfaceVariant"
+                            app:startIconDrawable="@drawable/ic_info"
+                            app:startIconTint="?attr/colorOnSurfaceVariant">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/tiet_description"
@@ -144,74 +152,95 @@
                                 android:inputType="textMultiLine"
                                 android:maxLines="5"
                                 android:minLines="1"
-                                android:paddingStart="0dp" />
+                                android:paddingStart="0dp"
+                                android:textSize="@dimen/text_body_large"/>
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/til_location"
-                            style="@style/Widget.Synkron.TextInputLayout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/spacing_s"
                             android:hint="@string/hint_location"
-                            app:startIconDrawable="@drawable/ic_location">
+                            app:boxStrokeColor="?attr/colorOnSurfaceVariant"
+                            app:hintTextColor="?attr/colorOnSurfaceVariant"
+                            app:startIconDrawable="@drawable/ic_location"
+                            app:startIconTint="?attr/colorOnSurfaceVariant">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/tiet_location"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:inputType="textCapWords" />
+                                android:inputType="textCapWords"
+                                android:textSize="@dimen/text_body_large"/>
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/til_sub_task"
-                            style="@style/Widget.Synkron.TextInputLayout"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="@string/hint_subtask"
+                            app:boxStrokeColor="?attr/colorOnSurfaceVariant"
                             app:endIconMode="clear_text"
-                            app:startIconDrawable="@drawable/ic_check">
+                            app:hintTextColor="?attr/colorOnSurfaceVariant"
+                            app:startIconDrawable="@drawable/ic_check"
+                            app:startIconTint="?attr/colorOnSurfaceVariant">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/tiet_sub_task"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:imeOptions="actionDone"
-                                android:inputType="textCapSentences" />
+                                android:inputType="textCapSentences"
+                                android:textSize="@dimen/text_body_large"/>
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnAddSubTask"
-                            style="@style/Widget.Material3.Button.TextButton"
                             android:layout_width="wrap_content"
+                            style="@style/Widget.Material3.Button.OutlinedButton"
                             android:layout_height="wrap_content"
                             android:layout_gravity="end"
-                            android:text="@string/action_add_step"
+                            android:textSize="@dimen/text_body_large"
+                            android:layout_marginTop="@dimen/spacing_2xs"
+                            android:text="@string/hint_subtask"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             app:icon="@drawable/ic_add"
+                            app:iconSize="@dimen/icon_small"
                             app:iconTint="?attr/colorOnSurfaceVariant" />
 
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/rvSubtareas"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/spacing_s"
                             android:nestedScrollingEnabled="false"
                             tools:itemCount="2"
                             tools:listitem="@layout/item_subtask_new" />
 
-                        <View style="@style/Widget.Synkron.Divider" />
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/divider_height"
+                            android:layout_marginVertical="@dimen/spacing_m"
+                            android:alpha="0.5"
+                            android:background="?attr/colorOutlineVariant" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_medium"
-                            android:orientation="vertical">
+                            android:backgroundTint="?attr/colorSurfaceContainerLow"
+                            android:orientation="vertical"
+                            android:padding="@dimen/spacing_m">
 
                             <TextView
-                                style="@style/TextAppearance.Synkron.SectionTitle"
+                                style="@style/TextAppearance.Material3.LabelMedium"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginBottom="@dimen/spacing_small"
-                                android:text="@string/section_planning" />
+                                android:layout_marginBottom="@dimen/spacing_xs"
+                                android:text="@string/section_planning"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="@dimen/text_caption"
+                                android:textStyle="bold" />
 
                             <LinearLayout
                                 android:layout_width="match_parent"
@@ -223,11 +252,12 @@
                                     style="@style/Widget.Material3.Button.OutlinedButton"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
+                                    android:layout_marginBottom="@dimen/spacing_xs"
                                     android:text="@string/btn_today"
                                     android:textColor="?attr/colorOnSurfaceVariant"
-                                    android:textSize="13sp"
+                                    android:textSize="@dimen/text_body_large"
                                     app:icon="@drawable/ic_calendar_today"
-                                    app:iconSize="@dimen/icon_size_small"
+                                    app:iconSize="@dimen/icon_small"
                                     app:iconTint="?attr/colorOnSurfaceVariant" />
 
                                 <LinearLayout
@@ -237,16 +267,16 @@
 
                                     <com.google.android.material.button.MaterialButton
                                         android:id="@+id/btnHoraStart"
-                                        style="@style/Widget.Material3.Button.OutlinedButton"
                                         android:layout_width="0dp"
+                                        style="@style/Widget.Material3.Button.OutlinedButton"
                                         android:layout_height="wrap_content"
-                                        android:layout_marginEnd="@dimen/spacing_tiny"
+                                        android:layout_marginEnd="@dimen/spacing_2xs"
                                         android:layout_weight="1"
                                         android:text="@string/btn_start_time"
                                         android:textColor="?attr/colorOnSurfaceVariant"
-                                        android:textSize="13sp"
+                                        android:textSize="@dimen/text_body_large"
                                         app:icon="@drawable/ic_access_time"
-                                        app:iconSize="@dimen/icon_size_small"
+                                        app:iconSize="@dimen/icon_small"
                                         app:iconTint="?attr/colorOnSurfaceVariant" />
 
                                     <com.google.android.material.button.MaterialButton
@@ -254,19 +284,24 @@
                                         style="@style/Widget.Material3.Button.OutlinedButton"
                                         android:layout_width="0dp"
                                         android:layout_height="wrap_content"
-                                        android:layout_marginStart="@dimen/spacing_tiny"
+                                        android:layout_marginStart="@dimen/spacing_2xs"
                                         android:layout_weight="1"
                                         android:text="@string/btn_end_time"
                                         android:textColor="?attr/colorOnSurfaceVariant"
-                                        android:textSize="13sp"
+                                        android:textSize="@dimen/text_body_large"
                                         app:icon="@drawable/ic_access_time"
-                                        app:iconSize="@dimen/icon_size_small"
+                                        app:iconSize="@dimen/icon_small"
                                         app:iconTint="?attr/colorOnSurfaceVariant" />
                                 </LinearLayout>
                             </LinearLayout>
                         </LinearLayout>
 
-                        <View style="@style/Widget.Synkron.Divider" />
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/divider_height"
+                            android:layout_marginVertical="@dimen/spacing_m"
+                            android:alpha="0.5"
+                            android:background="?attr/colorOutlineVariant" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -274,26 +309,32 @@
                             android:clickable="true"
                             android:focusable="true"
                             android:orientation="vertical">
-
                             <include
                                 android:id="@+id/layoutnotifications"
                                 layout="@layout/item_recordatory_new_task" />
                         </LinearLayout>
 
-                        <View style="@style/Widget.Synkron.Divider" />
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/divider_height"
+                            android:layout_marginVertical="@dimen/spacing_m"
+                            android:alpha="0.5"
+                            android:background="?attr/colorOutlineVariant" />
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_large"
                             android:orientation="vertical">
 
                             <TextView
-                                style="@style/TextAppearance.Synkron.SectionTitle"
+                                style="@style/TextAppearance.Material3.LabelMedium"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginBottom="@dimen/spacing_small"
-                                android:text="@string/section_priority" />
+                                android:layout_marginBottom="@dimen/spacing_xs"
+                                android:text="@string/section_priority"
+                                android:textColor="?attr/colorOnSurfaceVariant"
+                                android:textSize="@dimen/text_caption"
+                                android:textStyle="bold" />
 
                             <com.google.android.material.chip.ChipGroup
                                 android:id="@+id/chip_group_priority_task"
@@ -311,7 +352,8 @@
                                     android:textColor="@color/priority_high"
                                     app:chipBackgroundColor="@android:color/transparent"
                                     app:chipStrokeColor="@color/priority_high"
-                                    app:chipStrokeWidth="1dp" />
+                                    app:chipStrokeWidth="1dp"
+                                    app:chipMinTouchTargetSize="@dimen/button_height"/>
 
                                 <com.google.android.material.chip.Chip
                                     android:id="@+id/chip_medium"
@@ -323,7 +365,8 @@
                                     android:textColor="@color/priority_medium"
                                     app:chipBackgroundColor="@android:color/transparent"
                                     app:chipStrokeColor="@color/priority_medium"
-                                    app:chipStrokeWidth="1dp" />
+                                    app:chipStrokeWidth="1dp"
+                                    app:chipMinTouchTargetSize="@dimen/button_height"/>
 
                                 <com.google.android.material.chip.Chip
                                     android:id="@+id/chip_small"
@@ -334,17 +377,16 @@
                                     android:textColor="@color/priority_low"
                                     app:chipBackgroundColor="@android:color/transparent"
                                     app:chipStrokeColor="@color/priority_low"
-                                    app:chipStrokeWidth="1dp" />
+                                    app:chipStrokeWidth="1dp"
+                                    app:chipMinTouchTargetSize="@dimen/button_height"/>
                             </com.google.android.material.chip.ChipGroup>
                         </LinearLayout>
-
-                        <View style="@style/Widget.Synkron.Divider" />
 
                         <LinearLayout
                             android:id="@+id/container_recurrence_section"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:padding="16dp"
+                            android:layout_marginTop="@dimen/spacing_l"
                             android:orientation="vertical">
 
                             <LinearLayout
@@ -354,11 +396,12 @@
                                 android:background="?attr/selectableItemBackground"
                                 android:gravity="center_vertical"
                                 android:orientation="horizontal"
-                                android:paddingVertical="@dimen/spacing_small">
+                                android:padding="@dimen/card_margin_horizontal"
+                                android:paddingVertical="@dimen/spacing_xs">
 
                                 <ImageView
-                                    android:layout_width="@dimen/spacing_large"
-                                    android:layout_height="@dimen/spacing_large"
+                                    android:layout_width="@dimen/icon_medium"
+                                    android:layout_height="@dimen/icon_medium"
                                     android:contentDescription="@null"
                                     android:src="@drawable/ic_time_restart"
                                     app:tint="?attr/colorOnSurface" />
@@ -366,11 +409,12 @@
                                 <TextView
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
-                                    android:layout_marginStart="@dimen/spacing_medium"
+                                    android:layout_marginStart="@dimen/spacing_m"
                                     android:layout_weight="1"
                                     android:text="@string/section_recurrence"
                                     android:textAppearance="?attr/textAppearanceBodyLarge"
-                                    android:textColor="?attr/colorOnSurface" />
+                                    android:textColor="?attr/colorOnSurface"
+                                    android:textSize="@dimen/text_body_large"/>
 
                                 <TextView
                                     android:id="@+id/tv_recurrence_status"
@@ -378,15 +422,16 @@
                                     android:layout_height="wrap_content"
                                     android:text="@string/recurrence_none"
                                     android:textAppearance="?attr/textAppearanceLabelLarge"
-                                    android:textColor="@color/priority_high" />
+                                    android:textColor="@color/priority_high"
+                                    android:textStyle="bold"
+                                    android:textSize="@dimen/text_body"/>
                             </LinearLayout>
 
                             <com.google.android.material.chip.ChipGroup
                                 android:id="@+id/chip_group_days"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_gravity="center"
-                                android:layout_marginTop="@dimen/spacing_small"
+                                android:layout_marginTop="@dimen/spacing_xs"
                                 android:visibility="gone"
                                 app:selectionRequired="true"
                                 app:singleSelection="false">
@@ -396,6 +441,7 @@
                                     style="@style/Widget.MaterialComponents.Chip.Choice"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
                                     android:tag="1"
                                     android:text="Lun" />
                                 <com.google.android.material.chip.Chip
@@ -403,6 +449,7 @@
                                     style="@style/Widget.MaterialComponents.Chip.Choice"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
                                     android:tag="2"
                                     android:text="Mar" />
                                 <com.google.android.material.chip.Chip
@@ -410,6 +457,7 @@
                                     style="@style/Widget.MaterialComponents.Chip.Choice"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
                                     android:tag="3"
                                     android:text="Mié" />
                                 <com.google.android.material.chip.Chip
@@ -417,6 +465,7 @@
                                     style="@style/Widget.MaterialComponents.Chip.Choice"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
                                     android:tag="4"
                                     android:text="Jue" />
                                 <com.google.android.material.chip.Chip
@@ -424,6 +473,7 @@
                                     style="@style/Widget.MaterialComponents.Chip.Choice"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
                                     android:tag="5"
                                     android:text="Vie" />
                                 <com.google.android.material.chip.Chip
@@ -431,6 +481,7 @@
                                     style="@style/Widget.MaterialComponents.Chip.Choice"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
                                     android:tag="6"
                                     android:text="Sáb" />
                                 <com.google.android.material.chip.Chip
@@ -438,9 +489,9 @@
                                     style="@style/Widget.MaterialComponents.Chip.Choice"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:textColor="?attr/colorOnSurfaceVariant"
                                     android:tag="7"
                                     android:text="Dom" />
-
                             </com.google.android.material.chip.ChipGroup>
                         </LinearLayout>
 
@@ -456,7 +507,7 @@
             android:background="?attr/colorPrimary"
             android:elevation="@dimen/bottom_bar_elevation"
             android:orientation="horizontal"
-            android:padding="@dimen/spacing_medium"
+            android:padding="@dimen/spacing_m"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
@@ -466,21 +517,24 @@
                 style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/button_height"
-                android:layout_marginEnd="@dimen/spacing_small"
+                android:layout_marginEnd="@dimen/spacing_xs"
                 android:layout_weight="1"
+                android:textSize="@dimen/text_body_large"
                 android:text="@string/btn_cancel"
                 android:textColor="?attr/colorError"
                 app:strokeColor="?attr/colorError" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnGuardar"
-                style="@style/Widget.Material3.Button"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="0dp"
                 android:layout_height="@dimen/button_height"
-                android:layout_marginStart="@dimen/spacing_small"
+                android:layout_marginStart="@dimen/spacing_xs"
                 android:layout_weight="1"
+                android:textSize="@dimen/text_body_large"
                 android:text="@string/btn_save"
-                app:backgroundTint="?attr/colorPrimary" />
+                android:textColor="?attr/colorOnSurfaceVariant"
+                app:strokeColor="?attr/colorOnSurfaceVariant" />
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
