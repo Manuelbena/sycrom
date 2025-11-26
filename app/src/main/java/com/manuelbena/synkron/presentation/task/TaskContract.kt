@@ -1,39 +1,78 @@
 package com.manuelbena.synkron.presentation.task
 
-import com.manuelbena.synkron.domain.models.TaskDomain
+import com.manuelbena.synkron.domain.models.SubTaskDomain
+import com.manuelbena.synkron.domain.models.GoogleEventReminder
+import java.util.Calendar
 
-/**
- * Define el contrato de comunicación entre TaskFragment (Vista) y TaskViewModel.
- * Sigue el patrón MVI (State, Event, Action).
- */
-interface TaskContract {
+data class TaskState(
+    val isLoading: Boolean = false,
+    val title: String = "",
+    val description: String = "",
+    val location: String = "",
 
-    /**
-     * Define los posibles estados de la UI (lo que se está pintando).
-     * El estado es persistente.
-     */
-    sealed class TaskState {
-        object Idle : TaskState() // Estado inicial
-        object Loading : TaskState() // Guardando
-        data class Success(val message: String) : TaskState() // Se guardó con éxito
-        data class Error(val message: String) : TaskState() // Falló al guardar
-    }
+    // Nueva lógica de Tiempo
+    val selectedDate: Calendar = Calendar.getInstance(), // La fecha base (día)
+    val startTime: Calendar = Calendar.getInstance(),    // Hora inicio
+    val endTime: Calendar = Calendar.getInstance().apply { add(Calendar.HOUR_OF_DAY, 1) }, // Hora fin (+1h por defecto)
+    val isAllDay: Boolean = false,
+    val isNoDate: Boolean = false,
 
-    /**
-     * Define los eventos que la UI envía al ViewModel (acciones del usuario).
-     */
-    sealed class TaskEvent {
-        data class OnSaveTask(val task: TaskDomain) : TaskEvent()
-        // Aquí podríamos añadir más, como OnDateChanged, OnTitleChanged, etc.
-        // pero por ahora mantenemos la lógica de recolección en el Fragment.
-    }
+    // Lógica de Negocio
+    val category: String = "Personal",
+    val colorId: String = "2",
+    val priority: String = "Media",
 
-    /**
-     * Define acciones de un solo uso (Single-shot) que el ViewModel envía a la UI.
-     * (Ej. Navegación, SnackBar).
-     */
-    sealed class TaskAction {
-        object NavigateBack : TaskAction()
-        data class ShowErrorSnackbar(val message: String) : TaskAction()
-    }
+    // Listas Dinámicas
+    val subTasks: List<SubTaskDomain> = emptyList(),
+    val reminders: List<GoogleEventReminder> = emptyList(), // Nueva lista de recordatorios
+
+    // Recurrencia
+    val recurrenceType: RecurrenceType = RecurrenceType.NONE,
+    val selectedRecurrenceDays: Set<Int> = emptySet(), // Para los chips de L, M, X... (Calendar.MONDAY, etc)
+
+    val error: String? = null,
+    val isSaved: Boolean = false
+)
+
+enum class RecurrenceType { NONE, DAILY, WEEKLY, CUSTOM }
+
+sealed class TaskEvent {
+    // Inputs básicos
+    data class OnTitleChange(val title: String) : TaskEvent()
+    data class OnDescriptionChange(val desc: String) : TaskEvent()
+    data class OnLocationChange(val loc: String) : TaskEvent()
+
+    // Tabs (Schedule, AllDay, NoDate)
+    data class OnTaskTypeChanged(val tabIndex: Int) : TaskEvent()
+
+    // Fechas y Horas
+    data class OnDateSelected(val date: Long) : TaskEvent()
+    data class OnStartTimeSelected(val hour: Int, val minute: Int) : TaskEvent()
+    data class OnEndTimeSelected(val hour: Int, val minute: Int) : TaskEvent()
+
+    // Listas
+    data class OnAddSubTask(val text: String) : TaskEvent()
+    data class OnRemoveSubTask(val item: SubTaskDomain) : TaskEvent()
+    object OnAddReminderClicked : TaskEvent() // Abre diálogo
+    data class OnAddReminder(val reminder: GoogleEventReminder) : TaskEvent()
+    data class OnRemoveReminder(val reminder: GoogleEventReminder) : TaskEvent()
+
+    // Otros
+    data class OnCategorySelected(val category: String, val colorId: String) : TaskEvent()
+    data class OnPrioritySelected(val priority: String) : TaskEvent()
+
+    // Recurrencia
+    object OnRecurrenceSelectorClicked : TaskEvent()
+    data class OnRecurrenceDayToggled(val day: Int, val isSelected: Boolean) : TaskEvent() // Click en chips L, M...
+
+    // Acciones
+    object OnSaveClicked : TaskEvent()
+    object OnCancelClicked : TaskEvent()
+}
+
+sealed class TaskEffect {
+    object NavigateBack : TaskEffect()
+    data class ShowMessage(val msg: String) : TaskEffect()
+    object ShowRecurrenceDialog : TaskEffect() // Efecto para abrir tu diálogo de selección
+    object ShowReminderDialog : TaskEffect()
 }

@@ -1,72 +1,42 @@
 package com.manuelbena.synkron.presentation.task
 
+import android.app.TimePickerDialog
 import android.os.Bundle
-import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
-import android.widget.RadioButton
-import android.widget.RadioGroup
 import android.widget.Toast
+import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.chip.Chip
 import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
-import com.google.android.material.timepicker.MaterialTimePicker
-import com.google.android.material.timepicker.TimeFormat
+import com.google.android.material.tabs.TabLayout
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentNewTaskBinding
-import com.manuelbena.synkron.domain.models.GoogleEventAttendee
-import com.manuelbena.synkron.domain.models.GoogleEventReminder
-import com.manuelbena.synkron.domain.models.GoogleEventReminders
-import com.manuelbena.synkron.domain.models.SubTaskDomain
-import com.manuelbena.synkron.domain.models.TaskDomain
-import com.manuelbena.synkron.presentation.dialogs.AddReminderDialog
-import com.manuelbena.synkron.presentation.dialogs.adapter.ReminderManagerAdapter
-import com.manuelbena.synkron.presentation.models.ReminderItem
-import com.manuelbena.synkron.presentation.models.ReminderMethod
-import com.manuelbena.synkron.presentation.task.adapters.SubtaskTouchHelperCallback
+import com.manuelbena.synkron.databinding.ItemCategoryRowSelectorBinding // Para el include
 import com.manuelbena.synkron.presentation.task.adapters.TaskCreationSubtaskAdapter
-import com.manuelbena.synkron.presentation.util.getDurationInMinutes
-import com.manuelbena.synkron.presentation.util.toGoogleEventDateTime
+import com.manuelbena.synkron.presentation.dialogs.adapter.ReminderManagerAdapter // Asumiendo que existe o reutilizas uno
 import dagger.hilt.android.AndroidEntryPoint
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import java.util.TimeZone
-import java.util.UUID
 
 @AndroidEntryPoint
 class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     override val viewModel: TaskViewModel by viewModels()
 
-    // --- Estado Local de la UI ---
+    // Adaptadores
+    private val subtaskAdapter by lazy { TaskCreationSubtaskAdapter(mutableListOf()) { /* Drag handle logic */ } }
+    // Necesitarás un adaptador simple para recordatorios
+    // private val reminderAdapter by lazy { ... }
 
-    // SUBTAREAS
-    private val subtaskList = mutableListOf<String>()
-    private lateinit var subtaskAdapter: TaskCreationSubtaskAdapter
-    private lateinit var itemTouchHelper: ItemTouchHelper
-
-    // RECORDATORIOS (¡NUEVO!)
-    private val reminderList = mutableListOf<ReminderItem>()
-    private lateinit var reminderAdapter: ReminderManagerAdapter
-
-    /**
-     * Objeto Calendar que almacena el estado de la FECHA y HORA de INICIO
-     */
-    private var startCalendar: Calendar = Calendar.getInstance()
-
-    /** Almacena la duración en minutos si el usuario la introduce manualmente. */
-    private var selectedDurationInMinutes: Int = 0
-
-    // --- Ciclo de Vida y View Binding ---
+    // Binding para el include de categorías
+    private lateinit var categoryBinding: ItemCategoryRowSelectorBinding
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentNewTaskBinding {
         return FragmentNewTaskBinding.inflate(inflater, container, false)
@@ -74,234 +44,156 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     override fun setUI() {
         super.setUI()
-        setupDefaultDateTime()
-        setupSubtaskManager()
-        setupReminderManager() // <--- ¡Inicializamos los recordatorios!
+        // Vincular el include
+        categoryBinding = ItemCategoryRowSelectorBinding.bind(binding.layoutCategorySelect.root)
+
+        setupRecyclers()
+        setupInputs()
+        setupDateTimePickers()
+        setupTabsAndChips()
     }
+
+    private fun setupRecyclers() {
+        // Subtareas
+        binding.rvSubtareas.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = subtaskAdapter
+        }
+        // Recordatorios
+        binding.rvReminders.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            // adapter = reminderAdapter
+        }
+    }
+
+    private fun setupInputs() {
+        binding.apply {
+            // Text Watchers
+            tietTitle.doAfterTextChanged { viewModel.onEvent(TaskEvent.OnTitleChange(it.toString())) }
+            tietDescription.doAfterTextChanged { viewModel.onEvent(TaskEvent.OnDescriptionChange(it.toString())) }
+            tietLocation.doAfterTextChanged { viewModel.onEvent(TaskEvent.OnLocationChange(it.toString())) }
+
+            // Subtarea con botón
+            btnAddSubTask.setOnClickListener {
+                val text = tietSubTask.text.toString()
+                if (text.isNotBlank()) {
+                    viewModel.onEvent(TaskEvent.OnAddSubTask(text))
+                    tietSubTask.text?.clear()
+                }
+            }
+
+            // Acciones principales
+            btnGuardar.setOnClickListener { viewModel.onEvent(TaskEvent.OnSaveClicked) }
+            btnCancelar.setOnClickListener { viewModel.onEvent(TaskEvent.OnCancelClicked) }
+
+            // Recordatorio
+            btnAddReminder.setOnClickListener { viewModel.onEvent(TaskEvent.OnAddReminderClicked) }
+
+            // Recurrencia
+            btnRecurrenceSelector.setOnClickListener { viewModel.onEvent(TaskEvent.OnRecurrenceSelectorClicked) }
+        }
+    }
+
+    private fun setupDateTimePickers() {
+        binding.btnFecha.setOnClickListener {
+            val picker = MaterialDatePicker.Builder.datePicker().setTitleText("Fecha de tarea").build()
+            picker.addOnPositiveButtonClickListener { selection ->
+                viewModel.onEvent(TaskEvent.OnDateSelected(selection))
+            }
+            picker.show(childFragmentManager, "DATE")
+        }
+
+        binding.btnHoraStart.setOnClickListener {
+            showTimePicker { h, m -> viewModel.onEvent(TaskEvent.OnStartTimeSelected(h, m)) }
+        }
+
+        binding.btnHoraEnd.setOnClickListener {
+            showTimePicker { h, m -> viewModel.onEvent(TaskEvent.OnEndTimeSelected(h, m)) }
+        }
+    }
+
+    private fun setupTabsAndChips() {
+        // Tabs: Planificado, Todo el día, Sin fecha
+        binding.tabLayoutTaskType.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                tab?.position?.let { viewModel.onEvent(TaskEvent.OnTaskTypeChanged(it)) }
+            }
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
+
+        // Prioridad
+        binding.chipGroupPriorityTask.setOnCheckedStateChangeListener { _, checkedIds ->
+            val priority = when (checkedIds.firstOrNull()) {
+                R.id.chip_hight -> "Alta"
+                R.id.chip_small -> "Baja"
+                else -> "Media"
+            }
+            viewModel.onEvent(TaskEvent.OnPrioritySelected(priority))
+        }
+
+        // Días de Recurrencia (L, M, X...)
+        // Iteramos por los hijos del ChipGroup para asignar listeners
+        for (i in 0 until binding.chipGroupDays.childCount) {
+            val chip = binding.chipGroupDays.getChildAt(i) as? Chip
+            chip?.setOnCheckedChangeListener { _, isChecked ->
+                val dayId = chip.tag.toString().toInt() // Asegúrate de poner tag="2" para Monday en XML, etc
+                viewModel.onEvent(TaskEvent.OnRecurrenceDayToggled(dayId, isChecked))
+            }
+        }
+    }
+
+    // --- State Rendering ---
 
     override fun observe() {
         viewModel.state.observe(viewLifecycleOwner) { state ->
-            binding.btnGuardar.isEnabled = state !is TaskContract.TaskState.Loading
+            renderState(state)
         }
-
-        viewModel.action.observe(viewLifecycleOwner) { action ->
-            when (action) {
-                is TaskContract.TaskAction.NavigateBack -> requireActivity().finish()
-                is TaskContract.TaskAction.ShowErrorSnackbar -> {
-                    Snackbar.make(binding.root, action.message, Snackbar.LENGTH_LONG).show()
-                }
+        viewModel.effect.observe(viewLifecycleOwner) { effect ->
+            when(effect) {
+                is TaskEffect.NavigateBack -> requireActivity().onBackPressedDispatcher.onBackPressed()
+                is TaskEffect.ShowMessage -> Snackbar.make(binding.root, effect.msg, Snackbar.LENGTH_SHORT).show()
+                is TaskEffect.ShowReminderDialog -> { /* Mostrar tu diálogo de recordatorios */ }
+                is TaskEffect.ShowRecurrenceDialog -> { /* Mostrar diálogo selección recurrencia */ }
             }
         }
     }
 
-    override fun setListener() {
-        super.setListener()
+    private fun renderState(state: TaskState) {
+        val dateFormatter = SimpleDateFormat("EEE, dd MMM yyyy", Locale.getDefault())
+        val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
+
         binding.apply {
-            btnHoraStart.setOnClickListener { setupTimePicker() }
-            btnFecha.setOnClickListener { setupDatePicker() }
+            // Textos Botones Fecha/Hora
+            btnFecha.text = dateFormatter.format(state.selectedDate.time)
+            btnHoraStart.text = timeFormatter.format(state.startTime.time)
+            btnHoraEnd.text = timeFormatter.format(state.endTime.time)
 
+            // Visibilidad según TABS
+            // Si es "No Fecha" (tab 2), ocultamos todo el contenedor de planificación
+            containerDuration.isVisible = !state.isNoDate
 
-            // Listener para añadir aviso
-            btnAddReminder.setOnClickListener { showAddReminderDialog() }
+            // Si es "Todo el día" (tab 1), ocultamos las horas, solo dejamos la fecha
+            containerDatetime.isVisible = !state.isAllDay && !state.isNoDate
 
+            // Si es "Todo el día", cambiamos el texto del botón fecha para que ocupe todo o se centre
+            // (Opcional, según diseño visual)
 
-
-            btnGuardar.setOnClickListener { gatherDataAndSave() }
-            btnCancelar.setOnClickListener { requireActivity().finish() }
-        }
-    }
-
-    // --- Lógica de Guardado (ACTUALIZADA con Recordatorios) ---
-
-    private fun gatherDataAndSave() {
-        val summary = binding.tietTitle.text.toString().trim()
-        if (summary.isEmpty()) {
-            binding.tilTitle.error = "El título no puede estar vacío"
-            return
-        } else {
-            binding.tilTitle.error = null
-        }
-
-        val description = binding.tietDescription.text.toString().trim()
-        val location = binding.tietLocation.text.toString().trim()
-        val (taskType, colorId) = "Trabajo" to "#FF5722"
-        val duration = 0
-
-        val startDateTime = startCalendar.toGoogleEventDateTime()
-        val endCalendar = (startCalendar.clone() as Calendar).apply {
-            add(Calendar.MINUTE, duration)
-        }
-        val endDateTime = endCalendar.toGoogleEventDateTime()
-
-        // Mapear Subtareas
-        val subTasksToSave = subtaskList.map { subtaskTitle ->
-            SubTaskDomain(id = UUID.randomUUID().toString(), title = subtaskTitle, isDone = false)
-        }
-
-        // --- MAPEO DE RECORDATORIOS (NUEVO) ---
-        // Convertimos tu lista de ReminderItem (UI) a GoogleEventReminder (Dominio/API)
-        val googleRemindersList = reminderList.map { item ->
-            // Mapeamos tu Enum interno a los strings que espera Google/N8n
-            val methodString = when (item.method) {
-                ReminderMethod.NOTIFICATION -> "popup"
-                ReminderMethod.WHATSAPP -> "email" // Usamos "email" para interceptarlo en N8n y mandar Whatsapp
-                ReminderMethod.ALARM -> "popup"
-            }
-            // Usamos offsetMinutes para decirle "cuantos minutos antes"
-            GoogleEventReminder(minutes = item.offsetMinutes, method = methodString)
-        }
-
-        val reminders = GoogleEventReminders(
-            useDefault = false,
-            overrides = googleRemindersList // ¡Aquí inyectamos la lista dinámica!
-        )
-        // -------------------------------------
-
-        val taskToSave = TaskDomain(
-            id = 0L,
-            summary = summary,
-            description = description,
-            location = location,
-            colorId = colorId,
-            start = startDateTime,
-            end = endDateTime,
-            attendees = emptyList(),
-            recurrence = emptyList(),
-            reminders = reminders, // <--- Pasamos el objeto creado arriba
-            transparency = "opaque",
-            conferenceLink = null,
-            subTasks = subTasksToSave,
-            typeTask = taskType,
-            priority = "media",
-            isActive = true,
-            isDone = false
-        )
-
-        viewModel.onEvent(TaskContract.TaskEvent.OnSaveTask(taskToSave))
-    }
-
-    // --- Configuración de Managers (Subtareas y Recordatorios) ---
-
-    private fun setupSubtaskManager() {
-        subtaskAdapter = TaskCreationSubtaskAdapter(subtaskList) { viewHolder ->
-            itemTouchHelper.startDrag(viewHolder)
-        }
-        binding.rvSubtareas.adapter = subtaskAdapter
-        binding.rvSubtareas.layoutManager = LinearLayoutManager(requireContext())
-        val callback = SubtaskTouchHelperCallback(subtaskAdapter)
-        itemTouchHelper = ItemTouchHelper(callback)
-        itemTouchHelper.attachToRecyclerView(binding.rvSubtareas)
-
-        binding.btnAddSubTask.setOnClickListener {
-            val subtaskText = binding.tietSubTask.text.toString().trim()
-            if (subtaskText.isNotEmpty()) {
-                subtaskList.add(subtaskText)
-                subtaskAdapter.notifyItemInserted(subtaskList.size - 1)
-                binding.tietSubTask.text?.clear()
+            // Recurrencia: Mostrar chips si es Custom (ejemplo)
+            chipGroupDays.isVisible = state.recurrenceType == RecurrenceType.CUSTOM
+            tvRecurrenceStatus.text = when(state.recurrenceType) {
+                RecurrenceType.NONE -> "No se repite"
+                RecurrenceType.DAILY -> "Todos los días"
+                RecurrenceType.WEEKLY -> "Semanalmente"
+                RecurrenceType.CUSTOM -> "Personalizado"
             }
         }
     }
 
-    // --- SETUP RECORDATORIOS (NUEVO) ---
-    private fun setupReminderManager() {
-        // Inicializamos el adapter pasándole la función de borrar
-        reminderAdapter = ReminderManagerAdapter { reminderToDelete ->
-            val position = reminderList.indexOf(reminderToDelete)
-            if (position != -1) {
-                reminderList.removeAt(position)
-                reminderAdapter.submitList(reminderList.toList()) // Actualizamos la lista
-            }
-        }
-
-        binding.rvReminders.apply {
-            adapter = reminderAdapter
-            layoutManager = LinearLayoutManager(requireContext())
-        }
-
-        // Cargar lista inicial vacía (o podrías poner uno por defecto aquí)
-        reminderAdapter.submitList(reminderList.toList())
-    }
-
-    private fun showAddReminderDialog() {
-        val dialog = AddReminderDialog { newReminder ->
-            // Callback cuando el usuario guarda en el diálogo
-            reminderList.add(newReminder)
-            reminderAdapter.submitList(reminderList.toList()) // Refresca el adapter
-        }
-        dialog.show(childFragmentManager, "AddReminderDialog")
-    }
-    // -----------------------------------
-
-    // --- Helpers de Fecha y UI (Se mantienen igual) ---
-
-    private fun setupDefaultDateTime() {
-        startCalendar = Calendar.getInstance()
-        updateDateTimeButtons()
-    }
-
-    private fun setupDatePicker() {
-        val datePicker = MaterialDatePicker.Builder.datePicker()
-            .setTitleText("Selecciona una fecha")
-            .setSelection(startCalendar.timeInMillis)
-            .build()
-        datePicker.addOnPositiveButtonClickListener { selection ->
-            val utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply { timeInMillis = selection }
-            startCalendar.set(utcCal.get(Calendar.YEAR), utcCal.get(Calendar.MONTH), utcCal.get(Calendar.DAY_OF_MONTH))
-            updateDateTimeButtons()
-        }
-        datePicker.show(childFragmentManager, "DATE_PICKER")
-    }
-
-    private fun setupTimePicker() {
-        val timePicker = MaterialTimePicker.Builder()
-            .setTimeFormat(TimeFormat.CLOCK_24H)
-            .setHour(startCalendar.get(Calendar.HOUR_OF_DAY))
-            .setMinute(startCalendar.get(Calendar.MINUTE))
-            .setTitleText("Selecciona una hora")
-            .build()
-        timePicker.addOnPositiveButtonClickListener {
-            startCalendar.set(Calendar.HOUR_OF_DAY, timePicker.hour)
-            startCalendar.set(Calendar.MINUTE, timePicker.minute)
-            updateDateTimeButtons()
-        }
-        timePicker.show(childFragmentManager, "TIME_PICKER")
-    }
-
-    private fun updateDateTimeButtons() {
-        binding.btnFecha.text = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(startCalendar.time)
-        binding.btnHoraStart.text = String.format(Locale.getDefault(), "%02d:%02d", startCalendar.get(Calendar.HOUR_OF_DAY), startCalendar.get(Calendar.MINUTE))
-    }
-
-    private fun setupDurationPicker() {
-        // (Tu código de duración existente se mantiene igual...)
-        // He omitido el cuerpo para no alargar la respuesta, pero déjalo como estaba.
-        val context = requireContext()
-        // ... Lógica del dialog ...
-        val container = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            val padding = (20 * resources.displayMetrics.density).toInt()
-            setPadding(padding, 0, padding, 0)
-        }
-        val textInputLayout = TextInputLayout(context)
-        val editText = TextInputEditText(context).apply {
-            inputType = InputType.TYPE_CLASS_NUMBER
-            hint = "Valor"
-        }
-        textInputLayout.addView(editText)
-        container.addView(textInputLayout)
-
-        val radioGroup = RadioGroup(context).apply {
-            orientation = RadioGroup.HORIZONTAL
-        }
-        val radioMinutos = RadioButton(context).apply {
-            text = "Minutos"; id = View.generateViewId(); isChecked = true
-        }
-        val radioHoras = RadioButton(context).apply {
-            text = "Horas"; id = View.generateViewId()
-        }
-        radioGroup.addView(radioMinutos)
-        radioGroup.addView(radioHoras)
-        container.addView(radioGroup)
-
+    private fun showTimePicker(onTimeSelected: (Int, Int) -> Unit) {
+        val cal = Calendar.getInstance()
+        TimePickerDialog(requireContext(), { _, h, m ->
+            onTimeSelected(h, m)
+        }, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), true).show()
     }
 }
