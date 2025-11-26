@@ -9,6 +9,7 @@ import com.manuelbena.synkron.data.mappers.toEntity
 import com.manuelbena.synkron.data.remote.n8n.N8nApi
 import com.manuelbena.synkron.data.remote.n8n.models.N8nChatRequest
 import com.manuelbena.synkron.data.remote.n8n.models.N8nChatResponse
+import com.manuelbena.synkron.data.scheduler.AlarmScheduler
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import com.manuelbena.synkron.domain.models.TaskDomain
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -23,7 +24,7 @@ import javax.inject.Inject
 
 class TaskRepository @Inject constructor(
     private val taskDao: TaskDao,
-    @ApplicationContext private val context: Context,
+    private val alarmScheduler: AlarmScheduler,
     private val api: N8nApi
 ) : ITaskRepository {
 
@@ -51,10 +52,12 @@ class TaskRepository @Inject constructor(
 
     override suspend fun insertTask(task: TaskDomain) = withContext(Dispatchers.IO) {
         taskDao.insertTask(task.toEntity())
+        alarmScheduler.schedule(task)
     }
 
     override suspend fun updateTask(task: TaskDomain) = withContext(Dispatchers.IO) {
         taskDao.updateTask(task.toEntity())
+        alarmScheduler.schedule(task)
     }
 
     override suspend fun deleteTask(task: TaskDomain) = withContext(Dispatchers.IO) {
