@@ -45,7 +45,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:ellipsize="end"
-        android:fontFamily="@font/inter"
+        android:fontFamily="@font/nunito"
         android:gravity="center"
         android:maxLines="1"
         android:textColor="?attr/colorOnSurfaceVariant"

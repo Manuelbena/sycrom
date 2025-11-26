@@ -2,6 +2,8 @@ package com.manuelbena.synkron.presentation.task
 
 import android.content.res.ColorStateList
 import android.os.Bundle
+import android.transition.AutoTransition
+import android.transition.TransitionManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.chip.Chip
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.tabs.TabLayout
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import com.manuelbena.synkron.R
@@ -81,6 +84,37 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         setupReminderInlineList()
         updateReminderUI()
         setupRecurrenceLogic()
+        updateUiForTaskType(binding.tabLayoutTaskType.selectedTabPosition)
+    }
+
+    private fun updateUiForTaskType(position: Int) {
+        // Esta línea mágica hace que cualquier cambio de visibilidad posterior se anime automáticamente
+        TransitionManager.beginDelayedTransition(binding.root as ViewGroup, AutoTransition())
+
+        binding.apply {
+            when (position) {
+                0 -> { // PLANIFICADO
+                    // Mostramos todo
+                    containerDuration.visibility = View.VISIBLE
+                    containerDatetime.visibility = View.VISIBLE
+                    btnHoraStart.visibility = View.VISIBLE // Necesitamos hora específica
+                    btnHoraEnd.visibility = View.VISIBLE // Necesitamos hora específica
+                }
+                1 -> { // TODO EL DÍA
+                    // Mostramos el contenedor de fecha, pero ocultamos el botón de hora
+                    containerDuration.visibility = View.VISIBLE
+                    btnFecha.visibility = View.VISIBLE
+                    btnHoraStart.visibility = View.GONE // Necesitamos hora específica
+                    btnHoraEnd.visibility = View.GONE // Necesitamos hora específica
+                }
+                2 -> { // NO PLANIFICADO (Sin fecha / Someday)
+                    // Ocultamos todo lo relacionado con el tiempo
+                    containerDuration.visibility = View.GONE
+                    containerDatetime.visibility = View.GONE
+                    viewDuration.visibility = View.GONE
+                }
+            }
+        }
     }
 
     private fun setupDefaultDateTime() {
@@ -180,6 +214,15 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
     override fun setListener() {
         super.setListener()
         binding.apply {
+
+            tabLayoutTaskType.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab?) {
+                    tab?.let { updateUiForTaskType(it.position) }
+                }
+
+                override fun onTabUnselected(tab: TabLayout.Tab?) {}
+                override fun onTabReselected(tab: TabLayout.Tab?) {}
+            })
             // Pickers
             btnHoraStart.setOnClickListener { showTimePicker(true) }
             btnHoraEnd.setOnClickListener { showTimePicker(false) }

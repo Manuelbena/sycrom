@@ -157,7 +157,7 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:padding="16dp"
-                            android:text="Relajate hoy no tienes tareas que realizar..."
+                            android:text="¡Todo despejado, Manuel! Disfruta tu día."
                             android:textColor="?attr/colorOnPrimary"
                             android:textSize="16sp"
                             android:visibility="gone"
@@ -250,33 +250,36 @@
                         android:id="@+id/ly_body_suggestion"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
+                        android:gravity="start"
+
                         android:orientation="horizontal"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/ly_header_suggestion">
+                        <ImageView
+                            android:layout_width="80dp"
+                            android:layout_height="150dp"
+                            android:layout_marginEnd="@dimen/card_margin_horizontal"
+                            android:layout_marginStart="@dimen/txt_dimen_xl"
+                            android:src="@drawable/synkron_conunatarea" />
 
                         <TextView
                             android:id="@+id/textSugerencia"
                             android:layout_width="210dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="12dp"
+                            android:layout_marginTop="12dp"
                             android:text="Tienes una hora libre a las 17:00. ¿Por qué no dar un paseo por el Parque del Retiro?"
                             android:textColor="?attr/colorOnPrimary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
-                        <ImageView
-                            android:layout_width="80dp"
-                            android:layout_height="150dp"
-                            android:layout_marginStart="@dimen/txt_dimen_xl"
-                            android:src="@drawable/synkron_conunatarea" />
+
                     </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:gravity="start"
+                        android:gravity="end"
                         android:orientation="horizontal"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"

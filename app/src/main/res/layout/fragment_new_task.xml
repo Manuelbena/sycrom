@@ -226,6 +226,7 @@
                             android:background="?attr/colorOutlineVariant" />
 
                         <LinearLayout
+                            android:id="@+id/container_duration"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:backgroundTint="?attr/colorSurfaceContainerLow"
@@ -261,6 +262,7 @@
                                     app:iconTint="?attr/colorOnSurfaceVariant" />
 
                                 <LinearLayout
+                                    android:id="@+id/container_datetime"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:orientation="horizontal">
@@ -297,6 +299,7 @@
                         </LinearLayout>
 
                         <View
+                            android:id="@+id/view_duration"
                             android:layout_width="match_parent"
                             android:layout_height="@dimen/divider_height"
                             android:layout_marginVertical="@dimen/spacing_m"

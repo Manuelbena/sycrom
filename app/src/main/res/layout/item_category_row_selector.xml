@@ -28,7 +28,7 @@
         android:text="Categoría"
         android:textSize="@dimen/text_body_large"
         android:textColor="?attr/colorOnSurfaceVariant"
-        android:fontFamily="@font/inter"
+        android:fontFamily="@font/nunito"
         app:layout_constraintStart_toEndOf="@+id/ivCategoryLabelIcon"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -65,7 +65,7 @@
         tools:text="Tarea"
         android:textSize="@dimen/text_body_large"
         android:textStyle="bold"
-        android:fontFamily="@font/inter"
+        android:fontFamily="@font/nunito"
         app:layout_constraintEnd_toStartOf="@+id/flSelectedCategoryIcon"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />

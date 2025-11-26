@@ -24,7 +24,7 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="@color/background_primary"
-            android:fontFamily="@font/inter"
+            android:fontFamily="@font/nunito"
             android:layout_marginBottom="24dp"/>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -43,6 +43,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="GESTIONAR CATEGORÍAS"
+            android:visibility="gone"
             android:gravity="center"
             android:padding="16dp"
             android:textColor="@color/background_primary"
