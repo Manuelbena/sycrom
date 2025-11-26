@@ -11,12 +11,12 @@ enum class CategoryType(
     @DrawableRes val iconRes: Int,
     @ColorRes val colorRes: Int
 ) {
-    WORK("work", "Trabajo", "9", R.drawable.ic_work, R.color.color_surface),
-    PERSONAL("personal", "Personal", "2", R.drawable.ic_home_black_24dp, R.color.slate),
-    HEALTH("health", "Salud", "10", R.drawable.ic_health, R.color.priority_high),
-    FINANCE("finance", "Dinero", "6", R.drawable.ic_banck, R.color.priority_medium), // 6 = Mandarina
-    STUDY("study", "Estudios", "5", R.drawable.ic_book, R.color.priority_low), // 5 = Amarillo huevo
-    OTHER("other", "Otros", "8", R.drawable.ic_other, R.color.gold_dark); //
+    WORK("work", "Trabajo", "9", R.drawable.ic_work, R.color.cat_work),
+    PERSONAL("personal", "Personal", "2", R.drawable.ic_home_black_24dp, R.color.cat_personal),
+    HEALTH("health", "Salud", "10", R.drawable.ic_health, R.color.cat_health),
+    FINANCE("finance", "Dinero", "6", R.drawable.ic_banck, R.color.cat_finance), // 6 = Mandarina
+    STUDY("study", "Estudios", "5", R.drawable.ic_book, R.color.cat_studies), // 5 = Amarillo huevo
+    OTHER("other", "Otros", "8", R.drawable.ic_other, R.color.cat_default); //
 
 
 

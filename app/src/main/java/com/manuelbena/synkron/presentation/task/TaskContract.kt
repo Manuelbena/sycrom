@@ -2,9 +2,11 @@ package com.manuelbena.synkron.presentation.task
 
 import com.manuelbena.synkron.domain.models.SubTaskDomain
 import com.manuelbena.synkron.domain.models.GoogleEventReminder
+import com.manuelbena.synkron.domain.models.TaskDomain
 import java.util.Calendar
 
 data class TaskState(
+    val id : Int = 0,
     val isLoading: Boolean = false,
     val title: String = "",
     val description: String = "",
@@ -37,7 +39,7 @@ sealed class TaskEvent {
     data class OnDescriptionChange(val desc: String) : TaskEvent()
     data class OnLocationChange(val loc: String) : TaskEvent()
     data class OnTaskTypeChanged(val tabIndex: Int) : TaskEvent()
-
+    data class OnLoadTaskForEdit(val task: TaskDomain) : TaskEvent()
     data class OnDateSelected(val date: Long) : TaskEvent()
     data class OnStartTimeSelected(val hour: Int, val minute: Int) : TaskEvent()
     data class OnEndTimeSelected(val hour: Int, val minute: Int) : TaskEvent()

@@ -36,7 +36,8 @@ import com.manuelbena.synkron.presentation.task_ia.TaskIaBottomSheet
 import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
 import com.manuelbena.synkron.presentation.util.ADD_TASK
 import com.manuelbena.synkron.presentation.util.CarouselScrollListener
-import com.manuelbena.synkron.presentation.util.EDIT_TASK
+import com.manuelbena.synkron.presentation.util.TASK_TO_EDIT_KEY
+
 
 import com.manuelbena.synkron.presentation.util.WeekCalendarManager
 import com.manuelbena.synkron.presentation.util.getDurationInMinutes
@@ -482,7 +483,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private fun navigateToContainerActivity(task: TaskDomain?) {
         val intent = Intent(requireContext(), ContainerActivity::class.java).apply {
             if (task != null) {
-                putExtra(EDIT_TASK, task)
+                putExtra(TASK_TO_EDIT_KEY, task)
             } else {
                 putExtra(ADD_TASK, "true")
             }

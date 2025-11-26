@@ -40,7 +40,7 @@ fun String.getCategoryIcon(): Int {
         "PERSONAL" -> R.drawable.ic_home_black_24dp // Asegúrate de tener este drawable
         "HEALTH", "SALUD" -> R.drawable.ic_health
         "STUDIES", "ESTUDIOS" -> R.drawable.ic_book
-        "FINANCE", "DINERO" -> R.drawable.ic_attach_money
+        "FINANCE", "DINERO" -> R.drawable.ic_banck
         else -> R.drawable.ic_other // Fallback seguro por si llega algo raro
     }
 }

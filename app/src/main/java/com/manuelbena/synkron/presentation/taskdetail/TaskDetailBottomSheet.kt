@@ -17,7 +17,8 @@ import com.manuelbena.synkron.R
 import com.manuelbena.synkron.databinding.BottomSheetTaskDetailBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
-import com.manuelbena.synkron.presentation.util.EDIT_TASK
+import com.manuelbena.synkron.presentation.util.TASK_TO_EDIT_KEY
+
 import com.manuelbena.synkron.presentation.util.TaskDetailContract
 import com.manuelbena.synkron.presentation.util.TaskDetailViewModel
 import com.manuelbena.synkron.presentation.util.adapters.SubtaskAdapter
@@ -243,7 +244,7 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
 
     private fun navigateToContainerActivity(task: TaskDomain) {
         val intent = Intent(requireContext(), ContainerActivity::class.java).apply {
-            putExtra(EDIT_TASK, task)
+            putExtra(TASK_TO_EDIT_KEY, task)
         }
         startActivity(intent)
     }

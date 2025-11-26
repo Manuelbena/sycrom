@@ -18,6 +18,8 @@ import com.google.android.material.tabs.TabLayout
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentNewTaskBinding
 import com.manuelbena.synkron.databinding.ItemCategoryRowSelectorBinding
+import com.manuelbena.synkron.domain.models.TaskDomain
+import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.dialogs.AddReminderDialog
 import com.manuelbena.synkron.presentation.dialogs.CategorySelectionDialog
 import com.manuelbena.synkron.presentation.dialogs.adapter.ReminderManagerAdapter
@@ -51,6 +53,15 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     override fun setUI() {
         super.setUI()
+
+        // 1. Verificar si estamos en modo edición recuperando el argumento del Bundle
+        arguments?.getParcelable<TaskDomain>(ContainerActivity.TASK_TO_EDIT_KEY)?.let { task ->
+            // Si existe la tarea, le decimos al ViewModel que cargue los datos
+            viewModel.onEvent(TaskEvent.OnLoadTaskForEdit(task))
+        }
+
+        categoryBinding = ItemCategoryRowSelectorBinding.bind(binding.layoutCategorySelect.root)
+
         categoryBinding = ItemCategoryRowSelectorBinding.bind(binding.layoutCategorySelect.root)
 
         setupRecyclers()
@@ -240,14 +251,65 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         val timeFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
 
         binding.apply {
+            if (state.id != 0) {
+                // ESTAMOS EDITANDO
+                try {
+                    toolbar.title = "Editar Tarea"
+                } catch (e: Exception) {
+                    // Si no encuentras el ID, no pasa nada
+                }
+                btnGuardar.text = "Actualizar"
+            } else {
+                // ESTAMOS CREANDO
+                try {
+                    toolbar.title = "Nueva Tarea"
+                } catch (e: Exception) { }
+                btnGuardar.text = "Guardar"
+            }
+
+            // --- 1. CAMPOS DE TEXTO (NUEVO) ---
+            // Usamos una comprobación para evitar bucles infinitos al escribir y que el cursor no salte
+            if (tietTitle.text.toString() != state.title) {
+                tietTitle.setText(state.title)
+            }
+            if (tietDescription.text.toString() != state.description) {
+                tietDescription.setText(state.description)
+            }
+            if (tietLocation.text.toString() != state.location) {
+                tietLocation.setText(state.location)
+            }
+
+            // --- 2. TABS: Evento / Todo el día / Sin fecha (NUEVO) ---
+            // Calculamos el índice según el estado
+            val expectedTabIndex = when {
+                state.isNoDate -> 2
+                state.isAllDay -> 1
+                else -> 0
+            }
+            if (tabLayoutTaskType.selectedTabPosition != expectedTabIndex) {
+                tabLayoutTaskType.getTabAt(expectedTabIndex)?.select()
+            }
+
+            // --- 3. PRIORIDAD (NUEVO) ---
+            val chipIdToSelect = when (state.priority) {
+                "Alta" -> com.manuelbena.synkron.R.id.chip_hight
+                "Baja" -> com.manuelbena.synkron.R.id.chip_small
+                else -> com.manuelbena.synkron.R.id.chip_medium
+            }
+            if (chipGroupPriorityTask.checkedChipId != chipIdToSelect) {
+                chipGroupPriorityTask.check(chipIdToSelect)
+            }
+
+            // --- 4. FECHAS Y HORAS (YA LO TENÍAS) ---
             btnFecha.text = dateFormatter.format(state.selectedDate.time)
             btnHoraStart.text = timeFormatter.format(state.startTime.time)
             btnHoraEnd.text = timeFormatter.format(state.endTime.time)
 
+            // Control de visibilidad de contenedores
             containerDuration.isVisible = !state.isNoDate
             containerDatetime.isVisible = !state.isAllDay && !state.isNoDate
 
-            // Categoría (Visual)
+            // --- 5. CATEGORÍA (YA LO TENÍAS) ---
             val currentCategoryType = CategoryType.getAll()
                 .find { it.title == state.category }
                 ?: CategoryType.PERSONAL
@@ -259,17 +321,18 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
                 viewSelectedCategoryBackground.background.setTint(colorInt)
             }
 
-            // Subtareas
+            // --- 6. LISTAS (YA LO TENÍAS) ---
             subtaskAdapter.updateItems(state.subTasks)
 
-            // NUEVO: Actualizar lista de Recordatorios
-            // Mapeamos de Domain (GoogleEventReminder) a UI (ReminderItem) para que el adaptador entienda
+            // Recordatorios
             val uiReminders = state.reminders.map { domainReminder ->
+                // Nota: Asegúrate de que esta lógica de conversión coincide con la que definimos antes
                 val displayTimeCalendar = (state.startTime.clone() as Calendar).apply {
                     add(Calendar.MINUTE, -domainReminder.minutes)
                 }
 
-                val methodEnum = when(domainReminder.method) {
+                // Mapeo inverso de método para pintar el icono correcto
+                val methodEnum = when (domainReminder.method) {
                     "email" -> ReminderMethod.WHATSAPP
                     "alarm" -> ReminderMethod.ALARM
                     else -> ReminderMethod.NOTIFICATION
@@ -282,16 +345,23 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
                     method = methodEnum,
                     offsetMinutes = domainReminder.minutes,
                     displayTime = timeFormatter.format(displayTimeCalendar.time),
-
-                    // PINTAR EL MENSAJE REAL (Punto 3)
                     message = domainReminder.message ?: "Recordatorio"
                 )
             }
             reminderAdapter.submitList(uiReminders)
 
-            // Recurrencia
+            // --- 7. RECURRENCIA (YA LO TENÍAS) ---
             chipGroupDays.isVisible = state.recurrenceType == RecurrenceType.CUSTOM
-            tvRecurrenceStatus.text = state.recurrenceType.name
+            tvRecurrenceStatus.text = state.recurrenceType.name // O un texto más amigable si tienes un mapeo
+
+            // Si es custom, marcar los chips de los días
+            if (state.recurrenceType == RecurrenceType.CUSTOM) {
+                for (i in 0 until chipGroupDays.childCount) {
+                    val chip = chipGroupDays.getChildAt(i) as? Chip
+                    val dayId = chip?.tag.toString().toIntOrNull() ?: 0
+                    chip?.isChecked = state.selectedRecurrenceDays.contains(dayId)
+                }
+            }
         }
     }
 
