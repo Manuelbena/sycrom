@@ -55,19 +55,6 @@ class AlarmScheduler @Inject constructor(
 
                 // Log para confirmar
                 android.util.Log.d("SYCROM_ALARM", "Alarma programada modo RELOJ (Máxima prioridad) a las $triggerTime")
-
-                // Programar alarma exacta
-                try {
-                    alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        triggerTime,
-                        pendingIntent
-                    )
-                    android.util.Log.d("SYCROM_ALARM", "¡Alarma fijada en AlarmManager con éxito!")
-                } catch (e: SecurityException) {
-                    // Aquí deberías manejar si el usuario no dio permiso de Alarmas Exactas (Android 12+)
-                    e.printStackTrace()
-                }
             }else{
                 android.util.Log.e("SYCROM_ALARM", "ERROR: La hora es en el pasado, no se programó.")
             }

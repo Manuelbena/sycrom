@@ -24,7 +24,7 @@ class App : Application() {
 
         // 2. Cambiamos el ID para asegurar que se crea nuevo
         val channel = android.app.NotificationChannel(
-            "ALARM_CHANNEL_HIGH", // Nuevo ID
+            "ALARM_CHANNEL_V2", // Nuevo ID
             "Alarmas Sycrom",
             android.app.NotificationManager.IMPORTANCE_HIGH
         ).apply {

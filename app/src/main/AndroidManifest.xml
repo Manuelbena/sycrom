@@ -38,6 +38,7 @@
             android:name=".presentation.alarm.AlarmActivity"
             android:exported="false"
             android:launchMode="singleTask"
+            android:taskAffinity=""
             android:theme="@style/Theme.AppCompat.NoActionBar"
             android:showOnLockScreen="true"
             android:excludeFromRecents="true"
