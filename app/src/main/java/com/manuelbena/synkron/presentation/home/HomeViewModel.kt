@@ -1,11 +1,16 @@
 package com.manuelbena.synkron.presentation.home
 
+import android.content.Context
+import android.content.Intent
+
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.domain.usecase.DeleteTaskUseCase
 import com.manuelbena.synkron.domain.usecase.GetTaskTodayUseCase
 import com.manuelbena.synkron.domain.usecase.UpdateTaskUseCase
+import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
 import com.manuelbena.synkron.presentation.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -127,10 +132,4 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // Clase sellada para las Acciones (Eventos de un solo uso)
-    sealed class HomeAction {
-        data class NavigateToEditTask(val task: TaskDomain) : HomeAction()
-        data class ShowErrorSnackbar(val message: String) : HomeAction()
-        data class ShareTask(val task: TaskDomain) : HomeAction()
-    }
 }

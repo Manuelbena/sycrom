@@ -144,13 +144,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         // --- OBSERVADOR DE ACCIÓN (SingleLiveEvent) ---
         viewModel.action.observe(viewLifecycleOwner) { action ->
             when (action) {
-                is HomeViewModel.HomeAction.ShowErrorSnackbar -> {
+                is HomeAction.ShowErrorSnackbar -> {
                     Snackbar.make(binding.root, action.message, Snackbar.LENGTH_SHORT).show()
                 }
-                is HomeViewModel.HomeAction.NavigateToEditTask -> {
+                is HomeAction.NavigateToEditTask -> {
                     navigateToContainerActivity(action.task)
                 }
-                is HomeViewModel.HomeAction.ShareTask -> {
+                is HomeAction.ShareTask -> {
                     shareTask(action.task)
                 }
             }

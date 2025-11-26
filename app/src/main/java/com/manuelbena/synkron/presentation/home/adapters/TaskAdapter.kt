@@ -35,10 +35,6 @@ class TaskAdapter(
         setHasStableIds(true)
     }
 
-    override fun getItemId(position: Int): Long {
-        return getItem(position).id
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val binding = ItemTaskTodayBinding.inflate(
             LayoutInflater.from(parent.context),
@@ -73,19 +69,29 @@ class TaskAdapter(
 
         private fun showPopupMenu(anchorView: View, task: TaskDomain) {
             val popup = PopupMenu(anchorView.context, anchorView)
+            // Asegúrate que tu XML 'menu_item_task' tenga el ID 'action_edit_task'
             popup.menuInflater.inflate(R.menu.menu_item_task, popup.menu)
+
             popup.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
-                    R.id.action_edit_task -> onMenuAction(TaskMenuAction.OnEdit(task))
-                    R.id.action_delete_task -> onMenuAction(TaskMenuAction.OnDelete(task))
-                    R.id.action_share_task -> onMenuAction(TaskMenuAction.OnShare(task))
-                    else -> return@setOnMenuItemClickListener false
+                    // Aquí despachamos la acción al Fragment a través del Sealed Class
+                    R.id.action_edit_task -> {
+                        onMenuAction(TaskMenuAction.OnEdit(task))
+                        true
+                    }
+                    R.id.action_delete_task -> {
+                        onMenuAction(TaskMenuAction.OnDelete(task))
+                        true
+                    }
+                    R.id.action_share_task -> {
+                        onMenuAction(TaskMenuAction.OnShare(task))
+                        true
+                    }
+                    else -> false
                 }
-                true
             }
             popup.show()
         }
-
         @RequiresApi(Build.VERSION_CODES.P)
         override fun bind(item: TaskDomain) {
             binding.apply {

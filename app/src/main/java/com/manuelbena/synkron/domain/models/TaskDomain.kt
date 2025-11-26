@@ -6,7 +6,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class TaskDomain(
     // --- Campos Internos de Synkrón ---
-    val id: Long = 0L,
+    val id: Int = 0,
     val subTasks: List<SubTaskDomain> = emptyList(),
     val typeTask : String, // Nombre de la categoría (ej: "Trabajo")
 

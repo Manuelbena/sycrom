@@ -88,7 +88,6 @@ class TaskViewModel @Inject constructor(
                 }
             }
 
-            // --- SUBTAREAS ---
             is TaskEvent.OnAddSubTask -> {
                 if (event.text.isNotBlank()) {
                     val sub = SubTaskDomain(id = UUID.randomUUID().toString(), title = event.text, isDone = false)
@@ -101,19 +100,12 @@ class TaskViewModel @Inject constructor(
             is TaskEvent.OnReorderSubTasks -> {
                 updateState { copy(subTasks = event.items) }
             }
-
-            // --- RECORDATORIOS ---
             is TaskEvent.OnAddReminderClicked -> _effect.value = TaskEffect.ShowReminderDialog
             is TaskEvent.OnAddReminder -> updateState { copy(reminders = reminders + event.reminder) }
             is TaskEvent.OnRemoveReminder -> updateState { copy(reminders = reminders - event.reminder) }
-
-            // --- CATEGORÍA (CORREGIDO) ---
             is TaskEvent.OnCategorySelectorClicked -> _effect.value = TaskEffect.ShowCategoryDialog
             is TaskEvent.OnCategorySelected -> updateState { copy(category = event.category, colorId = event.colorId) }
-
             is TaskEvent.OnPrioritySelected -> updateState { copy(priority = event.priority) }
-
-            // --- RECURRENCIA (CORREGIDO) ---
             is TaskEvent.OnRecurrenceSelectorClicked -> _effect.value = TaskEffect.ShowRecurrenceDialog
             is TaskEvent.OnRecurrenceTypeSelected -> updateState { copy(recurrenceType = event.type) }
             is TaskEvent.OnRecurrenceDayToggled -> {

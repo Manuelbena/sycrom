@@ -8,7 +8,7 @@ import com.manuelbena.synkron.domain.models.SubTaskDomain
 @Entity(tableName = "task_table")
 data class TaskEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Long = 0L,
+    val id: Int = 0,
 
     // Campos de Fecha/Hora
     val date: Long,
