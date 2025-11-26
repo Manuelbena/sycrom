@@ -229,6 +229,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText("Selecciona una fecha")
             .setSelection(startCalendar.timeInMillis)
+            .setTheme(R.style.SynkronDatePicker)
             .build()
 
         datePicker.addOnPositiveButtonClickListener { selection ->
@@ -249,6 +250,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             .setHour(startCalendar.get(Calendar.HOUR_OF_DAY))
             .setMinute(startCalendar.get(Calendar.MINUTE))
             .setTitleText(if (isStart) "Hora Inicio" else "Hora Fin")
+            .setTheme(R.style.SynkronTimePicker)
             .build()
 
         timePicker.addOnPositiveButtonClickListener {
