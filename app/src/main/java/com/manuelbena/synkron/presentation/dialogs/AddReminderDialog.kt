@@ -10,7 +10,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
-import com.manuelbena.synkron.R
 import com.manuelbena.synkron.databinding.DialogAddCustomReminderBinding
 import com.manuelbena.synkron.presentation.models.ReminderItem
 import com.manuelbena.synkron.presentation.models.ReminderMethod
@@ -20,19 +19,24 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class AddReminderDialog(
-    private val taskStartTime: Calendar, // 1. Recibimos la hora de inicio de la tarea
+    private val taskStartTime: Calendar, // Inicio de la tarea
+    private val taskEndTime: Calendar,   // Fin de la tarea (NUEVO)
     private val onReminderAdded: (ReminderItem) -> Unit
 ) : BottomSheetDialogFragment() {
 
     private var _binding: DialogAddCustomReminderBinding? = null
     private val binding get() = _binding!!
 
-    // Iniciamos el reloj con la hora actual o la hora de la tarea (opcional)
-    private var selectedHour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-    private var selectedMinute = Calendar.getInstance().get(Calendar.MINUTE)
+    private var selectedHour: Int = 0
+    private var selectedMinute: Int = 0
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = DialogAddCustomReminderBinding.inflate(inflater, container, false)
+
+        // Por defecto, sugerimos la hora de inicio
+        selectedHour = taskStartTime.get(Calendar.HOUR_OF_DAY)
+        selectedMinute = taskStartTime.get(Calendar.MINUTE)
+
         return binding.root
     }
 
@@ -44,46 +48,52 @@ class AddReminderDialog(
 
     override fun onStart() {
         super.onStart()
-        val sheet = dialog as? BottomSheetDialog
-        sheet?.behavior?.state = BottomSheetBehavior.STATE_EXPANDED
+        (dialog as? BottomSheetDialog)?.behavior?.state = BottomSheetBehavior.STATE_EXPANDED
     }
 
     private fun setupUI() {
         updateTimeDisplay()
         binding.chipNotification.isChecked = true
-        // Si habías borrado el etOffset del XML, borra cualquier referencia aquí si la tenías
     }
 
     private fun setupListeners() {
         binding.cardTime.setOnClickListener { showTimePicker() }
 
         binding.btnSave.setOnClickListener {
-            val message = binding.etMessage.text.toString()
+            val messageInput = binding.etMessage.text.toString()
+            val finalMessage = messageInput.ifBlank { "Recordatorio" }
 
-            // 2. CÁLCULO MATEMÁTICO: Hora Tarea - Hora Recordatorio
-
-            // Creamos un calendario para la hora del aviso (usando el mismo día de la tarea)
+            // 1. Construimos la fecha exacta del recordatorio
             val reminderTime = (taskStartTime.clone() as Calendar).apply {
                 set(Calendar.HOUR_OF_DAY, selectedHour)
                 set(Calendar.MINUTE, selectedMinute)
                 set(Calendar.SECOND, 0)
             }
 
-            // Calculamos la diferencia en milisegundos
-            val diffInMillis = taskStartTime.timeInMillis - reminderTime.timeInMillis
+            val now = Calendar.getInstance()
 
-            // Convertimos a minutos
-            val minutesOffset = TimeUnit.MILLISECONDS.toMinutes(diffInMillis).toInt()
-
-            // 3. Validación: El aviso no puede ser posterior a la tarea
-            if (minutesOffset < 0) {
-                Toast.makeText(requireContext(), "El aviso debe ser antes de la hora de la tarea", Toast.LENGTH_SHORT).show()
+            // VALIDACIÓN 1: El recordatorio NO puede ser en el pasado
+            if (reminderTime.before(now)) {
+                Toast.makeText(requireContext(), "La hora del aviso ya ha pasado", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
+            // VALIDACIÓN 2 (AJUSTADA): El recordatorio NO puede ser después de que acabe la tarea
+            // (Permitimos avisos DURANTE la tarea, ej. 14:00 en una tarea de 8 a 17)
+            if (reminderTime.after(taskEndTime)) {
+                Toast.makeText(requireContext(), "El aviso debe ser antes de que acabe la tarea", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Cálculo de antelación (Minutos) respecto al INICIO
+            // NOTA: Si es durante la tarea, el resultado será negativo (ej. -120 min).
+            // Google Calendar ACEPTA negativos (significa "después del inicio").
+            val diffInMillis = taskStartTime.timeInMillis - reminderTime.timeInMillis
+            val minutesOffset = TimeUnit.MILLISECONDS.toMinutes(diffInMillis).toInt()
+
             val method = when (binding.chipGroupType.checkedChipId) {
-                R.id.chipAlarm -> ReminderMethod.ALARM
-                R.id.chipWhatsapp -> ReminderMethod.WHATSAPP
+                com.manuelbena.synkron.R.id.chipAlarm -> ReminderMethod.ALARM
+                com.manuelbena.synkron.R.id.chipWhatsapp -> ReminderMethod.WHATSAPP
                 else -> ReminderMethod.NOTIFICATION
             }
 
@@ -94,9 +104,9 @@ class AddReminderDialog(
                 hour = selectedHour,
                 minute = selectedMinute,
                 method = method,
-                offsetMinutes = minutesOffset, // ¡Aquí va el cálculo automático!
+                offsetMinutes = minutesOffset, // Puede ser negativo si es "durante"
                 displayTime = timeString,
-                message = message.ifEmpty { "Recordatorio" }
+                message = finalMessage
             )
 
             onReminderAdded(reminder)
@@ -118,8 +128,7 @@ class AddReminderDialog(
             selectedMinute = picker.minute
             updateTimeDisplay()
         }
-
-        picker.show(childFragmentManager, "time_picker_tag")
+        picker.show(childFragmentManager, "time_picker")
     }
 
     private fun updateTimeDisplay() {

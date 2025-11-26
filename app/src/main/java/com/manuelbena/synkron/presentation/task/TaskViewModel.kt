@@ -45,12 +45,47 @@ class TaskViewModel @Inject constructor(
                 updateState { copy(selectedDate = newCal) }
             }
             is TaskEvent.OnStartTimeSelected -> {
-                val newStart = (current.startTime.clone() as Calendar).apply { set(Calendar.HOUR_OF_DAY, event.hour); set(Calendar.MINUTE, event.minute) }
-                updateState { copy(startTime = newStart) } // Simplificado
+                val newStart = (current.startTime.clone() as Calendar).apply {
+                    set(Calendar.HOUR_OF_DAY, event.hour)
+                    set(Calendar.MINUTE, event.minute)
+                }
+
+                // Lógica de empuje (Inicio > Fin)
+                var newEnd = current.endTime
+                if (newStart.after(newEnd)) {
+                    newEnd = (newStart.clone() as Calendar).apply { add(Calendar.HOUR_OF_DAY, 1) }
+                }
+
+                // --- NUEVA LÓGICA: Límite 23:59 ---
+                // Calculamos el final del día de la nueva hora de inicio
+                val endOfDay = (newStart.clone() as Calendar).apply {
+                    set(Calendar.HOUR_OF_DAY, 23)
+                    set(Calendar.MINUTE, 59)
+                }
+
+                // Si la hora fin calculada se pasa al día siguiente o supera las 23:59
+                if (newEnd.after(endOfDay) || newEnd.get(Calendar.DAY_OF_YEAR) != newStart.get(Calendar.DAY_OF_YEAR)) {
+                    newEnd = endOfDay // La topeamos a las 23:59
+                }
+
+                updateState { copy(startTime = newStart, endTime = newEnd) }
             }
+
             is TaskEvent.OnEndTimeSelected -> {
-                val newEnd = (current.endTime.clone() as Calendar).apply { set(Calendar.HOUR_OF_DAY, event.hour); set(Calendar.MINUTE, event.minute) }
-                updateState { copy(endTime = newEnd) }
+                val newEnd = (current.endTime.clone() as Calendar).apply {
+                    set(Calendar.HOUR_OF_DAY, event.hour)
+                    set(Calendar.MINUTE, event.minute)
+                }
+
+                // VALIDACIÓN: La hora fin no puede ser anterior al inicio
+                if (newEnd.before(current.startTime)) {
+                    _effect.value = TaskEffect.ShowMessage("La hora fin no puede ser anterior al inicio")
+                } else {
+                    // Como seleccionamos hora/minuto sobre el mismo objeto Calendar del día,
+                    // implícitamente estamos en el mismo día.
+                    // Solo aseguramos que no haya saltos raros si la lógica cambiara.
+                    updateState { copy(endTime = newEnd) }
+                }
             }
 
             // --- SUBTAREAS ---

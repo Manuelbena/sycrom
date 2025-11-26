@@ -193,11 +193,25 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
                 }
 
                 is TaskEffect.ShowReminderDialog -> {
-                    // 1. Obtenemos la hora de inicio actual del ViewModel
-                    val taskStart = viewModel.state.value?.startTime ?: Calendar.getInstance()
+                    val currentState = viewModel.state.value ?: TaskState()
 
-                    // 2. Se la pasamos al constructor del Diálogo
-                    AddReminderDialog(taskStart) { reminderItem -> // <--- CAMBIO AQUÍ
+                    // 1. Fecha/Hora INICIO completa
+                    val fullTaskStart = (currentState.selectedDate.clone() as Calendar).apply {
+                        set(Calendar.HOUR_OF_DAY, currentState.startTime.get(Calendar.HOUR_OF_DAY))
+                        set(Calendar.MINUTE, currentState.startTime.get(Calendar.MINUTE))
+                        set(Calendar.SECOND, 0)
+                    }
+
+                    // 2. Fecha/Hora FIN completa (NUEVO)
+                    // Usamos la misma fecha base, pero la hora de fin del estado
+                    val fullTaskEnd = (currentState.selectedDate.clone() as Calendar).apply {
+                        set(Calendar.HOUR_OF_DAY, currentState.endTime.get(Calendar.HOUR_OF_DAY))
+                        set(Calendar.MINUTE, currentState.endTime.get(Calendar.MINUTE))
+                        set(Calendar.SECOND, 0)
+                    }
+
+                    // 3. Pasamos ambas fechas al diálogo
+                    AddReminderDialog(fullTaskStart, fullTaskEnd) { reminderItem ->
 
                         val methodString = when (reminderItem.method) {
                             ReminderMethod.WHATSAPP -> "email"
@@ -207,7 +221,8 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
                         val domainReminder = com.manuelbena.synkron.domain.models.GoogleEventReminder(
                             method = methodString,
-                            minutes = reminderItem.offsetMinutes // Ya viene calculado automáticamente
+                            minutes = reminderItem.offsetMinutes, // Si es negativo, Google entiende "después del inicio"
+                            message = reminderItem.message
                         )
 
                         viewModel.onEvent(TaskEvent.OnAddReminder(domainReminder))
@@ -250,7 +265,6 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             // NUEVO: Actualizar lista de Recordatorios
             // Mapeamos de Domain (GoogleEventReminder) a UI (ReminderItem) para que el adaptador entienda
             val uiReminders = state.reminders.map { domainReminder ->
-                // Calculamos la hora de visualización (Hora Inicio Tarea - Minutos Offset)
                 val displayTimeCalendar = (state.startTime.clone() as Calendar).apply {
                     add(Calendar.MINUTE, -domainReminder.minutes)
                 }
@@ -262,16 +276,17 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
                 }
 
                 ReminderItem(
-                    id = UUID.randomUUID().toString(), // Generamos ID temporal para UI
+                    id = UUID.randomUUID().toString(),
                     hour = displayTimeCalendar.get(Calendar.HOUR_OF_DAY),
                     minute = displayTimeCalendar.get(Calendar.MINUTE),
                     method = methodEnum,
                     offsetMinutes = domainReminder.minutes,
                     displayTime = timeFormatter.format(displayTimeCalendar.time),
-                    message = "Recordatorio" // Mensaje genérico si no lo guardamos en dominio
+
+                    // PINTAR EL MENSAJE REAL (Punto 3)
+                    message = domainReminder.message ?: "Recordatorio"
                 )
             }
-            // ¡Aquí está la magia!
             reminderAdapter.submitList(uiReminders)
 
             // Recurrencia

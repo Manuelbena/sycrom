@@ -40,7 +40,8 @@ data class GoogleEventAttendee(
 @Parcelize
 data class GoogleEventReminder(
     val method: String = "popup",
-    val minutes: Int
+    val minutes: Int,
+    val message: String? = null
 ) : Parcelable
 
 /**
