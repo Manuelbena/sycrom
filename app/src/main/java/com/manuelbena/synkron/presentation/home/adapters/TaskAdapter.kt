@@ -21,6 +21,8 @@ import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseViewHolder
 import com.manuelbena.synkron.databinding.ItemTaskTodayBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
+import com.manuelbena.synkron.presentation.util.getCategoryColor
+import com.manuelbena.synkron.presentation.util.getCategoryIcon
 import com.manuelbena.synkron.presentation.util.getDurationInMinutes
 import com.manuelbena.synkron.presentation.util.toDurationString
 import com.manuelbena.synkron.presentation.util.toHourString
@@ -101,12 +103,11 @@ class TaskAdapter(
                 // 1. MAPEO DE DATOS
                 // =============================================================
                 tvEventTitle.text = item.summary
-                val iconResId = context.getIconResId(item.categoryIcon)
-                val colorResId = context.getColorResId(item.categoryColor)
+
 
                 // Icono y Tint
-                ivCategoryIcon.setImageResource(iconResId)
-                ivCategoryIcon.backgroundTintList = ContextCompat.getColorStateList(context, colorResId)
+                ivCategoryIcon.setImageResource(item.typeTask.getCategoryIcon())
+                ivCategoryIcon.backgroundTintList = ContextCompat.getColorStateList(context, item.typeTask.getCategoryColor())
 
                 // Ubicación
                 if (item.location.isNullOrEmpty()) {
@@ -257,16 +258,7 @@ class TaskAdapter(
         }
     }
 
-    // Extensiones Helper
-    private fun Context.getIconResId(resName: String): Int {
-        val resId = resources.getIdentifier(resName, "drawable", packageName)
-        return if (resId != 0) resId else R.drawable.ic_label
-    }
 
-    private fun Context.getColorResId(resName: String): Int {
-        val resId = resources.getIdentifier(resName, "color", packageName)
-        return if (resId != 0) resId else R.color.priority_default
-    }
 
     sealed class TaskMenuAction {
         data class OnEdit(val task: TaskDomain) : TaskMenuAction()

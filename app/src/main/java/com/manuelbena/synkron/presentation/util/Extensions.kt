@@ -1,6 +1,8 @@
 package com.manuelbena.synkron.presentation.util
 
+import com.manuelbena.synkron.R
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
+import com.manuelbena.synkron.presentation.models.CategoryType
 import java.time.Duration
 
 import java.time.format.DateTimeFormatter
@@ -30,6 +32,39 @@ fun GoogleEventDateTime?.toHourString(locale: Locale = Locale.getDefault()): Str
     }
 }
 
+// Mapeo seguro y rápido: String del Dominio -> Recurso de UI
+fun String.getCategoryIcon(): Int {
+    // Normalizamos el string para evitar errores de mayúsculas/minúsculas
+    return when (this.uppercase()) {
+        "WORK", "TRABAJO" -> R.drawable.ic_work
+        "PERSONAL" -> R.drawable.ic_home_black_24dp // Asegúrate de tener este drawable
+        "HEALTH", "SALUD" -> R.drawable.ic_health
+        "STUDIES", "ESTUDIOS" -> R.drawable.ic_book
+        "FINANCE", "DINERO" -> R.drawable.ic_attach_money
+        else -> R.drawable.ic_other // Fallback seguro por si llega algo raro
+    }
+}
+
+fun String.getCategoryColor(): Int {
+    return when (this.uppercase()) {
+        "WORK", "TRABAJO" -> R.color.cat_work
+        "PERSONAL" -> R.color.cat_personal
+        "HEALTH", "SALUD" -> R.color.cat_health
+        "STUDIES", "ESTUDIOS" -> R.color.cat_studies
+        "FINANCE", "DINERO" -> R.color.cat_finance
+        else -> R.color.cat_default
+    }
+}
+
+// Lo mismo para el color si lo necesitas
+fun String.getPriorityColor(): Int {
+    return when (this.uppercase()) {
+        "HIGH", "ALTA" -> R.color.priority_high
+        "MEDIUM", "MEDIA" -> R.color.priority_medium
+        "LOW", "BAJA" -> R.color.priority_low
+        else -> R.color.priority_default
+    }
+}
 /**
  * Calcula la duración en minutos entre dos objetos [GoogleEventDateTime].
  * REESCRITO para usar ZonedDateTime.
