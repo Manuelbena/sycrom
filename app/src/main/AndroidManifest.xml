@@ -35,12 +35,14 @@
             </intent-filter>
         </receiver>
         <activity
-            android:name=".presentation.alarm.AlarmActivity"
+            android:name=".presentation.activitys.AlarmActivity"
             android:exported="false"
             android:launchMode="singleTask"
             android:taskAffinity=""
-            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:theme="@style/Theme.Synkron"
             android:showOnLockScreen="true"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true"
             android:excludeFromRecents="true"
             android:screenOrientation="portrait" />
         <activity
