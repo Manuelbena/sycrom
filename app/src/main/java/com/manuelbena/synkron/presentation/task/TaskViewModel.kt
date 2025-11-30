@@ -51,6 +51,8 @@ class TaskViewModel @Inject constructor(
                 val newStart = (current.startTime.clone() as Calendar).apply {
                     set(Calendar.HOUR_OF_DAY, event.hour)
                     set(Calendar.MINUTE, event.minute)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
                 }
 
                 // Lógica de empuje (Inicio > Fin)
@@ -64,6 +66,8 @@ class TaskViewModel @Inject constructor(
                 val endOfDay = (newStart.clone() as Calendar).apply {
                     set(Calendar.HOUR_OF_DAY, 23)
                     set(Calendar.MINUTE, 59)
+                    set(Calendar.SECOND, 0)
+                    set(Calendar.MILLISECOND, 0)
                 }
 
                 // Si la hora fin calculada se pasa al día siguiente o supera las 23:59

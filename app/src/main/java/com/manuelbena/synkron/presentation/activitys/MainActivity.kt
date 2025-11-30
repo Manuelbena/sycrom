@@ -66,7 +66,17 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
      * Comprueba los permisos críticos para que la alarma funcione
      */
     private fun checkPermissions() {
-        // 1. Permiso de Alarmas Exactas (Android 12+)
+
+        if (Build.VERSION.SDK_INT >= 33) { // Android 13 (Tiramisu)
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) !=
+                android.content.pm.PackageManager.PERMISSION_GRANTED) {
+
+                requestPermissions(
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    101 // Un código de solicitud cualquiera
+                )
+            }
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
             if (!alarmManager.canScheduleExactAlarms()) {
