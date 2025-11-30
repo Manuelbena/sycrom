@@ -36,7 +36,7 @@ class SubtaskAdapter(
      * ViewHolder para un solo item de subtarea [R.layout.item_subtask].
      */
     inner class SubtaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val checkBox: MaterialCheckBox = itemView.findViewById(R.id.subtaskCheckbox)
+        private val checkBox: MaterialCheckBox = itemView.findViewById(R.id.cbSubtask)
 
         init {
             // Es más eficiente poner el listener aquí que en onBindViewHolder

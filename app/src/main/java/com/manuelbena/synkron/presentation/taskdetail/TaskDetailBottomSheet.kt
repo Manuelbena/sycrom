@@ -1,57 +1,73 @@
 package com.manuelbena.synkron.presentation.taskdetail
 
-
+import android.annotation.SuppressLint
+import android.app.Dialog
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.Paint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.databinding.BottomSheetTaskDetailBinding
+import com.manuelbena.synkron.domain.models.GoogleEventReminder
 import com.manuelbena.synkron.domain.models.TaskDomain
+
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.util.TASK_TO_EDIT_KEY
-
-import com.manuelbena.synkron.presentation.util.TaskDetailContract
-import com.manuelbena.synkron.presentation.util.TaskDetailViewModel
-import com.manuelbena.synkron.presentation.util.adapters.SubtaskAdapter
-
+import com.manuelbena.synkron.presentation.util.getCategoryColor
+import com.manuelbena.synkron.presentation.util.getCategoryIcon
 import com.manuelbena.synkron.presentation.util.getDurationInMinutes
 import com.manuelbena.synkron.presentation.util.toCalendar
 import com.manuelbena.synkron.presentation.util.toDurationString
 import com.manuelbena.synkron.presentation.util.toHourString
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.collections.isNotEmpty
 
 @AndroidEntryPoint
 class TaskDetailBottomSheet : BottomSheetDialogFragment() {
 
-    // --- Propiedades ---
-
-    private val viewModel: TaskDetailViewModel by viewModels()
     private var _binding: BottomSheetTaskDetailBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var subtaskAdapter: SubtaskAdapter
+    private val taskId: Int by lazy { arguments?.getInt("TASK_ID") ?: 0 }
+    private val viewModel: TaskDetailViewModel by viewModels()
 
-    // --- Ciclo de Vida ---
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
+        dialog.setOnShowListener {
+            val bottomSheet = dialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+            bottomSheet?.let { sheet ->
+                val behavior = BottomSheetBehavior.from(sheet)
+                behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                behavior.skipCollapsed = true // Opcional: si quieres que no tenga estado intermedio
+                behavior.isDraggable = true
+            }
+        }
+        return dialog
+    }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = BottomSheetTaskDetailBinding.inflate(inflater, container, false)
@@ -60,245 +76,266 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupUI()
+        viewModel.getTask(taskId)
         setupListeners()
-        observeViewModel()
+        setupObservers()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
-    // --- Configuración ---
-
-    private fun setupUI() {
-        subtaskAdapter = SubtaskAdapter { subtask, isDone ->
-            viewModel.onEvent(TaskDetailContract.TaskDetailEvent.OnSubtaskChecked(subtask, isDone))
+    private fun setupObservers() {
+        viewModel.task.observe(viewLifecycleOwner) { task ->
+            if (task != null) updateUI(task)
         }
 
-        binding.recyclerViewTaskDetailSubtasks.apply {
-            layoutManager = LinearLayoutManager(context)
-            adapter = subtaskAdapter
+        viewModel.shouldDismiss.observe(viewLifecycleOwner) { shouldDismiss ->
+            if (shouldDismiss) dismiss()
         }
     }
+
+    @SuppressLint("SetTextI18n")
+    private fun updateUI(task: TaskDomain) {
+        binding.apply {
+            // 1. Título y Estado (Lottie)
+            tvTaskTitle.text = task.summary
+            updateTitleStyle(task.isDone)
+
+            // --- 2. SOLUCIÓN: Lottie Lógica Bidireccional ---
+            // Quitamos el listener temporalmente para configurar el estado inicial sin disparar eventos
+            lottieCompleteTask.setOnClickListener(null)
+
+            // Si la animación NO está corriendo, forzamos el estado visual exacto
+            if (!lottieCompleteTask.isAnimating) {
+                lottieCompleteTask.progress = if (task.isDone) 1f else 0f
+            }
+
+            // Listener: Controla la animación visual Y el cambio de datos
+            lottieCompleteTask.setOnClickListener {
+                val newState = !task.isDone
+                if (newState) {
+                    // Animación normal (0 -> 1)
+                    lottieCompleteTask.speed = 1.5f
+                    lottieCompleteTask.playAnimation()
+                } else {
+                    // Animación inversa (1 -> 0) para desmarcar suavemente
+                    lottieCompleteTask.speed = -1.5f
+                    lottieCompleteTask.playAnimation()
+                }
+                viewModel.toggleTaskCompletion(newState)
+            }
+
+            // 2. PIN
+            val pinIcon = if (task.isPinned) R.drawable.ic_mark_check else R.drawable.ic_mark
+            btnPin.setImageResource(pinIcon)
+            // Si quieres tintar el icono activo:
+            if (task.isPinned) btnPin.setColorFilter(requireContext().getColor(R.color.md_theme_onPrimary))
+            else btnPin.clearColorFilter() // O poner color por defecto
+
+            // 3. Chips de Metadatos
+            val startCal = task.start.toCalendar()
+            chipDate.text = SimpleDateFormat("EEE, dd MMM", Locale.getDefault()).format(startCal.time)
+
+            // PRIORIDAD: Color del punto y texto
+            chipPriority.text = task.priority
+            val priorityColor = getPriorityColor(task.priority)
+            chipPriority.chipIconTint = ColorStateList.valueOf(priorityColor)
+
+            // CATEGORIA: Icono y texto
+            chipCategory.text = task.typeTask
+
+            // Icono y Tint
+            chipCategory.setChipIconResource(task.typeTask.getCategoryIcon())
+            chipCategory.backgroundTintList = ContextCompat.getColorStateList(requireContext(), task.typeTask.getCategoryColor())
+
+
+
+            // 4. Ubicación
+            if (task.location.isNullOrEmpty()) {
+                tvLocation.text = "Sin ubicación"
+                // Opcional: layoutLocation.isVisible = false si prefieres ocultarlo
+            } else {
+                tvLocation.text = task.location
+                layoutLocation.isVisible = true
+            }
+
+            // 5. Hora y Duración
+            val startTime = task.start.toHourString()
+            val endTime = task.end.toHourString()
+            tvTimeRange.text = "$startTime - $endTime"
+
+            val durationMin = getDurationInMinutes(task.start, task.end)
+            if (durationMin > 0) {
+                tvDurationText.isVisible = true
+                tvDurationText.text = durationMin.toDurationString()
+            } else {
+                tvDurationText.isVisible = false
+            }
+
+            // 6. Descripción
+            tvDescription.text = if (task.description.isNullOrBlank()) "Sin descripción" else task.description
+
+            // 7. Configuración
+
+            val hasReminders = task.reminders.overrides.isNotEmpty()
+
+
+            // Pasamos el callback de borrado al adapter
+            setupRemindersRecycler(task.reminders.overrides)
+
+            val showSettingsSection =  hasReminders
+            layoutSettings.isVisible = showSettingsSection
+
+            // Truco visibilidad titulo
+            try {
+                val parentLayout = layoutSettings.parent as? ViewGroup
+                if (parentLayout != null) {
+                    val index = parentLayout.indexOfChild(layoutSettings)
+                    if (index > 0) {
+                        val labelView = parentLayout.getChildAt(index - 1)
+                        if (labelView is TextView && labelView.text == "Avisos") {
+                            labelView.isVisible = showSettingsSection
+                        }
+                    }
+                }
+            } catch (e: Exception) { }
+
+            // 8. Subtareas
+            renderSubtasks(task)
+        }
+    }
+
+    private fun renderSubtasks(task: TaskDomain) {
+        binding.containerSubtasks.removeAllViews()
+
+        // Mostrar/Ocultar cabecera
+        binding.tvSubtasksHeader.isVisible = task.subTasks.isNotEmpty()
+        binding.dividerSubtask.isVisible = task.subTasks.isNotEmpty()
+
+
+        task.subTasks.forEach { subTask ->
+            val view = layoutInflater.inflate(R.layout.item_subtask, binding.containerSubtasks, false)
+            val check = view.findViewById<CheckBox>(R.id.cbSubtask)
+            val title = view.findViewById<TextView>(R.id.tvSubtaskTitle)
+
+            title.text = subTask.title
+            check.isChecked = subTask.isDone
+
+            if (subTask.isDone) {
+                title.paintFlags = title.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                title.alpha = 0.6f
+            } else {
+                title.paintFlags = title.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                title.alpha = 1f
+            }
+
+            check.setOnCheckedChangeListener { _, isChecked ->
+                viewModel.toggleSubtaskCompletion(subTask, isChecked)
+            }
+            binding.containerSubtasks.addView(view)
+        }
+    }
+
+    private fun setupRemindersRecycler(reminders: List<GoogleEventReminder>) {
+
+        binding.dividerRecurrence.isVisible = reminders.isNotEmpty()
+        binding.tvRecurrence.isVisible = reminders.isNotEmpty()
+
+
+        if (reminders.isNotEmpty()) {
+
+            binding.rvReminders.layoutManager = LinearLayoutManager(context)
+            binding.rvReminders.adapter = ReminderSimpleAdapter(reminders) { reminder ->
+                viewModel.deleteReminder(reminder)
+            }
+        } else {
+            binding.rvReminders.isVisible = false
+        }
+    }
+
+    private fun updateTitleStyle(isDone: Boolean) {
+        binding.tvTaskTitle.apply {
+            if (isDone) {
+                paintFlags = paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                alpha = 0.6f
+            } else {
+                paintFlags = paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                alpha = 1f
+            }
+        }
+    }
+
+    private fun getPriorityColor(priority: String): Int {
+        return when (priority.lowercase(Locale.ROOT)) {
+            "alta", "high" -> Color.parseColor("#F44336") // Rojo Material
+            "media", "medium" -> Color.parseColor("#FF9800") // Naranja
+            "baja", "low" -> Color.parseColor("#4CAF50") // Verde
+            else -> Color.GRAY
+        }
+    }
+
 
     private fun setupListeners() {
-        // 1. Listeners del Toggle de Estado
-        binding.toggleButtonStatus.addOnButtonCheckedListener { _, checkedId, isChecked ->
-            if (isChecked) {
-                val isDone = (checkedId == binding.buttonStatusDone.id)
-                viewModel.onEvent(TaskDetailContract.TaskDetailEvent.OnTaskChecked(isDone))
+        binding.btnPin.setOnClickListener { viewModel.togglePin() }
 
+        binding.btnEdit.setOnClickListener {
+            viewModel.task.value?.let { task ->
+                val intent = Intent(requireContext(), ContainerActivity::class.java).apply {
+                    putExtra(TASK_TO_EDIT_KEY, task)
+                }
+                startActivity(intent)
+                dismiss()
             }
         }
 
-        // 2. Listener del FAB (Borrar)
-        binding.fabDelete.setOnClickListener {
-            viewModel.onEvent(TaskDetailContract.TaskDetailEvent.OnDeleteClicked)
+        binding.btnDelete.setOnClickListener {
+            viewModel.task.value?.let { task -> viewModel.deleteTask(task) }
         }
 
-        // 3. Listeners del BottomAppBar (Compartir)
-        binding.bottomAppBar.setNavigationOnClickListener {
-            viewModel.onEvent(TaskDetailContract.TaskDetailEvent.OnShareClicked)
-        }
-
-        // 4. Listener del botón 'X'
-        binding.buttonCloseSheet.setOnClickListener {
-            dismiss()
-        }
-
-        // 5. Listener del Menú (Editar)
-        binding.bottomAppBar.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                // ¡ID CORREGIDO!
-                R.id.menu_edit_task -> {
-                    viewModel.onEvent(TaskDetailContract.TaskDetailEvent.OnEditClicked)
-                    true
-                }
-                else -> false
-            }
+        binding.btnShare.setOnClickListener {
+            viewModel.task.value?.let { task -> shareTask(task) }
         }
     }
 
-    private fun observeViewModel() {
-        // Observa el ESTADO (los datos a pintar)
-        viewModel.state.observe(viewLifecycleOwner) { state ->
-            // Se llama cada vez que el ViewModel actualiza la Tarea
-            bindTaskData(state.task)
-        }
-
-        // Observa las ACCIONES (eventos de un solo uso)
-        viewModel.action.observe(viewLifecycleOwner) { action ->
-            when (action) {
-                is TaskDetailContract.TaskDetailAction.NavigateToEdit -> {
-                    navigateToContainerActivity(action.task)
-                    dismiss()
-                }
-                is TaskDetailContract.TaskDetailAction.ShareTask -> {
-                    shareTask(action.task)
-                }
-                is TaskDetailContract.TaskDetailAction.DismissSheet -> {
-                    dismiss()
-                }
-            }
-        }
-    }
-
-    // --- Métodos de UI ---
-
-    /**
-     * Rellena todas las vistas con los datos de la [TaskDomain].
-     * (¡COMPLETAMENTE ACTUALIZADO A TaskDomain NUEVO!)
-     */
-    private fun bindTaskData(task: TaskDomain) {
-
-        // 1. Sincronizar el Toggle de Estado
-        if (task.isDone) {
-            binding.toggleButtonStatus.check(R.id.button_status_done)
-        } else {
-            binding.toggleButtonStatus.check(R.id.button_status_pending)
-        }
-
-        // 2. Título y Tachado (CAMBIO: summary)
-        binding.textViewTaskDetailTitle.text = task.summary
-        updateTitleStrikeThrough(task.isDone)
-
-        // 3. Rellenar los Chips de Contexto (CAMBIOS)
-        val startDateCalendar = task.start.toCalendar() // Helper para obtener un Calendar
-        val durationInMinutes = getDurationInMinutes(task.start, task.end) // Helper
-
-        binding.chipContextDate.text = SimpleDateFormat("dd MMMM", Locale.getDefault()).format(startDateCalendar.time)
-        binding.chipContextTime.text = task.start.toHourString()
-        binding.chipContextDuration.text = durationInMinutes.toDurationString()
-
-        // CAMBIO: location
-        binding.chipContextLocation.isVisible = !task.location.isNullOrEmpty()
-        binding.chipContextLocation.text = task.location
-
-        // CAMBIO: priority
-        binding.chipContextPriority.isVisible = task.priority.isNotEmpty()
-        binding.chipContextPriority.text = "Prioridad ${task.priority}"
-
-        // 4. Descripción
-        binding.textViewTaskDetailDescription.text = task.description.takeIf { !it.isNullOrEmpty() } ?: "Sin descripción"
-
-        // 5. Progreso de Subtareas
-        val totalSubtasks = task.subTasks.size
-        val completedSubtasks = task.subTasks.count { it.isDone }
-        val hasSubtasks = totalSubtasks > 0
-
-        binding.layoutSubtasks.isVisible = hasSubtasks
-        if (hasSubtasks) {
-            val progress = (completedSubtasks * 100) / totalSubtasks
-            binding.progressBarTaskDetailProgress.progress = progress
-            binding.textViewTaskDetailProgressText.text = "$completedSubtasks de $totalSubtasks completadas"
-            subtaskAdapter.submitList(task.subTasks)
-        }
-    }
-
-    private fun updateTitleStrikeThrough(isDone: Boolean) {
-        if (isDone) {
-            binding.textViewTaskDetailTitle.paintFlags =
-                binding.textViewTaskDetailTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-        } else {
-            binding.textViewTaskDetailTitle.paintFlags =
-                binding.textViewTaskDetailTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-        }
-    }
-
-    // --- Métodos de Navegación/Acción (ACTUALIZADOS) ---
-
-    /**
-     * Crea un enlace universal de "Añadir a Google Calendar" a partir de una tarea.
-     * (¡COMPLETAMENTE ACTUALIZADO A TaskDomain NUEVO!)
-     */
-    private fun createGoogleCalendarLink(task: TaskDomain): String {
-        // 1. Calcular las fechas de inicio y fin (CAMBIO)
-        val startCalendar = task.start.toCalendar()
-        val endCalendar = task.end.toCalendar()
-
-        val startTimeMillis = startCalendar.timeInMillis
-        val endTimeMillis = endCalendar.timeInMillis
-
-        // 2. Formatear las fechas a ISO 8601 en UTC
-        val isoFormatter = SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US).apply {
-            timeZone = TimeZone.getTimeZone("UTC")
-        }
-        val startTimeUtc = isoFormatter.format(Date(startTimeMillis))
-        val endTimeUtc = isoFormatter.format(Date(endTimeMillis))
-
-        // 3. Codificar los parámetros (CAMBIO)
-        val title = URLEncoder.encode(task.summary, "UTF-8")
-        val dates = URLEncoder.encode("$startTimeUtc/$endTimeUtc", "UTF-8")
-        val details = URLEncoder.encode(task.description ?: "", "UTF-8")
-        val location = URLEncoder.encode(task.location ?: "", "UTF-8")
-
-        // 4. Construir la URL final
-        return "https://www.google.com/calendar/render?action=TEMPLATE" +
-                "&text=$title" +
-                "&dates=$dates" +
-                "&details=$details" +
-                "&location=$location"
-    }
-
-    private fun navigateToContainerActivity(task: TaskDomain) {
-        val intent = Intent(requireContext(), ContainerActivity::class.java).apply {
-            putExtra(TASK_TO_EDIT_KEY, task)
-        }
-        startActivity(intent)
-    }
 
     private fun shareTask(task: TaskDomain) {
         val shareText = generateShareText(task)
         val sendIntent: Intent = Intent().apply {
-            action = Intent.ACTION_SEND // CAMBIO: 'action' en minúscula
+            action = Intent.ACTION_SEND
             putExtra(Intent.EXTRA_TEXT, shareText)
-            type = "text/plain" // CAMBIO: 'type' en minúscula
+            type = "text/plain"
         }
-         sendIntent.setPackage("com.whatsapp") // (Opcional)
 
         val shareIntent = Intent.createChooser(sendIntent, "Compartir tarea")
         startActivity(shareIntent)
     }
 
-    /**
-     * Genera el texto formateado con emojis para compartir.
-     * (¡COMPLETAMENTE ACTUALIZADO A TaskDomain NUEVO!)
-     */
     private fun generateShareText(task: TaskDomain): String {
         val builder = StringBuilder()
         val startDateCalendar = task.start.toCalendar()
         val durationInMinutes = getDurationInMinutes(task.start, task.end)
 
-        // --- Encabezado y Título ---
         val statusEmoji = if (task.isDone) "✅" else "🎯"
         builder.append("$statusEmoji *¡Ojo a esta tarea!* $statusEmoji\n\n")
-        builder.append("*${task.summary.uppercase()}*\n\n") // CAMBIO
+        builder.append("*${task.summary.uppercase()}*\n\n")
 
-        // --- Contexto (Fecha, Hora, Lugar...) ---
         val dateText = SimpleDateFormat("EEEE, dd 'de' MMMM", Locale("es", "ES")).format(startDateCalendar.time)
         builder.append("🗓️ *Cuándo:* ${dateText.replaceFirstChar { it.titlecase(Locale.getDefault()) }}\n")
-        builder.append("⏰ *Hora:* ${task.start.toHourString()}\n") // CAMBIO
+        builder.append("⏰ *Hora:* ${task.start.toHourString()}\n")
 
-        if (durationInMinutes > 0) { // CAMBIO
+        if (durationInMinutes > 0) {
             builder.append("⏳ *Duración:* ${durationInMinutes.toDurationString()}\n")
         }
-        if (!task.location.isNullOrEmpty()) { // CAMBIO
+        if (!task.location.isNullOrEmpty()) {
             builder.append("📍 *Lugar:* ${task.location}\n")
         }
         if (task.typeTask.isNotEmpty()) {
             builder.append("🏷️ *Categoría:* ${task.typeTask}\n")
         }
-        builder.append("\n") // Separador
+        builder.append("\n")
 
-        // --- Descripción (si existe) ---
-        if (!task.description.isNullOrEmpty()) { // CAMBIO
+        if (!task.description.isNullOrEmpty()) {
             builder.append("🧐 *El plan:*\n")
             builder.append("${task.description}\n\n")
         }
 
-        // --- Subtareas (si existen) ---
         if (task.subTasks.isNotEmpty()) {
             builder.append("📋 *Los pasos a seguir:*\n")
             task.subTasks.forEach { subtask ->
@@ -313,22 +350,83 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
             builder.append("$calendarLink\n\n")
         } catch (e: Exception) {}
 
-        // --- Footer de Synkrón ---
         builder.append("--------------------------------\n")
         builder.append("¡Gestionando mi caos con *Synkrón*! 🚀")
 
         return builder.toString()
     }
 
-    // --- Companion Object ---
+    private fun createGoogleCalendarLink(task: TaskDomain): String {
+        val startCalendar = task.start.toCalendar()
+        val endCalendar = task.end.toCalendar()
+
+        val startTimeMillis = startCalendar.timeInMillis
+        val endTimeMillis = endCalendar.timeInMillis
+
+        val isoFormatter = SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }
+        val startTimeUtc = isoFormatter.format(Date(startTimeMillis))
+        val endTimeUtc = isoFormatter.format(Date(endTimeMillis))
+
+        val title = URLEncoder.encode(task.summary, "UTF-8")
+        val dates = URLEncoder.encode("$startTimeUtc/$endTimeUtc", "UTF-8")
+        val details = URLEncoder.encode(task.description ?: "", "UTF-8")
+        val location = URLEncoder.encode(task.location ?: "", "UTF-8")
+
+        return "https://www.google.com/calendar/render?action=TEMPLATE" +
+                "&text=$title" +
+                "&dates=$dates" +
+                "&details=$details" +
+                "&location=$location"
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
 
     companion object {
         const val TAG = "TaskDetailBottomSheet"
+        fun newInstance(task: TaskDomain) = TaskDetailBottomSheet().apply {
+            arguments = bundleOf("TASK_ID" to task.id)
+        }
+    }
 
-        fun newInstance(task: TaskDomain): TaskDetailBottomSheet {
-            return TaskDetailBottomSheet().apply {
-                arguments = bundleOf("task" to task)
+    // Adaptador interno para Avisos (Sin crear archivo extra)
+    inner class ReminderSimpleAdapter(
+        private val items: List<GoogleEventReminder>,
+        private val onDeleteClick: (GoogleEventReminder) -> Unit
+    ) : RecyclerView.Adapter<ReminderSimpleAdapter.ViewHolder>() {
+
+        inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val tvTime: TextView = view.findViewById(R.id.tvTime)
+            val tvType: TextView = view.findViewById(R.id.tvTypeLabel)
+            val btnDelete: ImageView = view.findViewById(R.id.btnDelete)
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            // Usamos TU layout 'item_reminder_row'
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_reminder_row, parent, false)
+            return ViewHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val item = items[position]
+            val timeText = when {
+                item.minutes < 60 -> "${item.minutes} min antes"
+                item.minutes == 60 -> "1 hora antes"
+                item.minutes < 1440 -> "${item.minutes / 60} horas antes"
+                else -> "${item.minutes / 1440} días antes"
+            }
+            holder.tvTime.text = timeText
+            holder.tvType.text = "Notificación (${item.method})" // O solo "Notificación"
+
+            holder.btnDelete.setOnClickListener {
+                onDeleteClick(item)
             }
         }
+
+        override fun getItemCount() = items.size
     }
 }

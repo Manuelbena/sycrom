@@ -4,186 +4,297 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:background="?attr/colorSurfaceVariant">
+
     <androidx.core.widget.NestedScrollView
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:paddingBottom="100dp"> <LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="24dp">
-
-        <ImageButton
-            android:id="@+id/button_close_sheet"
-            style="?attr/materialIconButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="top|end"
-           android:layout_margin="8dp"
-            android:contentDescription="Cerrar"
-            android:src="@drawable/ic_close"
-            app:tint="?attr/colorOnSurfaceVariant" />
-
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/toggleButton_status"
+        android:id="@+id/bottom_sheet_scroll"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:selectionRequired="true"
-        app:singleSelection="true">
-        <Button
-            android:id="@+id/button_status_pending"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Pendiente" />
-        <Button
-            android:id="@+id/button_status_done"
-            style="?attr/materialButtonOutlinedStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Terminado" />
-    </com.google.android.material.button.MaterialButtonToggleGroup>
+        android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/textView_taskDetail_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:textAppearance="?attr/textAppearanceHeadlineMedium"
-        android:textColor="?attr/colorOnSurface"
-        tools:text="Reunión de Marketing Estratégico Global" />
-
-    <com.google.android.material.chip.ChipGroup
-        android:id="@+id/chipGroup_context"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:chipSpacingVertical="8dp">
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_context_date"
-            style="@style/Widget.Material3.Chip.Assist"
-            android:background="?attr/colorSurfaceVariant"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="31 de Octubre"
-            app:chipIcon="@drawable/ic_calendar_today" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_context_time"
-            style="@style/Widget.Material3.Chip.Assist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="10:30"
-            app:chipIcon="@drawable/ic_clock" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_context_duration"
-            style="@style/Widget.Material3.Chip.Assist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="1h 30m"
-            app:chipIcon="@drawable/ic_timer_duration" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_context_location"
-            style="@style/Widget.Material3.Chip.Assist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Oficina Principal"
-            app:chipIcon="@drawable/ic_location" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip_context_priority"
-            style="@style/Widget.Material3.Chip.Assist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Prioridad Alta"
-            app:chipIcon="@drawable/ic_plus"
-            app:chipIconTint="?attr/colorError" />
-
-    </com.google.android.material.chip.ChipGroup>
-
-    <TextView
-        android:id="@+id/textView_taskDetail_description"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:textAppearance="?attr/textAppearanceBodyLarge"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        tools:text="Discutir los KPIs del Q3 y planificar la estrategia del Q4, incluyendo la campaña de Navidad." />
-
-    <LinearLayout
-        android:id="@+id/layout_subtasks"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:orientation="vertical">
-
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-            <TextView
-                android:id="@+id/textView_taskDetail_subtaskTitle"
-                android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="32dp">
+
+            <!-- Drag Handle -->
+            <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+
+            <!-- Barra de Acciones Superior -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:text="Progreso de Subtareas"
-                android:textAppearance="?attr/textAppearanceTitleMedium" />
+                android:gravity="end|center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="24dp">
 
-            <TextView
-                android:id="@+id/textView_taskDetail_progressText"
-                android:layout_width="wrap_content"
+                <com.airbnb.lottie.LottieAnimationView
+                    android:id="@+id/lottieCompleteTask"
+                    android:layout_width="64dp"
+                    android:layout_height="70dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:lottie_rawRes="@raw/donme"
+                    app:lottie_autoPlay="false"
+                    app:lottie_loop="false"
+                    app:lottie_speed="1.5" />
+
+                <ImageButton
+                    android:id="@+id/btnEdit"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Editar"
+                    android:src="@drawable/ic_edit"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/btnShare"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <ImageButton
+                    android:id="@+id/btnShare"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Compartir"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/btnDelete"
+                    android:src="@drawable/ic_share"
+                    app:tint="?attr/colorOnSurfaceVariant" />
+
+                <ImageButton
+                    android:id="@+id/btnDelete"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Borrar"
+                    android:src="@drawable/ic_delete"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/btnPin"
+                    app:tint="?attr/colorError" />
+
+                <!-- Botón de PIN -->
+                <ImageButton
+                    android:id="@+id/btnPin"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/ic_mark"
+                    app:tint="?attr/colorOnPrimary"
+                    tools:ignore="ContentDescription"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:textAppearance="?attr/textAppearanceLabelMedium"
-                tools:text="2 de 5 completadas"/>
-        </RelativeLayout>
+                android:orientation="vertical"
+                android:paddingHorizontal="24dp"
+                android:paddingTop="8dp">
 
-        <com.google.android.material.progressindicator.LinearProgressIndicator
-            android:id="@+id/progressBar_taskDetail_progress"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:max="100"
-            tools:progress="60" />
+                <!-- Título y Checkbox Lottie -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="top">
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerView_taskDetail_subtasks"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:maxHeight="250dp"
-            tools:itemCount="3"
-            tools:listitem="@layout/item_subtask" />
-    </LinearLayout>
+                    <TextView
+                        android:id="@+id/tvTaskTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Título de la tarea"
+                        android:textSize="@dimen/text_h6"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnPrimary" />
 
-</LinearLayout>
-</androidx.core.widget.NestedScrollView>
+                </LinearLayout>
 
-    <com.google.android.material.bottomappbar.BottomAppBar
-        android:id="@+id/bottom_app_bar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:fabAlignmentMode="end"
-        app:backgroundTint="?attr/colorSurfaceVariant"
-        app:fabCradleMargin="10dp"
-        app:fabCradleRoundedCornerRadius="16dp"
-        app:navigationIcon="@drawable/ic_share"
-        app:menu="@menu/task_detail_bottom_bar" />
+                <!-- Chips de Metadatos (Solo Fecha, Prioridad, Categoría) -->
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/chipGroupMetadata"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp">
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fab_delete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_delete"
-        app:layout_anchor="@id/bottom_app_bar"
-        app:backgroundTint="?attr/colorErrorContainer"
-        app:tint="?attr/colorOnErrorContainer" />
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipDate"
+                        style="@style/Widget.Material3.Chip.Assist"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:chipIcon="@drawable/ic_calendar_today"
+                        android:text="Fecha" />
 
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipPriority"
+                        style="@style/Widget.Material3.Chip.Assist"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:chipIcon="@drawable/bg_event_dot"
+                        android:text="Prioridad" />
+
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipCategory"
+                        style="@style/Widget.Material3.Chip.Assist"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:chipIcon="@drawable/ic_label"
+                        android:text="Categoría" />
+                </com.google.android.material.chip.ChipGroup>
+
+                <!-- Ubicación -->
+                <LinearLayout
+                    android:id="@+id/layoutLocation"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/ic_location_on"
+                        app:tint="?attr/colorOnPrimary"
+                        android:contentDescription="Ubicación"/>
+
+                    <TextView
+                        android:id="@+id/tvLocation"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:textSize="@dimen/text_body_large"
+                        android:textColor="?attr/colorOnSurfaceVariant"/>
+                </LinearLayout>
+
+                <!-- NUEVO: Hora y Duración (Texto limpio debajo de ubicación) -->
+                <LinearLayout
+                    android:id="@+id/layoutTimeInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="8dp"> <!-- Alineado visualmente -->
+
+                    <TextView
+                        android:id="@+id/tvTimeRange"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="10:00 - 11:30"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="@dimen/text_body_large"
+                        app:drawableStartCompat="@drawable/ic_access_time"
+                        android:drawablePadding="8dp"
+                        app:drawableTint="?attr/colorOnPrimary"/>
+
+                    <TextView
+                        android:id="@+id/tvDurationText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="1h 30m"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="@dimen/text_body_large"
+                        app:drawableStartCompat="@drawable/ic_timer_duration"
+                        android:drawablePadding="8dp"
+                        app:drawableTint="?attr/colorOnPrimary"/>
+                </LinearLayout>
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="24dp"/>
+
+                <!-- Descripción -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Descripción"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textStyle="bold"
+                    android:textSize="@dimen/text_body_large"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:lineSpacingExtra="4dp"
+                    android:textSize="@dimen/text_body_large"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:alpha="0.8"/>
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:id="@+id/divider_subtask"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="24dp"/>
+
+                <!-- Subtareas -->
+                <TextView
+                    android:id="@+id/tvSubtasksHeader"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Lista de verificación"
+                    android:textSize="@dimen/text_body_large"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <LinearLayout
+                    android:id="@+id/containerSubtasks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+                <com.google.android.material.divider.MaterialDivider
+                    android:id="@+id/dividerRecurrence"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="24dp"/>
+
+                <!-- Configuración (Avisos y Repetición) -->
+                <TextView
+                    android:id="@+id/tvRecurrence"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Avisos"
+                    android:textSize="@dimen/text_body_large"
+                    android:textColor="?attr/colorOnPrimary"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <LinearLayout
+                    android:id="@+id/layoutSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <!-- NUEVO: RecyclerView para los Avisos -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvReminders"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        tools:listitem="@layout/item_reminder_row"
+                        android:nestedScrollingEnabled="false"/>
+                </LinearLayout>
+
+
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
