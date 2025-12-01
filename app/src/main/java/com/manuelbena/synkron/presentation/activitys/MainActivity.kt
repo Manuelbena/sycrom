@@ -17,16 +17,19 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseActivity
+import com.manuelbena.synkron.data.local.notification.NotificationHelper
 import com.manuelbena.synkron.databinding.ActivityMainBinding
 
 import com.manuelbena.synkron.presentation.task_ia.TaskIaBottomSheet
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity<ActivityMainBinding>() {
 
-
+    @Inject
+    lateinit var notificationHelper: NotificationHelper
     override fun inflateView(inflater: LayoutInflater): ActivityMainBinding {
         return ActivityMainBinding.inflate(inflater)
     }
@@ -45,6 +48,19 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         val navController = navHostFragment.navController
 
         binding.navView.setupWithNavController(navController)
+
+        // --- PRUEBA TEMPORAL ---
+        binding.root.postDelayed({
+            try {
+                notificationHelper.showStandardNotification(
+                    "Prueba de Sistema",
+                    "Si ves esto, las notificaciones funcionan.",
+                    "12345"
+                )
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }, 5000)
 
         // Gestión de visibilidad del BottomNav
         navController.addOnDestinationChangedListener { _, destination, _ ->

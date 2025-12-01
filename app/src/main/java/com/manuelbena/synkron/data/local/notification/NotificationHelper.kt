@@ -24,18 +24,15 @@ class NotificationHelper @Inject constructor(
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     companion object {
+        // Deben coincidir con App.kt
         const val ALARM_CHANNEL_ID = "ALARM_CHANNEL_V2"
-        // CAMBIA ESTO: Debe coincidir exactamente con App.kt
-        const val NOTIFICATION_CHANNEL_ID = "TASK_NOTIFICATION_CHANNEL_V5"
-        const val ALARM_CHANNEL_NAME = "Alarmas Prioritarias"
-        const val NOTIFICATION_CHANNEL_NAME = "Recordatorios de Tareas"
+        const val NOTIFICATION_CHANNEL_ID = "SYCROM_NOTIFICATIONS_FINAL"
     }
 
-    // (El init y createNotificationChannels se pueden omitir aquí si ya están en App.kt, pero no estorban)
-
     fun showStandardNotification(title: String, message: String, taskId: String?) {
-        Log.d("SYCROM_DEBUG", "NotificationHelper: Construyendo notificación para $title")
+        Log.d("SYCROM_DEBUG", "Helper: Iniciando showStandardNotification para $title")
 
+        // Intent para abrir la app
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("EXTRA_TASK_ID", taskId)
@@ -48,24 +45,28 @@ class NotificationHelper @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // IMPORTANTE: Asegúrate de que el ID del canal coincida con el de App.kt
-        val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+        // Construcción de la notificación
+        val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_launcher) // Asegúrate de que este recurso existe
             .setContentTitle(title)
             .setContentText(message)
-            // --- CONFIGURACIÓN PARA QUE "SALTE" (HEADS-UP) ---
-            .setPriority(NotificationCompat.PRIORITY_HIGH) // <--- ¡CAMBIADO A HIGH!
-            .setCategory(NotificationCompat.CATEGORY_REMINDER) // <--- AYUDA AL SISTEMA
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // <--- VISIBLE EN BLOQUEO
+            .setPriority(NotificationCompat.PRIORITY_HIGH) // Para Android < 8.0 y compatibilidad
+            .setCategory(NotificationCompat.CATEGORY_REMINDER) // Importante para Do Not Disturb
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // Visible en bloqueo
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
-            .setDefaults(Notification.DEFAULT_ALL)
-            .build()
+            .setVibrate(longArrayOf(0, 500, 200, 500)) // Vibración forzada en el builder
+            .setDefaults(Notification.DEFAULT_SOUND) // Sonido default
 
         val notificationId = taskId?.hashCode() ?: System.currentTimeMillis().toInt()
 
-        Log.d("SYCROM_DEBUG", "NotificationHelper: Enviando notificación ID: $notificationId al canal $NOTIFICATION_CHANNEL_ID")
-        notificationManager.notify(notificationId, notification)
+        try {
+            notificationManager.notify(notificationId, builder.build())
+            Log.d("SYCROM_DEBUG", "Helper: notify() llamado con éxito. ID: $notificationId en Canal: $NOTIFICATION_CHANNEL_ID")
+        } catch (e: Exception) {
+            Log.e("SYCROM_DEBUG", "Helper: Error al llamar a notify(): ${e.message}")
+            e.printStackTrace()
+        }
     }
 
     fun getAlarmNotificationBuilder(message: String, fullScreenPendingIntent: PendingIntent): Notification {
