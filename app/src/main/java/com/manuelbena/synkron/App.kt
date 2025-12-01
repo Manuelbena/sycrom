@@ -14,7 +14,7 @@ class App : Application() {
 
     companion object {
         const val ALARM_CHANNEL_ID = "ALARM_CHANNEL_V2"
-        const val NOTIFICATION_CHANNEL_ID = "TASK_NOTIFICATION_CHANNEL"
+        const val NOTIFICATION_CHANNEL_ID = "TASK_NOTIFICATION_CHANNEL_V5"
     }
 
     override fun onCreate() {

@@ -25,7 +25,10 @@ class NotificationHelper @Inject constructor(
 
     companion object {
         const val ALARM_CHANNEL_ID = "ALARM_CHANNEL_V2"
-        const val NOTIFICATION_CHANNEL_ID = "TASK_NOTIFICATION_CHANNEL"
+        // CAMBIA ESTO: Debe coincidir exactamente con App.kt
+        const val NOTIFICATION_CHANNEL_ID = "TASK_NOTIFICATION_CHANNEL_V5"
+        const val ALARM_CHANNEL_NAME = "Alarmas Prioritarias"
+        const val NOTIFICATION_CHANNEL_NAME = "Recordatorios de Tareas"
     }
 
     // (El init y createNotificationChannels se pueden omitir aquí si ya están en App.kt, pero no estorban)
