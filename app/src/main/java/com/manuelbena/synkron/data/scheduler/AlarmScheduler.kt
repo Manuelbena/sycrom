@@ -15,13 +15,11 @@ class AlarmScheduler @Inject constructor(
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
     fun schedule(task: TaskDomain) {
-        // Filtramos recordatorios que sean ALARMA o NOTIFICACIÓN
+        // CAMBIO 1: Aceptamos ALARM o NOTIFICATION
         val remindersToSchedule = task.reminders.overrides.filter {
             it.method.equals(ReminderMethod.ALARM.name, ignoreCase = true) ||
-            it.method.equals(ReminderMethod.NOTIFICATION.name, ignoreCase = true)
+                    it.method.equals(ReminderMethod.NOTIFICATION.name, ignoreCase = true)
         }
-
-        android.util.Log.d("SYCROM_ALARM", "Programando ${remindersToSchedule.size} avisos para: ${task.summary}")
 
         val startMillis = task.start?.dateTime?.toInstant()?.toEpochMilli() ?: return
 
@@ -30,13 +28,14 @@ class AlarmScheduler @Inject constructor(
 
             if (triggerTime > System.currentTimeMillis()) {
                 val intent = Intent(context, AlarmReceiver::class.java).apply {
-                    action = "com.manuelbena.synkron.ACTION_ALARM_TRIGGER" // La acción única que creamos antes
+                    action = "com.manuelbena.synkron.ACTION_ALARM_TRIGGER" // Acción única
                     putExtra("EXTRA_MESSAGE", reminder.message ?: task.summary)
                     putExtra("EXTRA_TASK_ID", task.id.toString())
-                    putExtra("EXTRA_TYPE", reminder.method)}
+                    // CAMBIO 2: ¡Importantísimo! Pasamos el TIPO para saber cómo mostrarlo luego
+                    putExtra("EXTRA_TYPE", reminder.method)
+                }
 
                 val requestCode = task.id.hashCode() + reminder.minutes
-
                 val pendingIntent = PendingIntent.getBroadcast(
                     context,
                     requestCode,
@@ -44,13 +43,9 @@ class AlarmScheduler @Inject constructor(
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
 
+                // Usamos setAlarmClock para máxima precisión en ambos casos
                 val alarmClockInfo = AlarmManager.AlarmClockInfo(triggerTime, pendingIntent)
                 alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
-
-                android.util.Log.d(
-                    "SYCROM_ALARM",
-                    "Programado ${reminder.method} para ${task.summary}"
-                )
             }
         }
     }

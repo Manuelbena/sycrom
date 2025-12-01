@@ -47,10 +47,12 @@ class App : Application() {
             val notificationChannel = NotificationChannel(
                 NOTIFICATION_CHANNEL_ID,
                 "Recordatorios de Tareas",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_HIGH // <--- CAMBIAR A HIGH
             ).apply {
                 description = "Notificaciones estándar para tareas"
                 enableVibration(true)
+                // Opcional: Patrón de vibración corto para diferenciar de la alarma
+                vibrationPattern = longArrayOf(0, 500)
                 // Usa el sonido de notificación predeterminado del sistema
                 val notificationSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
                 val notificationAttributes = AudioAttributes.Builder()

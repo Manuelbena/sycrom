@@ -78,16 +78,16 @@ class NotificationHelper @Inject constructor(
         )
 
         val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher) // Asegúrate de usar un icono blanco transparente para notificaciones (ic_stat_name) si es posible
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(title)
             .setContentText(message)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH) // <--- CAMBIAR A HIGH
+            .setCategory(NotificationCompat.CATEGORY_REMINDER) // <--- AÑADIR ESTO (Ayuda al sistema a priorizar)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // <--- AÑADIR ESTO (Para verla en bloqueo)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .build()
 
-        // Usamos el hashCode del taskId como ID para no sobrescribir notificaciones de diferentes tareas
-        // Si taskId es nulo, usamos un ID fijo o random según tu necesidad.
         val notificationId = taskId?.hashCode() ?: System.currentTimeMillis().toInt()
         notificationManager.notify(notificationId, notification)
     }
