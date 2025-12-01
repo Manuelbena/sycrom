@@ -6,25 +6,22 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import kotlinx.coroutines.flow.Flow // ¡Importar Flow!
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TaskDao {
 
-    // CAMBIO: Opera sobre TaskEntity
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertTask(task: TaskEntity)
+    // CORRECCIÓN: Usamos 'date' que es el nombre real de la columna en tu TaskEntity
+    @Query("SELECT * FROM task_table WHERE date BETWEEN :dayStart AND :dayEnd ORDER BY date ASC")
+    fun getTasksForDay(dayStart: Long, dayEnd: Long): Flow<List<TaskEntity>>
 
-    // CAMBIO: Opera sobre TaskEntity
+    // IMPORTANTE: Debe devolver Long para obtener el ID de la nueva fila
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTask(task: TaskEntity): Long
+
     @Update
     suspend fun updateTask(task: TaskEntity)
 
-    // --- ¡CAMBIO CRÍTICO! ---
-    // Ya no es 'suspend' y devuelve 'Flow<List<TaskEntity>>'
-    @Query("SELECT * FROM task_table WHERE date >= :dayStart AND date < :dayEnd")
-    fun getTasksForDay(dayStart: Long, dayEnd: Long): Flow<List<TaskEntity>>
-
-
-     @Delete
-     suspend fun deleteTask(task: TaskEntity)
+    @Delete
+    suspend fun deleteTask(task: TaskEntity)
 }
