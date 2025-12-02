@@ -20,58 +20,103 @@ import javax.inject.Singleton
 class NotificationHelper @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     companion object {
-        // Deben coincidir con App.kt
         const val ALARM_CHANNEL_ID = "ALARM_CHANNEL_V2"
-        const val NOTIFICATION_CHANNEL_ID = "SYCROM_NOTIFICATIONS_FINAL"
+        const val NOTIFICATION_CHANNEL_ID = "SYCROM_ALERTS_V12"
     }
 
-    fun showStandardNotification(title: String, message: String, taskId: String?) {
-        Log.d("SYCROM_DEBUG", "Helper: Iniciando showStandardNotification para $title")
+    private val sycromPhrases = listOf(
+        "Aquí tienes lo siguiente en tu agenda.",
+        "Es hora de avanzar. ¿Listo?",
+        "Tu asistente Synkróm te recuerda:",
+        "Mantén el ritmo, tienes esto pendiente.",
+        "Un pequeño recordatorio para una gran tarea."
+    )
 
-        // Intent para abrir la app
+    fun showSycromNotification(
+        title: String,
+        message: String,
+        description: String,
+        subtasks: String,
+        location: String,
+        taskId: String?,
+        timestamp: Long = System.currentTimeMillis()
+    ) {
+        Log.d("SYCROM_DEBUG", "HELPER: Construyendo Notificación para ID=$taskId")
+
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             putExtra("EXTRA_TASK_ID", taskId)
         }
-
         val pendingIntent = PendingIntent.getActivity(
-            context,
-            taskId.hashCode(),
-            intent,
+            context, taskId.hashCode(), intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // Construcción de la notificación
+        val reviewIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("EXTRA_TASK_ID", taskId)
+            putExtra("EXTRA_ACTION", "REVIEW")
+        }
+        val reviewPendingIntent = PendingIntent.getActivity(
+            context, taskId.hashCode() + 1, reviewIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val sycromPhrase = sycromPhrases.random()
+        val stringBuilder = StringBuilder()
+        stringBuilder.append(sycromPhrase).append("\n\n")
+        if (location.isNotBlank()) stringBuilder.append("📍 ").append(location).append("\n")
+        if (description.isNotBlank()) stringBuilder.append("📝 ").append(description).append("\n")
+        if (subtasks.isNotBlank()) stringBuilder.append("\nSubtareas:\n").append(subtasks)
+
+        val bigText = stringBuilder.toString().trim()
+
+        // Construcción compatible con WEAR OS
         val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher) // Asegúrate de que este recurso existe
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(title)
             .setContentText(message)
-            .setPriority(NotificationCompat.PRIORITY_HIGH) // Para Android < 8.0 y compatibilidad
-            .setCategory(NotificationCompat.CATEGORY_REMINDER) // Importante para Do Not Disturb
-            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC) // Visible en bloqueo
+            .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+            // CATEGORÍA IMPORTANTE: 'ALARM' o 'EVENT' suelen vibrar mejor en el reloj
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
+
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
-            .setVibrate(longArrayOf(0, 500, 200, 500)) // Vibración forzada en el builder
-            .setDefaults(Notification.DEFAULT_SOUND) // Sonido default
+            .setWhen(timestamp)
+            .setShowWhen(true)
+            .setVibrate(longArrayOf(0, 500, 200, 500))
+            .setDefaults(Notification.DEFAULT_SOUND)
+
+            // Permite que se vea en otros dispositivos (Reloj, Auto)
+            .setLocalOnly(false)
+
+            .addAction(android.R.drawable.ic_menu_view, "Revisar", reviewPendingIntent)
+
+        // Añadir WearableExtender para acciones específicas en el reloj (opcional pero recomendado)
+        val wearAction = NotificationCompat.Action.Builder(
+            android.R.drawable.ic_menu_view,
+            "Abrir en Móvil",
+            pendingIntent
+        ).build()
+
+        val wearExtender = NotificationCompat.WearableExtender()
+            .addAction(wearAction)
+
+        builder.extend(wearExtender)
 
         val notificationId = taskId?.hashCode() ?: System.currentTimeMillis().toInt()
-
-        try {
-            notificationManager.notify(notificationId, builder.build())
-            Log.d("SYCROM_DEBUG", "Helper: notify() llamado con éxito. ID: $notificationId en Canal: $NOTIFICATION_CHANNEL_ID")
-        } catch (e: Exception) {
-            Log.e("SYCROM_DEBUG", "Helper: Error al llamar a notify(): ${e.message}")
-            e.printStackTrace()
-        }
+        notificationManager.notify(notificationId, builder.build())
     }
 
     fun getAlarmNotificationBuilder(message: String, fullScreenPendingIntent: PendingIntent): Notification {
         return NotificationCompat.Builder(context, ALARM_CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle("Sycrom - ¡Es hora!")
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_MAX)

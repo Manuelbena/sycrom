@@ -49,19 +49,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
         binding.navView.setupWithNavController(navController)
 
-        // --- PRUEBA TEMPORAL ---
-        binding.root.postDelayed({
-            try {
-                notificationHelper.showStandardNotification(
-                    "Prueba de Sistema",
-                    "Si ves esto, las notificaciones funcionan.",
-                    "12345"
-                )
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }, 5000)
-
         // Gestión de visibilidad del BottomNav
         navController.addOnDestinationChangedListener { _, destination, _ ->
             when (destination.id) {
@@ -74,8 +61,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         }
 
         
-        // --- CHECK ESPECÍFICO PARA VIVO AL INICIAR ---
-        checkVivoAutoStart()
+
     }
 
     /**
@@ -114,66 +100,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                     "Para que la alarma aparezca a pantalla completa cuando el móvil está bloqueado, activa este permiso.",
                     Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT
                 )
-            }
-        }
-    }
-
-    /**
-     * Lógica especial para móviles VIVO (Funtouch OS)
-     * Intenta abrir el gestor de "Inicio Automático" o "High Background Power Consumption".
-     */
-    private fun checkVivoAutoStart() {
-        val manufacturer = Build.MANUFACTURER.lowercase(Locale.getDefault())
-        if (manufacturer.contains("vivo")) {
-            // Usamos una preferencia simple para no molestar al usuario cada vez que abre la app
-            val prefs = getSharedPreferences("SycromSettings", Context.MODE_PRIVATE)
-            val isVivoChecked = prefs.getBoolean("vivo_autostart_checked", false)
-
-            if (!isVivoChecked) {
-                AlertDialog.Builder(this)
-                    .setTitle("Configuración Vivo")
-                    .setMessage("En móviles Vivo, debes permitir el 'Inicio Automático' para que la alarma suene con la pantalla apagada. \n\nPor favor, busca Sycrom en la lista y actívalo.")
-                    .setPositiveButton("Ir a Configuración") { _, _ ->
-                        openVivoManager()
-                        // Guardamos que ya le hemos avisado
-                        prefs.edit().putBoolean("vivo_autostart_checked", true).apply()
-                    }
-                    .setNegativeButton("Más tarde", null)
-                    .show()
-            }
-        }
-    }
-
-    private fun openVivoManager() {
-        try {
-            val intent = Intent()
-            intent.component = ComponentName(
-                "com.vivo.permissionmanager",
-                "com.vivo.permissionmanager.activity.BgStartUpManagerActivity"
-            )
-            startActivity(intent)
-        } catch (e: Exception) {
-            try {
-                val intent = Intent()
-                intent.component = ComponentName(
-                    "com.iqoo.secure",
-                    "com.iqoo.secure.ui.phoneoptimize.AddWhiteListActivity"
-                )
-                startActivity(intent)
-            } catch (e2: Exception) {
-                try {
-                    val intent = Intent()
-                    intent.component = ComponentName(
-                        "com.vivo.permissionmanager",
-                        "com.vivo.permissionmanager.activity.PurviewTabActivity"
-                    )
-                    startActivity(intent)
-                } catch (e3: Exception) {
-                    // Si fallan los intentos específicos de Vivo, abrimos la info de la app normal
-                    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    intent.data = Uri.parse("package:$packageName")
-                    startActivity(intent)
-                }
             }
         }
     }
