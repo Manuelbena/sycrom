@@ -1,6 +1,7 @@
 package com.manuelbena.synkron.presentation.home.adapters
 
 import android.animation.Animator
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Paint
 import android.graphics.drawable.LayerDrawable
@@ -13,6 +14,7 @@ import android.widget.PopupMenu
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -94,6 +96,7 @@ class TaskAdapter(
             }
             popup.show()
         }
+        @SuppressLint("SetTextI18n")
         @RequiresApi(Build.VERSION_CODES.P)
         override fun bind(item: TaskDomain) {
             binding.apply {
@@ -120,15 +123,19 @@ class TaskAdapter(
                 }
 
                 // Hora y Duración
-                tvEventTime.text = item.start.toHourString()
-                val durationInMinutes = getDurationInMinutes(item.start, item.end)
-                if (durationInMinutes > 0) {
-                    tvDuration.visibility = View.VISIBLE
+                // 5. Hora y Duración
+                val startTime = item.start.toHourString()
+                val endTime = item.end.toHourString()
+                tvEventTime.text = "$startTime - $endTime"
+
+                val durationMin = getDurationInMinutes(item.start, item.end)
+                if (durationMin > 0) {
+                    tvDuration.isVisible = true
                     iconRestant.visibility = View.VISIBLE
-                    tvDuration.text = durationInMinutes.toDurationString()
+                    tvDuration.text = durationMin.toDurationString()
                 } else {
-                    tvDuration.visibility = View.GONE
                     iconRestant.visibility = View.GONE
+                    tvDuration.isVisible = false
                 }
 
                 // Subtareas

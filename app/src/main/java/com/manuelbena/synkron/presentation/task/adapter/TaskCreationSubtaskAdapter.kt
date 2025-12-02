@@ -1,69 +1,29 @@
-package com.manuelbena.synkron.presentation.task.adapters
+package com.manuelbena.synkron.presentation.task.adapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.MotionEvent
-import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.manuelbena.synkron.R
+import com.manuelbena.synkron.databinding.ItemSubtaskNewBinding
 import com.manuelbena.synkron.domain.models.SubTaskDomain
 import java.util.Collections
 
 class TaskCreationSubtaskAdapter(
-    private val items: MutableList<SubTaskDomain>,
+    private val items: MutableList<SubTaskDomain> = mutableListOf(),
     private val onStartDrag: (RecyclerView.ViewHolder) -> Unit,
-    private val onRemove: (SubTaskDomain) -> Unit
+    private val onRemove: (SubTaskDomain) -> Unit,
+    private val onReorder: (List<SubTaskDomain>) -> Unit
 ) : RecyclerView.Adapter<TaskCreationSubtaskAdapter.SubtaskViewHolder>() {
 
-    inner class SubtaskViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val textView: TextView = view.findViewById(R.id.tvSubtaskText)
-        val removeButton: ImageButton = view.findViewById(R.id.ibRemoveSubtask)
-        val dragHandle: ImageView = view.findViewById(R.id.ivDragHandle)
-
-        init {
-            removeButton.setOnClickListener {
-                val position = bindingAdapterPosition
-                if (position != RecyclerView.NO_POSITION) {
-                    onRemove(items[position])
-                }
-            }
-        }
-    }
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubtaskViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_subtask_new, parent, false)
-        return SubtaskViewHolder(view)
-    }
-
-    @SuppressLint("ClickableViewAccessibility")
-    override fun onBindViewHolder(holder: SubtaskViewHolder, position: Int) {
-        val item = items[position]
-        holder.textView.text = item.title
-
-        holder.dragHandle.setOnTouchListener { _, event ->
-            if (event.actionMasked == MotionEvent.ACTION_DOWN) {
-                onStartDrag(holder)
-            }
-            false
-        }
-    }
-
-    override fun getItemCount() = items.size
-
-    @SuppressLint("NotifyDataSetChanged")
     fun updateItems(newItems: List<SubTaskDomain>) {
         items.clear()
         items.addAll(newItems)
         notifyDataSetChanged()
     }
 
-    // Este método es vital para el Callback
+    // Este método se llama EN CADA PASO del arrastre.
+    // Solo actualizamos la lista visualmente, NO avisamos al ViewModel todavía.
     fun onItemMove(fromPosition: Int, toPosition: Int) {
         if (fromPosition < toPosition) {
             for (i in fromPosition until toPosition) {
@@ -76,35 +36,39 @@ class TaskCreationSubtaskAdapter(
         }
         notifyItemMoved(fromPosition, toPosition)
     }
-}
 
-// --- AQUÍ ESTÁ LA CORRECCIÓN DEL CALLBACK ---
-class SubtaskTouchHelperCallback(
-    private val adapter: TaskCreationSubtaskAdapter
-) : ItemTouchHelper.Callback() {
-
-    override fun isLongPressDragEnabled() = false // Usamos el handle
-    override fun isItemViewSwipeEnabled() = false
-
-    override fun getMovementFlags(
-        recyclerView: RecyclerView,
-        viewHolder: RecyclerView.ViewHolder
-    ): Int {
-        val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
-        val swipeFlags = 0
-        return makeMovementFlags(dragFlags, swipeFlags)
+    // NUEVO: Este método se llamará cuando el usuario SUELTE el ítem.
+    // Aquí es seguro actualizar el ViewModel sin romper la animación.
+    fun onDragFinished() {
+        onReorder(items.toList())
     }
 
-    override fun onMove(
-        recyclerView: RecyclerView,
-        viewHolder: RecyclerView.ViewHolder,
-        target: RecyclerView.ViewHolder
-    ): Boolean {
-        adapter.onItemMove(viewHolder.bindingAdapterPosition, target.bindingAdapterPosition)
-        return true
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubtaskViewHolder {
+        val binding = ItemSubtaskNewBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return SubtaskViewHolder(binding)
     }
 
-    override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        // No implementado
+    override fun onBindViewHolder(holder: SubtaskViewHolder, position: Int) {
+        holder.bind(items[position])
+    }
+
+    override fun getItemCount(): Int = items.size
+
+    inner class SubtaskViewHolder(private val binding: ItemSubtaskNewBinding) : RecyclerView.ViewHolder(binding.root) {
+        @SuppressLint("ClickableViewAccessibility")
+        fun bind(item: SubTaskDomain) {
+            binding.tvSubtaskText.text = item.title
+
+            binding.ibRemoveSubtask.setOnClickListener {
+                onRemove(item)
+            }
+
+            binding.ivDragHandle.setOnTouchListener { _, event ->
+                if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+                    onStartDrag(this)
+                }
+                false
+            }
+        }
     }
 }
