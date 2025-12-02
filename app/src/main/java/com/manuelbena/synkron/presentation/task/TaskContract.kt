@@ -72,7 +72,6 @@ sealed class TaskEvent {
 
     // Acciones
     data class OnLoadTaskForEdit(val task: TaskDomain) : TaskEvent()
-
     data class OnLoadTaskById(val taskId: Int) : TaskEvent() // Carga por ID (Lo que usa Navigation)
     object OnSaveClicked : TaskEvent()
     object OnCancelClicked : TaskEvent()

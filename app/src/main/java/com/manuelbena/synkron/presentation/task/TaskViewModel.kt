@@ -41,11 +41,17 @@ class TaskViewModel @Inject constructor(
         val current = _state.value ?: TaskState()
 
         when (event) {
+            // --- CARGA DE DATOS ---
             is TaskEvent.OnLoadTaskById -> loadTaskFromId(event.taskId)
+            is TaskEvent.OnLoadTaskForEdit -> {
+                Log.d("SYCROM_DEBUG", "VM: Carga directa por Objeto. ID=${event.task.id}")
+                loadTask(event.task)
+            }
+
+            // ... (Resto de eventos igual que antes) ...
             is TaskEvent.OnTitleChange -> updateState { copy(title = event.title) }
             is TaskEvent.OnDescriptionChange -> updateState { copy(description = event.desc) }
             is TaskEvent.OnLocationChange -> updateState { copy(location = event.loc) }
-
             is TaskEvent.OnDateClicked -> _effect.value = TaskEffect.ShowDatePicker(current.selectedDate.timeInMillis)
             is TaskEvent.OnDateSelected -> {
                 val newCal = Calendar.getInstance().apply { timeInMillis = event.date }
@@ -54,54 +60,31 @@ class TaskViewModel @Inject constructor(
                 newCal.set(Calendar.SECOND, 0)
                 updateState { copy(selectedDate = newCal) }
             }
-
             is TaskEvent.OnStartTimeClicked -> _effect.value = TaskEffect.ShowTimePicker(current.startTime, true)
             is TaskEvent.OnStartTimeSelected -> {
                 val newStart = (current.startTime.clone() as Calendar).apply {
                     set(Calendar.HOUR_OF_DAY, event.hour)
                     set(Calendar.MINUTE, event.minute)
                     set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
                 }
                 var newEnd = current.endTime
-                if (newStart.after(newEnd)) {
-                    newEnd = (newStart.clone() as Calendar).apply { add(Calendar.HOUR_OF_DAY, 1) }
-                }
+                if (newStart.after(newEnd)) newEnd = (newStart.clone() as Calendar).apply { add(Calendar.HOUR_OF_DAY, 1) }
                 updateState { copy(startTime = newStart, endTime = newEnd) }
             }
-
             is TaskEvent.OnEndTimeClicked -> _effect.value = TaskEffect.ShowTimePicker(current.endTime, false)
             is TaskEvent.OnEndTimeSelected -> {
                 val newEnd = (current.endTime.clone() as Calendar).apply {
                     set(Calendar.HOUR_OF_DAY, event.hour)
                     set(Calendar.MINUTE, event.minute)
                     set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
                 }
                 updateState { copy(endTime = newEnd) }
             }
-
-            is TaskEvent.OnTaskTypeChanged -> {
-                updateState { copy(isAllDay = event.tabIndex == 1, isNoDate = event.tabIndex == 2) }
-            }
-
-            is TaskEvent.OnAddReminderClicked -> _effect.value = TaskEffect.ShowReminderDialog
-            is TaskEvent.OnAddReminder -> {
-                val newList = current.reminders + event.reminder
-                updateState { copy(reminders = newList) }
-            }
-            is TaskEvent.OnRemoveReminder -> {
-                val toRemove = current.reminders.find { it.method == event.reminder.method && it.minutes == event.reminder.minutes }
-                if (toRemove != null) updateState { copy(reminders = reminders - toRemove) }
-            }
-            is TaskEvent.OnUpdateReminders -> updateState { copy(reminders = event.reminders) }
-
+            is TaskEvent.OnTaskTypeChanged -> updateState { copy(isAllDay = event.tabIndex == 1, isNoDate = event.tabIndex == 2) }
             is TaskEvent.OnCategorySelectorClicked -> _effect.value = TaskEffect.ShowCategoryDialog
             is TaskEvent.OnCategorySelected -> updateState { copy(category = event.category, colorId = event.colorId) }
-
             is TaskEvent.OnPrioritySelectorClicked -> _effect.value = TaskEffect.ShowPriorityDialog
             is TaskEvent.OnPrioritySelected -> updateState { copy(priority = event.priority) }
-
             is TaskEvent.OnRecurrenceSelectorClicked -> _effect.value = TaskEffect.ShowRecurrenceDialog
             is TaskEvent.OnRecurrenceTypeSelected -> updateState { copy(recurrenceType = event.type) }
             is TaskEvent.OnRecurrenceDayToggled -> {
@@ -109,30 +92,36 @@ class TaskViewModel @Inject constructor(
                 if (event.isSelected) newSet.add(event.day) else newSet.remove(event.day)
                 updateState { copy(selectedRecurrenceDays = newSet) }
             }
-
             is TaskEvent.OnAddSubTask -> {
                 val newSub = SubTaskDomain(id = UUID.randomUUID().toString(), title = event.text, isDone = false)
                 updateState { copy(subTasks = subTasks + newSub) }
             }
             is TaskEvent.OnRemoveSubTask -> updateState { copy(subTasks = subTasks - event.item) }
             is TaskEvent.OnReorderSubTasks -> updateState { copy(subTasks = event.items) }
-
+            is TaskEvent.OnAddReminderClicked -> _effect.value = TaskEffect.ShowReminderDialog
+            is TaskEvent.OnAddReminder -> updateState { copy(reminders = reminders + event.reminder) }
+            is TaskEvent.OnRemoveReminder -> {
+                val toRemove = current.reminders.find { it.method == event.reminder.method && it.minutes == event.reminder.minutes }
+                if (toRemove != null) updateState { copy(reminders = reminders - toRemove) }
+            }
+            is TaskEvent.OnUpdateReminders -> updateState { copy(reminders = event.reminders) }
             is TaskEvent.OnSaveClicked -> saveTask()
             is TaskEvent.OnCancelClicked -> _effect.value = TaskEffect.NavigateBack
-            is TaskEvent.OnLoadTaskForEdit -> loadTask(event.task)
         }
     }
 
     private fun loadTaskFromId(taskId: Int) {
+        Log.d("SYCROM_DEBUG", "VM: Intentando cargar tarea por ID: $taskId")
         viewModelScope.launch {
             try {
                 updateState { copy(isLoading = true) }
                 val task = taskRepository.getTaskById(taskId)
                 if (task != null) {
-                    Log.d("SYCROM_DEBUG", "VM: Tarea cargada: ${task.summary}")
-                    loadTask(task) // Reutilizamos la lógica de mapeo
+                    Log.d("SYCROM_DEBUG", "VM: Tarea encontrada: ${task.summary}")
+                    loadTask(task)
                 } else {
-                    _effect.value = TaskEffect.ShowMessage("No se encontró la tarea")
+                    Log.e("SYCROM_DEBUG", "VM: Tarea no encontrada en BD con ID $taskId")
+                    _effect.value = TaskEffect.ShowMessage("Error: Tarea no encontrada")
                 }
                 updateState { copy(isLoading = false) }
             } catch (e: Exception) {
@@ -142,12 +131,45 @@ class TaskViewModel @Inject constructor(
         }
     }
 
+    // Método privado para mapear TaskDomain -> TaskState
+    private fun loadTask(task: TaskDomain) {
+        val startCal = googleDateToCalendar(task.start)
+        val endCal = googleDateToCalendar(task.end)
+
+        updateState {
+            copy(
+                id = task.id,
+                title = task.summary,
+                description = task.description ?: "",
+                location = task.location ?: "",
+                category = task.typeTask,
+                colorId = task.colorId,
+                priority = task.priority,
+
+                selectedDate = startCal,
+                startTime = startCal,
+                endTime = endCal,
+
+                isAllDay = task.start?.dateTime == null, // Lógica simple: si no tiene dateTime, es todo el día
+                isNoDate = task.start == null, // Si start es null, no tiene fecha
+
+                subTasks = task.subTasks,
+                reminders = task.reminders.overrides,
+
+                //recurrenceType = task.synkronRecurrence,
+                selectedRecurrenceDays = task.synkronRecurrenceDays.toSet()
+            )
+        }
+    }
+
     private fun saveTask() {
         val s = _state.value ?: return
         if (s.title.isBlank()) {
             _effect.value = TaskEffect.ShowMessage("Falta título")
             return
         }
+
+        Log.d("SYCROM_DEBUG", "VM: Guardando tarea ID=${s.id}")
 
         viewModelScope.launch {
             updateState { copy(isLoading = true) }
@@ -175,40 +197,25 @@ class TaskViewModel @Inject constructor(
                     priority = s.priority,
                     subTasks = s.subTasks,
                     reminders = GoogleEventReminders(overrides = s.reminders),
-                   // synkronRecurrence = s.recurrenceType,
+                    //synkronRecurrence = s.recurrenceType,
                     synkronRecurrenceDays = s.selectedRecurrenceDays.toList(),
-                    isActive = true, isDone = false, isDeleted = false, isArchived = false, isPinned = false, transparency = "opaque", conferenceLink = null
+                    isActive = true, isDone = false, isDeleted = false, isArchived = false, isPinned = false, transparency = "opaque", conferenceLink = ""
                 )
 
-                if (s.id == 0) insertTaskUseCase(task) else updateTaskUseCase(task)
+                if (s.id == 0) {
+                    insertTaskUseCase(task)
+                    _effect.value = TaskEffect.ShowMessage("Tarea guardada")
+                } else {
+                    updateTaskUseCase(task)
+                    _effect.value = TaskEffect.ShowMessage("Tarea actualizada")
+                }
                 _effect.value = TaskEffect.NavigateBack
+
             } catch (e: Exception) {
                 updateState { copy(isLoading = false) }
                 _effect.value = TaskEffect.ShowMessage("Error: ${e.message}")
                 e.printStackTrace()
             }
-        }
-    }
-
-    private fun loadTask(task: TaskDomain) {
-        val startCal = googleDateToCalendar(task.start)
-        val endCal = googleDateToCalendar(task.end)
-        updateState {
-            copy(
-                id = task.id,
-                title = task.summary,
-                description = task.description ?: "",
-                location = task.location ?: "",
-                category = task.typeTask,
-                priority = task.priority,
-                selectedDate = startCal,
-                startTime = startCal,
-                endTime = endCal,
-                subTasks = task.subTasks,
-                reminders = task.reminders.overrides,
-                //recurrenceType = task.synkronRecurrence,
-                selectedRecurrenceDays = task.synkronRecurrenceDays.toSet()
-            )
         }
     }
 

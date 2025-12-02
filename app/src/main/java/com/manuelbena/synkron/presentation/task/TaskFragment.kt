@@ -48,6 +48,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
     private lateinit var itemTouchHelper: ItemTouchHelper
     private lateinit var categoryBinding: ItemCategoryRowSelectorBinding
 
+    // Argumentos de navegación (SafeArgs)
     private val args: TaskFragmentArgs by navArgs()
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentNewTaskBinding {
@@ -56,10 +57,32 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     override fun setUI() {
         super.setUI()
-        if (args.taskId != 0) {
-            // Al iniciar, si hay ID, cargamos los datos
-            viewModel.onEvent(TaskEvent.OnLoadTaskById(args.taskId))
+
+        // --- ESTRATEGIA DE CARGA DE DATOS (PRIORIDADES) ---
+
+        // 1. Primero miramos si viene un OBJETO completo (Legacy)
+        val legacyTask = arguments?.getParcelable<TaskDomain>(ContainerActivity.TASK_TO_EDIT_KEY)
+            ?: requireActivity().intent.getParcelableExtra(ContainerActivity.TASK_TO_EDIT_KEY)
+
+        // 2. Si no, miramos si viene un ID por navegación (SafeArgs)
+        val navId = args.taskId
+
+        // 3. Si no, miramos si viene un ID por Intent directo (Extra "taskId")
+        val intentId = requireActivity().intent.getIntExtra("taskId", 0)
+
+        if (legacyTask != null) {
+            Log.d("SYCROM_DEBUG", "FRAGMENT: Cargando tarea desde OBJETO Parcelable: ${legacyTask.summary}")
+            viewModel.onEvent(TaskEvent.OnLoadTaskForEdit(legacyTask))
+        } else if (navId != 0) {
+            Log.d("SYCROM_DEBUG", "FRAGMENT: Cargando tarea desde ID (NavArgs): $navId")
+            viewModel.onEvent(TaskEvent.OnLoadTaskById(navId))
+        } else if (intentId != 0) {
+            Log.d("SYCROM_DEBUG", "FRAGMENT: Cargando tarea desde ID (Intent): $intentId")
+            viewModel.onEvent(TaskEvent.OnLoadTaskById(intentId))
+        } else {
+            Log.d("SYCROM_DEBUG", "FRAGMENT: Modo Nueva Tarea (No hay argumentos)")
         }
+
         categoryBinding = ItemCategoryRowSelectorBinding.bind(binding.layoutCategorySelect.root)
         setupRecyclers()
         setupListeners()
@@ -68,15 +91,10 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
     }
 
     private fun setupRecyclers() {
-        // Inicializamos el adaptador con la lista mutable y el callback de reordenamiento
         subtaskAdapter = TaskCreationSubtaskAdapter(
-            items = mutableListOf(),
             onStartDrag = { holder -> itemTouchHelper.startDrag(holder) },
             onRemove = { item -> viewModel.onEvent(TaskEvent.OnRemoveSubTask(item)) },
-            onReorder = { newItems ->
-                // Cuando se mueve un item, actualizamos el ViewModel para que guarde el nuevo orden
-                viewModel.onEvent(TaskEvent.OnReorderSubTasks(newItems))
-            }
+            onReorder = { newItems -> viewModel.onEvent(TaskEvent.OnReorderSubTasks(newItems)) }
         )
 
         binding.rvSubtareas.apply {
@@ -190,9 +208,6 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
                 }
                 is TaskEffect.ShowMessage -> Snackbar.make(binding.root, effect.msg, Snackbar.LENGTH_SHORT).show()
                 is TaskEffect.ShowCategoryDialog -> CategorySelectionDialog { sel -> viewModel.onEvent(TaskEvent.OnCategorySelected(sel.title, sel.googleColorId)) }.show(childFragmentManager, "CAT")
-
-                is TaskEffect.ShowPriorityDialog -> { }
-
                 is TaskEffect.ShowReminderDialog -> {
                     val s = viewModel.state.value ?: TaskState()
                     AddReminderDialog(s.startTime.clone() as Calendar, s.endTime.clone() as Calendar) { r ->
@@ -208,6 +223,7 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     private fun renderState(state: TaskState) {
         binding.apply {
+            // CONFIGURACIÓN DE EDICIÓN
             if (state.id != 0) {
                 try { toolbar.title = "Editar Tarea" } catch (_: Exception) {}
                 btnGuardar.text = "Actualizar"
