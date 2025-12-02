@@ -23,7 +23,7 @@ data class TaskDomain(
     val isPinned: Boolean = false,
 
     // Nuevos campos de Recurrencia (Turno anterior)
-    val synkronRecurrence: RecurrenceType = RecurrenceType.NOTIFICATION,
+    val synkronRecurrence: NotificationType = NotificationType.NOTIFICATION,
     val synkronRecurrenceDays: List<Int> = emptyList(),
 
     // --- Campos Mapeados 1:1 con Google Calendar ---

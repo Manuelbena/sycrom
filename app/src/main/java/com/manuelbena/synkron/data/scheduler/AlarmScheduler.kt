@@ -17,63 +17,75 @@ class AlarmScheduler @Inject constructor(
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
     fun schedule(task: TaskDomain) {
-        val remindersToSchedule = task.reminders.overrides.filter {
-            it.method.equals(ReminderMethod.ALARM.name, ignoreCase = true) ||
-                    it.method.equals(ReminderMethod.NOTIFICATION.name, ignoreCase = true)
+        val allReminders = task.reminders.overrides
+
+        Log.d("SYCROM_DEBUG", "SCHEDULER: ID=${task.id}. Recordatorios totales: ${allReminders.size}")
+
+        // --- CORRECCIÓN: ACEPTAR "popup" ---
+        val remindersToSchedule = allReminders.filter {
+            val method = it.method?.trim()?.lowercase() ?: ""
+
+            // Aceptamos: "alarm", "notification" y "popup"
+            method.contains("alarm") ||
+                    method.contains("notif") ||
+                    method.contains("popup")
         }
 
-        Log.d("SYCROM_DEBUG", "SCHEDULER: Intentando programar para ID=${task.id}. Recordatorios encontrados: ${remindersToSchedule.size}")
+        Log.d("SYCROM_DEBUG", "SCHEDULER: Recordatorios VÁLIDOS: ${remindersToSchedule.size}")
 
         val startMillis = task.start?.dateTime?.toInstant()?.toEpochMilli() ?: return
 
         remindersToSchedule.forEach { reminder ->
-            // triggerTime = Hora Inicio - Minutos de aviso
             val triggerTime = startMillis - (reminder.minutes * 60 * 1000)
             val now = System.currentTimeMillis()
 
-            Log.d("SYCROM_DEBUG", "SCHEDULER: Check hora -> Trigger: ${Date(triggerTime)} vs Ahora: ${Date(now)}")
-
-            if (triggerTime > now) {
+            // Margen de seguridad de 1 minuto
+            if (triggerTime > (now - 60000)) {
                 val intent = Intent(context, AlarmReceiver::class.java).apply {
-                    action = AlarmReceiver.ALARM_ACTION // Usamos la constante del Receiver
+                    action = AlarmReceiver.ALARM_ACTION
                     putExtra("EXTRA_MESSAGE", reminder.message ?: task.summary)
                     putExtra("EXTRA_TASK_ID", task.id.toString())
-                    putExtra("EXTRA_TYPE", reminder.method)
+
+                    // --- TRADUCCIÓN PARA EL RECEIVER ---
+                    // Si es "popup", le decimos al Receiver que es "NOTIFICATION" para que use el Helper
+                    val method = reminder.method?.lowercase() ?: ""
+                    val typeToSend = if (method.contains("alarm")) "ALARM" else "NOTIFICATION"
+
+                    putExtra("EXTRA_TYPE", typeToSend)
+                    Log.d("SYCROM_DEBUG", "SCHEDULER: PROGRAMADA a las ${Date(triggerTime)} (Tipo: $typeToSend)")
                 }
 
-                // RequestCode único: ID Tarea + Minutos offset
                 val requestCode = task.id.hashCode() + reminder.minutes
 
                 val pendingIntent = PendingIntent.getBroadcast(
-                    context,
-                    requestCode,
-                    intent,
+                    context, requestCode, intent,
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
 
                 val alarmClockInfo = AlarmManager.AlarmClockInfo(triggerTime, pendingIntent)
                 alarmManager.setAlarmClock(alarmClockInfo, pendingIntent)
 
-                Log.d("SYCROM_DEBUG", "SCHEDULER: ¡ÉXITO! Alarma programada a las ${Date(triggerTime)} (Tipo: ${reminder.method})")
+
             } else {
-                Log.w("SYCROM_DEBUG", "SCHEDULER: OMITIDO. La hora ${Date(triggerTime)} ya ha pasado.")
+                Log.w("SYCROM_DEBUG", "SCHEDULER: Omitido (Hora pasada) ${Date(triggerTime)}")
             }
         }
     }
 
     fun cancel(task: TaskDomain) {
-        val reminders = task.reminders.overrides
-        reminders.forEach { reminder ->
-            val requestCode = task.id.hashCode() + reminder.minutes
-            val intent = Intent(context, AlarmReceiver::class.java)
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                requestCode,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            alarmManager.cancel(pendingIntent)
-            Log.d("SYCROM_DEBUG", "SCHEDULER: Alarma cancelada para ID=${task.id}")
+        try {
+            task.reminders.overrides.forEach { reminder ->
+                val requestCode = task.id.hashCode() + reminder.minutes
+                val intent = Intent(context, AlarmReceiver::class.java)
+                intent.action = AlarmReceiver.ALARM_ACTION
+                val pendingIntent = PendingIntent.getBroadcast(
+                    context, requestCode, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                alarmManager.cancel(pendingIntent)
+            }
+        } catch (e: Exception) {
+            Log.e("SYCROM_DEBUG", "Error cancelando: ${e.message}")
         }
     }
 }

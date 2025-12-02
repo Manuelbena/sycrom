@@ -11,11 +11,11 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TaskDao {
 
-    // CORRECCIÓN: Usamos 'date' que es el nombre real de la columna en tu TaskEntity
+    // CORRECCIÓN 1: Cambiado 'start_date' por 'date' (el nombre real en tu TaskEntity)
     @Query("SELECT * FROM task_table WHERE date BETWEEN :dayStart AND :dayEnd ORDER BY date ASC")
     fun getTasksForDay(dayStart: Long, dayEnd: Long): Flow<List<TaskEntity>>
 
-    // IMPORTANTE: Debe devolver Long para obtener el ID de la nueva fila
+    // CORRECCIÓN 2: Añadido ': Long' para devolver el ID generado
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTask(task: TaskEntity): Long
 

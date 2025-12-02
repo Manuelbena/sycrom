@@ -1,7 +1,11 @@
 package com.manuelbena.synkron.domain.models
 
 enum class RecurrenceType {
-    ALARM,
-   EMAIL,
-   NOTIFICATION
+    DAILY,
+    WEEKLY,
+    CUSTOM,
+    NONE
 }
+
+
+

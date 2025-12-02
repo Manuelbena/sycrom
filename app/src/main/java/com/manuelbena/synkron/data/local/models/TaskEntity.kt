@@ -2,7 +2,7 @@ package com.manuelbena.synkron.data.local.models
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.manuelbena.synkron.domain.models.RecurrenceType
+import com.manuelbena.synkron.domain.models.NotificationType
 import com.manuelbena.synkron.domain.models.SubTaskDomain
 
 @Entity(tableName = "task_table")
@@ -46,6 +46,6 @@ data class TaskEntity(
     val isPinned: Boolean,
 
     // Recurrencia Interna
-    val synkronRecurrence: RecurrenceType = RecurrenceType.NOTIFICATION,
+    val synkronRecurrence: NotificationType = NotificationType.NOTIFICATION,
     val synkronRecurrenceDays: List<Int> = emptyList()
 )

@@ -1,6 +1,5 @@
 package com.manuelbena.synkron.data.repository
 
-import android.content.Context
 import android.util.Log
 import com.manuelbena.synkron.data.local.models.TaskDao
 import com.manuelbena.synkron.data.mappers.toDomain
@@ -11,7 +10,6 @@ import com.manuelbena.synkron.data.remote.n8n.models.N8nChatResponse
 import com.manuelbena.synkron.data.scheduler.AlarmScheduler
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import com.manuelbena.synkron.domain.models.TaskDomain
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -36,16 +34,20 @@ class TaskRepository @Inject constructor(
     }
 
     override suspend fun insertTask(task: TaskDomain) = withContext(Dispatchers.IO) {
-        // 1. Insertamos y OBTENEMOS el ID generado (ej: 154)
-        val newId = taskDao.insertTask(task.toEntity())
+        try {
+            // 1. Insertamos y guardamos el ID
+            val newId = taskDao.insertTask(task.toEntity())
+            Log.d("SYCROM_DEBUG", "REPO: Tarea insertada correctamente. ID generado: $newId")
 
-        Log.d("SYCROM_DEBUG", "REPO: Tarea insertada. ID generado por BD: $newId")
+            // 2. Actualizamos la tarea con el ID real para la alarma
+            val taskWithId = task.copy(id = newId.toInt())
 
-        // 2. Creamos una copia de la tarea con el ID REAL para el Scheduler
-        val taskWithId = task.copy(id = newId.toInt())
-
-        // 3. Programamos la alarma con el ID correcto
-        alarmScheduler.schedule(taskWithId)
+            // 3. Programamos
+            alarmScheduler.schedule(taskWithId)
+        } catch (e: Exception) {
+            Log.e("SYCROM_DEBUG", "REPO ERROR: Fallo al insertar tarea: ${e.message}")
+            throw e
+        }
     }
 
     override suspend fun updateTask(task: TaskDomain) = withContext(Dispatchers.IO) {
@@ -55,7 +57,7 @@ class TaskRepository @Inject constructor(
     }
 
     override suspend fun deleteTask(task: TaskDomain) = withContext(Dispatchers.IO) {
-        alarmScheduler.cancel(task) // Es buena práctica cancelar la alarma al borrar
+        alarmScheduler.cancel(task)
         taskDao.deleteTask(task.toEntity())
     }
 
@@ -65,7 +67,7 @@ class TaskRepository @Inject constructor(
             if (response.isSuccessful && response.body() != null) {
                 Result.success(response.body()!!)
             } else {
-                Result.failure(Exception("Error en n8n: ${response.code()} ${response.message()}"))
+                Result.failure(Exception("Error en n8n: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)

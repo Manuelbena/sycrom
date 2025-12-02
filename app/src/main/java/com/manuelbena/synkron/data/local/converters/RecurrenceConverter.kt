@@ -1,20 +1,20 @@
 package com.manuelbena.synkron.data.local.converters
 
 import androidx.room.TypeConverter
-import com.manuelbena.synkron.domain.models.RecurrenceType
+import com.manuelbena.synkron.domain.models.NotificationType
 
 class RecurrenceConverter {
 
     // Para el Enum
     @TypeConverter
-    fun fromRecurrenceType(value: RecurrenceType): String = value.name
+    fun fromRecurrenceType(value: NotificationType): String = value.name
 
     @TypeConverter
-    fun toRecurrenceType(value: String): RecurrenceType {
+    fun toRecurrenceType(value: String): NotificationType {
         return try {
-            RecurrenceType.valueOf(value)
+            NotificationType.valueOf(value)
         } catch (e: Exception) {
-            RecurrenceType.NOTIFICATION
+            NotificationType.NOTIFICATION
         }
     }
 
