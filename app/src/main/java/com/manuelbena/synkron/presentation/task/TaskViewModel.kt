@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.manuelbena.synkron.base.BaseViewModel
+import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import com.manuelbena.synkron.domain.models.SubTaskDomain
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.domain.models.GoogleEventReminders
@@ -26,7 +27,8 @@ import javax.inject.Inject
 @HiltViewModel
 class TaskViewModel @Inject constructor(
     private val insertTaskUseCase: InsertNewTaskUseCase,
-    private val updateTaskUseCase: UpdateTaskUseCase
+    private val updateTaskUseCase: UpdateTaskUseCase,
+    private val taskRepository: ITaskRepository
 ) : BaseViewModel<TaskEvent>() {
 
     private val _state = MutableLiveData(TaskState())
@@ -39,6 +41,7 @@ class TaskViewModel @Inject constructor(
         val current = _state.value ?: TaskState()
 
         when (event) {
+            is TaskEvent.OnLoadTaskById -> loadTaskFromId(event.taskId)
             is TaskEvent.OnTitleChange -> updateState { copy(title = event.title) }
             is TaskEvent.OnDescriptionChange -> updateState { copy(description = event.desc) }
             is TaskEvent.OnLocationChange -> updateState { copy(location = event.loc) }
@@ -117,6 +120,25 @@ class TaskViewModel @Inject constructor(
             is TaskEvent.OnSaveClicked -> saveTask()
             is TaskEvent.OnCancelClicked -> _effect.value = TaskEffect.NavigateBack
             is TaskEvent.OnLoadTaskForEdit -> loadTask(event.task)
+        }
+    }
+
+    private fun loadTaskFromId(taskId: Int) {
+        viewModelScope.launch {
+            try {
+                updateState { copy(isLoading = true) }
+                val task = taskRepository.getTaskById(taskId)
+                if (task != null) {
+                    Log.d("SYCROM_DEBUG", "VM: Tarea cargada: ${task.summary}")
+                    loadTask(task) // Reutilizamos la lógica de mapeo
+                } else {
+                    _effect.value = TaskEffect.ShowMessage("No se encontró la tarea")
+                }
+                updateState { copy(isLoading = false) }
+            } catch (e: Exception) {
+                Log.e("SYCROM_DEBUG", "Error cargando tarea: ${e.message}")
+                updateState { copy(isLoading = false) }
+            }
         }
     }
 

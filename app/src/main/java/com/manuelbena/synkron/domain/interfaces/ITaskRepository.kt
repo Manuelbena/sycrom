@@ -38,5 +38,7 @@ interface ITaskRepository {
      */
     suspend fun sendIaMessage(message: String): Result<N8nChatResponse>
 
+    suspend fun getTaskById(id: Int): TaskDomain?
+
 
 }

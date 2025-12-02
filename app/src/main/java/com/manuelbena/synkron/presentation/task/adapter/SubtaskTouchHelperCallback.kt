@@ -1,12 +1,12 @@
-package com.manuelbena.synkron.presentation.task.adapters
+package com.manuelbena.synkron.presentation.task.adapter
 
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import com.manuelbena.synkron.presentation.task.adapter.TaskCreationSubtaskAdapter
+
 
 class SubtaskTouchHelperCallback(private val adapter: TaskCreationSubtaskAdapter) : ItemTouchHelper.Callback() {
 
-    override fun isLongPressDragEnabled(): Boolean = false
+    override fun isLongPressDragEnabled(): Boolean = false // Lo controlamos con el icono de arrastre
     override fun isItemViewSwipeEnabled(): Boolean = true
 
     override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
@@ -20,18 +20,19 @@ class SubtaskTouchHelperCallback(private val adapter: TaskCreationSubtaskAdapter
         viewHolder: RecyclerView.ViewHolder,
         target: RecyclerView.ViewHolder
     ): Boolean {
+        // Mover visualmente mientras arrastras
         adapter.onItemMove(viewHolder.adapterPosition, target.adapterPosition)
         return true
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        // Lógica de swipe si la necesitas
+        // Aquí podrías llamar a borrar si quisieras borrar deslizando
     }
 
-    // NUEVO: Se llama cuando el usuario suelta el elemento y la animación termina.
+    // Se llama cuando sueltas el elemento
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
         super.clearView(recyclerView, viewHolder)
-        // Notificamos al adaptador que el arrastre ha terminado
+        // Guardar el orden final en el ViewModel
         adapter.onDragFinished()
     }
 }

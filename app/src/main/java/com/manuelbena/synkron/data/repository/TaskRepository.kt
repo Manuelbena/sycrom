@@ -49,6 +49,11 @@ class TaskRepository @Inject constructor(
             throw e
         }
     }
+    override suspend fun getTaskById(id: Int): TaskDomain? = withContext(Dispatchers.IO) {
+        val entity = taskDao.getTaskById(id)
+        entity?.toDomain()
+    }
+
 
     override suspend fun updateTask(task: TaskDomain) = withContext(Dispatchers.IO) {
         taskDao.updateTask(task.toEntity())

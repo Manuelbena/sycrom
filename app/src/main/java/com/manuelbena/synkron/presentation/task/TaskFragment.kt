@@ -21,7 +21,7 @@ import com.google.android.material.tabs.TabLayout
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentNewTaskBinding
 import com.manuelbena.synkron.databinding.ItemCategoryRowSelectorBinding
-
+import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.dialogs.AddReminderDialog
 import com.manuelbena.synkron.presentation.dialogs.CategorySelectionDialog
@@ -30,8 +30,8 @@ import com.manuelbena.synkron.presentation.models.CategoryType
 import com.manuelbena.synkron.domain.models.RecurrenceType
 import com.manuelbena.synkron.presentation.models.ReminderItem
 import com.manuelbena.synkron.presentation.models.ReminderMethod
+import com.manuelbena.synkron.presentation.task.adapter.SubtaskTouchHelperCallback
 import com.manuelbena.synkron.presentation.task.adapter.TaskCreationSubtaskAdapter
-import com.manuelbena.synkron.presentation.task.adapters.SubtaskTouchHelperCallback
 import com.manuelbena.synkron.presentation.util.extensions.formatDate
 import com.manuelbena.synkron.presentation.util.extensions.formatTime
 import dagger.hilt.android.AndroidEntryPoint
@@ -57,7 +57,8 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
     override fun setUI() {
         super.setUI()
         if (args.taskId != 0) {
-            // viewModel.onEvent(TaskEvent.OnLoadTaskForEdit(args.taskId))
+            // Al iniciar, si hay ID, cargamos los datos
+            viewModel.onEvent(TaskEvent.OnLoadTaskById(args.taskId))
         }
         categoryBinding = ItemCategoryRowSelectorBinding.bind(binding.layoutCategorySelect.root)
         setupRecyclers()
@@ -207,7 +208,13 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     private fun renderState(state: TaskState) {
         binding.apply {
-            if (state.id != 0) { toolbar.title = "Editar Tarea"; btnGuardar.text = "Actualizar" } else { toolbar.title = "Nueva Tarea"; btnGuardar.text = "Guardar" }
+            if (state.id != 0) {
+                try { toolbar.title = "Editar Tarea" } catch (_: Exception) {}
+                btnGuardar.text = "Actualizar"
+            } else {
+                try { toolbar.title = "Nueva Tarea" } catch (_: Exception) {}
+                btnGuardar.text = "Guardar"
+            }
 
             if (tietTitle.text.toString() != state.title) tietTitle.setText(state.title)
             if (tietDescription.text.toString() != state.description) tietDescription.setText(state.description)
