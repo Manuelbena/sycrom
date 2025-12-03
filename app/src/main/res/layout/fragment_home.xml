@@ -116,6 +116,7 @@
                     <com.google.android.material.appbar.AppBarLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="@dimen/txt_dimen_xl"
                         android:background="@android:color/transparent"
                         app:elevation="0dp">
 
@@ -137,10 +138,11 @@
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnToday"
-                                style="@style/Widget.MaterialComponents.Button.TextButton"
+                                app:backgroundTint="?attr/colorPrimary"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Hoy"
+                                android:textStyle="bold"
                                 android:textColor="@color/black" />
                         </LinearLayout>
 
@@ -151,23 +153,21 @@
                             android:orientation="horizontal"
                             android:paddingBottom="8dp">
                             <!-- Puedes reutilizar tu item_calendar_day_legend.xml si lo creaste, o ponerlo aquí directo -->
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="L" android:textColor="@android:color/darker_gray"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="M" android:textColor="@android:color/darker_gray"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="X" android:textColor="@android:color/darker_gray"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="J" android:textColor="@android:color/darker_gray"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="V" android:textColor="@android:color/darker_gray"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="S" android:textColor="@android:color/darker_gray"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="D" android:textColor="@android:color/darker_gray"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Lun" android:textColor="@android:color/darker_gray"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Mar" android:textColor="@android:color/darker_gray"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Mie" android:textColor="@android:color/darker_gray"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Juv" android:textColor="@android:color/darker_gray"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Vie" android:textColor="@android:color/darker_gray"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Sab" android:textColor="@android:color/darker_gray"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Dom" android:textColor="@android:color/darker_gray"/>
                         </LinearLayout>
 
                     </com.google.android.material.appbar.AppBarLayout>
-                    <!-- FIN DEL BLOQUE -->
-
-                    <!-- VISTA DEL CALENDARIO SEMANAL SCROLLEABLE -->
                     <com.kizitonwose.calendar.view.WeekCalendarView
                         android:id="@+id/weekCalendarView"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="@dimen/txt_dimen_xl"
                         app:cv_dayViewResource="@layout/item_calendar_day_new"
                        />
 
@@ -176,6 +176,7 @@
                         android:id="@+id/progress_indicator"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:backgroundTint="?attr/colorOnSecondary"
                         android:indeterminate="true"
                         android:visibility="visible" app:indicatorSize="40dp"
                         app:trackThickness="4dp" />
