@@ -30,9 +30,9 @@ import com.manuelbena.synkron.databinding.FragmentHomeBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
+import com.manuelbena.synkron.presentation.taskIA.TaskIaBottomSheet
 import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
 import com.manuelbena.synkron.presentation.util.CarouselScrollListener
-import com.manuelbena.synkron.presentation.task_ia.TaskIaBottomSheet
 import com.manuelbena.synkron.presentation.util.ADD_TASK // Asegúrate de que existen en Util o Constants
 import com.manuelbena.synkron.presentation.util.TASK_TO_EDIT_KEY // Asegúrate de que existen en Util o Constants
 import com.manuelbena.synkron.presentation.util.WeekCalendarManager

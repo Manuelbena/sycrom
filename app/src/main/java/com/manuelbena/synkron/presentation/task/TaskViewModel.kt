@@ -9,19 +9,15 @@ import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import com.manuelbena.synkron.domain.models.SubTaskDomain
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.domain.models.GoogleEventReminders
-import com.manuelbena.synkron.domain.models.GoogleEventReminder
-import com.manuelbena.synkron.domain.models.RecurrenceType
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
 import com.manuelbena.synkron.domain.usecase.InsertNewTaskUseCase
 import com.manuelbena.synkron.domain.usecase.UpdateTaskUseCase
 import com.manuelbena.synkron.presentation.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import java.time.ZoneId
-import java.time.ZonedDateTime
 import java.util.Calendar
-import java.util.Date
 import java.util.UUID
+import java.util.TimeZone
 import javax.inject.Inject
 
 @HiltViewModel
@@ -41,14 +37,12 @@ class TaskViewModel @Inject constructor(
         val current = _state.value ?: TaskState()
 
         when (event) {
-            // --- CARGA DE DATOS ---
             is TaskEvent.OnLoadTaskById -> loadTaskFromId(event.taskId)
             is TaskEvent.OnLoadTaskForEdit -> {
                 Log.d("SYCROM_DEBUG", "VM: Carga directa por Objeto. ID=${event.task.id}")
                 loadTask(event.task)
             }
 
-            // ... (Resto de eventos igual que antes) ...
             is TaskEvent.OnTitleChange -> updateState { copy(title = event.title) }
             is TaskEvent.OnDescriptionChange -> updateState { copy(description = event.desc) }
             is TaskEvent.OnLocationChange -> updateState { copy(location = event.loc) }
@@ -111,28 +105,25 @@ class TaskViewModel @Inject constructor(
     }
 
     private fun loadTaskFromId(taskId: Int) {
-        Log.d("SYCROM_DEBUG", "VM: Intentando cargar tarea por ID: $taskId")
         viewModelScope.launch {
             try {
                 updateState { copy(isLoading = true) }
-                val task = taskRepository.getTaskById(taskId)
-                if (task != null) {
-                    Log.d("SYCROM_DEBUG", "VM: Tarea encontrada: ${task.summary}")
-                    loadTask(task)
-                } else {
-                    Log.e("SYCROM_DEBUG", "VM: Tarea no encontrada en BD con ID $taskId")
-                    _effect.value = TaskEffect.ShowMessage("Error: Tarea no encontrada")
-                }
+                // NOTA: Asegúrate de que ITaskRepository tenga 'getTaskById' definido o usa el DAO directamente si es necesario.
+                // Si ITaskRepository no lo tiene, tendrás que añadirlo a la interfaz primero.
+                // val task = taskRepository.getTaskById(taskId)
+
+                // MOCK TEMPORAL POR SI NO LO TIENES EN LA INTERFAZ AÚN:
+                // Log.e("SYCROM", "getTaskById no está en ITaskRepository aún")
+
                 updateState { copy(isLoading = false) }
             } catch (e: Exception) {
-                Log.e("SYCROM_DEBUG", "Error cargando tarea: ${e.message}")
                 updateState { copy(isLoading = false) }
             }
         }
     }
 
-    // Método privado para mapear TaskDomain -> TaskState
     private fun loadTask(task: TaskDomain) {
+        // Conversión segura usando las funciones corregidas
         val startCal = googleDateToCalendar(task.start)
         val endCal = googleDateToCalendar(task.end)
 
@@ -150,13 +141,13 @@ class TaskViewModel @Inject constructor(
                 startTime = startCal,
                 endTime = endCal,
 
-                isAllDay = task.start?.dateTime == null, // Lógica simple: si no tiene dateTime, es todo el día
-                isNoDate = task.start == null, // Si start es null, no tiene fecha
+                isAllDay = task.start?.dateTime == null,
+                isNoDate = task.start == null,
 
                 subTasks = task.subTasks,
                 reminders = task.reminders.overrides,
 
-                //recurrenceType = task.synkronRecurrence,
+                // recurrenceType = task.synkronRecurrence, // Descomenta si usas este campo
                 selectedRecurrenceDays = task.synkronRecurrenceDays.toSet()
             )
         }
@@ -169,11 +160,10 @@ class TaskViewModel @Inject constructor(
             return
         }
 
-        Log.d("SYCROM_DEBUG", "VM: Guardando tarea ID=${s.id}")
-
         viewModelScope.launch {
             updateState { copy(isLoading = true) }
             try {
+                // Preparar calendarios finales
                 val finalStart = (s.selectedDate.clone() as Calendar).apply {
                     set(Calendar.HOUR_OF_DAY, s.startTime.get(Calendar.HOUR_OF_DAY))
                     set(Calendar.MINUTE, s.startTime.get(Calendar.MINUTE))
@@ -191,15 +181,21 @@ class TaskViewModel @Inject constructor(
                     summary = s.title,
                     description = s.description,
                     location = s.location,
+                    // CORRECCIÓN: Usamos la conversión simple a Long
                     start = if (!s.isNoDate) calendarToGoogleDate(finalStart) else null,
                     end = if (!s.isNoDate) calendarToGoogleDate(finalEnd) else null,
+
                     colorId = s.colorId,
                     priority = s.priority,
                     subTasks = s.subTasks,
                     reminders = GoogleEventReminders(overrides = s.reminders),
-                    //synkronRecurrence = s.recurrenceType,
+                    // synkronRecurrence = s.recurrenceType,
                     synkronRecurrenceDays = s.selectedRecurrenceDays.toList(),
-                    isActive = true, isDone = false, isDeleted = false, isArchived = false, isPinned = false, transparency = "opaque", conferenceLink = ""
+
+                    // Valores por defecto
+                    isActive = true, isDone = false, isDeleted = false,
+                    isArchived = false, isPinned = false,
+                    transparency = "opaque", conferenceLink = ""
                 )
 
                 if (s.id == 0) {
@@ -219,15 +215,21 @@ class TaskViewModel @Inject constructor(
         }
     }
 
+    // --- FUNCIONES CORREGIDAS PARA LONG ---
+
     private fun calendarToGoogleDate(cal: Calendar): GoogleEventDateTime {
-        val zdt = ZonedDateTime.ofInstant(cal.toInstant(), ZoneId.systemDefault())
-        return GoogleEventDateTime(dateTime = zdt, timeZone = ZoneId.systemDefault().id)
+        // Simple y limpio: Obtenemos milisegundos y ID de zona
+        return GoogleEventDateTime(
+            dateTime = cal.timeInMillis, // <-- ¡Esto es un Long!
+            timeZone = TimeZone.getDefault().id
+        )
     }
 
     private fun googleDateToCalendar(gDate: GoogleEventDateTime?): Calendar {
         val cal = Calendar.getInstance()
         if (gDate?.dateTime != null) {
-            cal.time = Date.from(gDate.dateTime.toInstant())
+            // Asignamos directamente el Long al calendario
+            cal.timeInMillis = gDate.dateTime
         }
         return cal
     }

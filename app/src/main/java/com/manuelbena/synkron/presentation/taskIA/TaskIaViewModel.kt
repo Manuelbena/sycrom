@@ -2,7 +2,7 @@ package com.manuelbena.synkron.presentation.taskIA
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.manuelbena.synkron.base.BaseViewModel
+import com.manuelbena.synkron.domain.models.TaskDomain // <-- Importante
 import com.manuelbena.synkron.domain.usecase.SendTaskIaUseCase
 import com.manuelbena.synkron.presentation.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,7 +14,6 @@ class TaskIaViewModel @Inject constructor(
     private val sendTaskIaUseCase: SendTaskIaUseCase
 ) : ViewModel() {
 
-    // LiveData o StateFlow para la UI
     private val _iaResponseState = SingleLiveEvent<IaUiState>()
     val iaResponseState: SingleLiveEvent<IaUiState> get() = _iaResponseState
 
@@ -22,25 +21,26 @@ class TaskIaViewModel @Inject constructor(
         _iaResponseState.value = IaUiState.Loading
 
         viewModelScope.launch {
+            // El UseCase ya nos devuelve un Result<TaskDomain> gracias a los cambios anteriores
             val result = sendTaskIaUseCase(userMessage)
 
-            result.onSuccess { n8nResponse ->
-                // Aquí procesas la respuesta para la UI
-                // Por ejemplo, autocompletar campos en el formulario
-                _iaResponseState.value = IaUiState.Success(n8nResponse)
+            result.onSuccess { taskDomain ->
+                // ✅ CORREGIDO: Guardamos la 'task' en el estado Success
+                _iaResponseState.value = IaUiState.Success(taskDomain)
 
-                // Opcional: Si quieres loguear como "Synkrón AI" diría:
-                // "He recibido la estructura de la tarea desde el servidor."
             }.onFailure { error ->
                 _iaResponseState.value = IaUiState.Error(error.message ?: "Error desconocido")
             }
         }
     }
 
-    // Sealed class para manejar los estados de la vista de forma limpia
+    // Sealed class actualizada
     sealed class IaUiState {
         object Loading : IaUiState()
-        data class Success(val data: com.manuelbena.synkron.data.remote.n8n.models.N8nChatResponse) : IaUiState()
+
+        // ✅ CAMBIO CLAVE: Usamos 'task' y 'TaskDomain' para que coincida con el BottomSheet
+        data class Success(val task: TaskDomain) : IaUiState()
+
         data class Error(val message: String) : IaUiState()
     }
 }

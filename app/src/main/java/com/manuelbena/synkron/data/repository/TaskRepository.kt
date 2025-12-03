@@ -4,6 +4,7 @@ import android.util.Log
 import com.manuelbena.synkron.data.local.models.TaskDao
 import com.manuelbena.synkron.data.mappers.toDomain
 import com.manuelbena.synkron.data.mappers.toEntity
+import com.manuelbena.synkron.data.mappers.toTaskDomain
 import com.manuelbena.synkron.data.remote.n8n.N8nApi
 import com.manuelbena.synkron.data.remote.n8n.models.N8nChatRequest
 import com.manuelbena.synkron.data.remote.n8n.models.N8nChatResponse
@@ -66,13 +67,23 @@ class TaskRepository @Inject constructor(
         taskDao.deleteTask(task.toEntity())
     }
 
-    override suspend fun sendIaMessage(message: String): Result<N8nChatResponse> {
+    // --- AQUÍ ESTÁ LA MAGIA ---
+    override suspend fun sendIaMessage(message: String): Result<TaskDomain> {
         return try {
+            // 1. Llamada a la API (devuelve Response<N8nChatResponse>)
             val response = api.sendChatMessage(N8nChatRequest(message))
+
             if (response.isSuccessful && response.body() != null) {
-                Result.success(response.body()!!)
+                // 2. Obtenemos el DTO crudo
+                val n8nResponse = response.body()!!
+
+                // 3. CONVERSIÓN: Usamos el mapper para transformarlo a Domain
+                val domainTask = n8nResponse.toTaskDomain()
+
+                // 4. Devolvemos éxito con el objeto de Dominio
+                Result.success(domainTask)
             } else {
-                Result.failure(Exception("Error en n8n: ${response.code()}"))
+                Result.failure(Exception("Error en n8n: ${response.code()} ${response.message()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)

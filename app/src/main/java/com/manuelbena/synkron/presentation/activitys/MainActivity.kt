@@ -20,7 +20,7 @@ import com.manuelbena.synkron.base.BaseActivity
 import com.manuelbena.synkron.data.local.notification.NotificationHelper
 import com.manuelbena.synkron.databinding.ActivityMainBinding
 
-import com.manuelbena.synkron.presentation.task_ia.TaskIaBottomSheet
+
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Locale
 import javax.inject.Inject

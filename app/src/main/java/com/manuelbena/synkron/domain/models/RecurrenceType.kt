@@ -1,6 +1,10 @@
 package com.manuelbena.synkron.domain.models
 
-enum class RecurrenceType {
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
+
+@Parcelize
+enum class RecurrenceType : Parcelable {
     DAILY,
     WEEKLY,
     CUSTOM,
