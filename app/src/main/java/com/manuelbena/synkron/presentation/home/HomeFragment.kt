@@ -1,6 +1,5 @@
 package com.manuelbena.synkron.presentation.home
 
-
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -20,8 +19,8 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
@@ -31,26 +30,20 @@ import com.manuelbena.synkron.databinding.FragmentHomeBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
-import com.manuelbena.synkron.presentation.task_ia.TaskIaBottomSheet
-
 import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
-import com.manuelbena.synkron.presentation.util.ADD_TASK
 import com.manuelbena.synkron.presentation.util.CarouselScrollListener
-import com.manuelbena.synkron.presentation.util.TASK_TO_EDIT_KEY
-
-
+import com.manuelbena.synkron.presentation.task_ia.TaskIaBottomSheet
+import com.manuelbena.synkron.presentation.util.ADD_TASK // Asegúrate de que existen en Util o Constants
+import com.manuelbena.synkron.presentation.util.TASK_TO_EDIT_KEY // Asegúrate de que existen en Util o Constants
 import com.manuelbena.synkron.presentation.util.WeekCalendarManager
+import com.manuelbena.synkron.presentation.util.extensions.toDurationString
 import com.manuelbena.synkron.presentation.util.getDurationInMinutes
 import com.manuelbena.synkron.presentation.util.toCalendar
-import com.manuelbena.synkron.presentation.util.toDurationString
 import com.manuelbena.synkron.presentation.util.toHourString
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect // --- CAMBIO IMPORTANTE: NO 'collectLatest' ---
 import kotlinx.coroutines.launch
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
@@ -60,8 +53,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override val viewModel: HomeViewModel by activityViewModels()
     private var isFabMenuOpen = false
+    private lateinit var weekManager: WeekCalendarManager
 
-    private lateinit var weekCalendarManager: WeekCalendarManager
     private val fabInterpolator = OvershootInterpolator()
 
     private var lastSnappedPosition = RecyclerView.NO_POSITION
@@ -94,10 +87,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        weekCalendarManager = WeekCalendarManager(binding.weekDaysContainer) { selectedDate: LocalDate ->
-            shouldScrollToStart = true
-            viewModel.onDateSelected(selectedDate)
-        }
+        setupHeader()
+        // Inicializamos el calendario AQUÍ, antes de llamar a métodos sobre él
+        setupCalendar()
         setupRecyclerView()
         setupFabAnimation()
         setupDotIndicatorListener()
@@ -105,7 +97,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override fun onResume() {
         super.onResume()
-
         val filter = IntentFilter(Intent.ACTION_DATE_CHANGED)
         requireActivity().registerReceiver(midnightUpdateReceiver, filter)
     }
@@ -115,62 +106,55 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         requireActivity().unregisterReceiver(midnightUpdateReceiver)
     }
 
-
-    /**
-     * Observa el StateFlow y el Action LiveData del ViewModel.
-     */
     override fun observe() {
-        // --- OBSERVADOR DE ESTADO (StateFlow) ---
-
-        // --- CAMBIO: Flag para inicializar el calendario solo una vez ---
         var isCalendarInitialized = false
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-
-                // --- CAMBIO: de 'collectLatest' a 'collect' ---
                 viewModel.uiState.collect { state ->
-
-                    // --- CAMBIO: Inicializar el calendario con el estado del VM ---
                     if (!isCalendarInitialized) {
-                        weekCalendarManager.setupCalendar(state.selectedDate)
+                        // Asegúrate de que 'setupCalendar' existe en WeekCalendarManager (ver mi respuesta anterior)
+                        weekManager.setupCalendar(state.selectedDate)
                         isCalendarInitialized = true
                     }
-
                     updateUi(state)
                 }
             }
         }
 
-        // --- OBSERVADOR DE ACCIÓN (SingleLiveEvent) ---
         viewModel.action.observe(viewLifecycleOwner) { action ->
             when (action) {
-                is HomeAction.ShowErrorSnackbar -> {
-                    Snackbar.make(binding.root, action.message, Snackbar.LENGTH_SHORT).show()
-                }
-                is HomeAction.NavigateToEditTask -> {
-                    navigateToContainerActivity(action.task)
-                }
-                is HomeAction.ShareTask -> {
-                    shareTask(action.task)
-                }
+                is HomeAction.ShowErrorSnackbar -> Snackbar.make(binding.root, action.message, Snackbar.LENGTH_SHORT).show()
+                is HomeAction.NavigateToEditTask -> navigateToContainerActivity(action.task)
+                is HomeAction.ShareTask -> shareTask(action.task)
             }
         }
     }
 
-    /**
-     * Función centralizada para actualizar la UI basada en el HomeState.
-     *
-     * ⬇️ SECCIÓN MODIFICADA ⬇️
-     */
-    private fun updateUi(state: HomeState) {
-        // Actualizaciones de texto (sin cambios)
-        binding.textDate.text = state.headerText
-        binding.tvDateTitle.text = state.selectedDate.format(
-            DateTimeFormatter.ofPattern("dd 'de' MMMM", Locale("es", "ES"))
-        )
+    private fun setupHeader() {
+        val date = SimpleDateFormat("EEEE, d 'de' MMMM", Locale.getDefault()).format(Date())
+        binding.textDate.text = date.replaceFirstChar { it.uppercase() }
+        binding.textGreeting.text = "Hola, Manuel"
+        binding.textTemperature.text = "19°C"
+    }
 
-        // Lógica de Carga (sin cambios)
+    private fun setupCalendar() {
+        // Inicializar el WeekCalendarManager con la vista correcta del XML
+        weekManager = WeekCalendarManager(
+            calendarView = binding.weekCalendarView,
+            onDaySelected = { date ->
+                // Aquí es donde daba el error. Usamos el método directo o el evento si existe.
+                // viewModel.onEvent(HomeEvents.OnDateSelected(date))
+
+                // Si 'onEvent' no existe en tu VM actual, usa el método directo:
+                viewModel.onDateSelected(date)
+            }
+        )
+        // Este método debe existir en tu WeekCalendarManager actualizado
+        weekManager.generateWeekDays()
+    }
+
+    private fun updateUi(state: HomeState) {
         binding.progressIndicator.isVisible = state.isLoading
 
         if (state.isLoading) {
@@ -189,8 +173,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
             if (binding.tabLayoutDots.tabCount != state.tasks.size) {
                 binding.tabLayoutDots.removeAllTabs()
-
-                // Bucle para añadir cada punto como una "vista personalizada"
                 state.tasks.forEach { _ ->
                     val newTab = binding.tabLayoutDots.newTab()
                     newTab.setCustomView(R.layout.dot_indicator_layout)
@@ -198,19 +180,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 }
             }
 
-            // 5. Lógica de scroll (movida aquí para que solo se ejecute
-            //    cuando la carga ha terminado y hay tareas)
             if (shouldScrollToStart && hasTasks) {
                 binding.recyclerViewTasks.scrollToPosition(0)
                 shouldScrollToStart = false
-}
+            }
         }
-        // --- FIN DEL CAMBIO ---
-
-        // Sincroniza la UI del calendario con el estado (sin cambios)
-        weekCalendarManager.selectDate(state.selectedDate)
+        // Sincronizar visualmente la fecha
+        weekManager.selectDate(state.selectedDate)
     }
-    // ⬆️ SECCIÓN MODIFICADA ⬆️
 
     override fun setListener() {
         binding.apply {
@@ -218,20 +195,15 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 it.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                 if (isFabMenuOpen) closeFabMenu() else openFabMenu()
             }
-
             tvFabAddTask.setOnClickListener {
                 closeFabMenu()
-                navigateToContainerActivity(null) // null = Tarea Nueva
+                navigateToContainerActivity(null)
             }
-
             tvFabAddSuggestion.setOnClickListener {
                 closeFabMenu()
-               showAiButton()
+                showAiButton()
             }
-            tvFabAddGasto.setOnClickListener {
-                closeFabMenu()
-                // Lógica futura
-            }
+            tvFabAddGasto.setOnClickListener { closeFabMenu() }
             tvFabAddIng.setOnClickListener {
                 closeFabMenu()
                 showAiButton()
@@ -249,14 +221,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         )
     }
 
-    // --- Funciones del FAB (open, close, show, hide) ---
     private fun openFabMenu() {
         isFabMenuOpen = true
-        binding.fabMain.animate()
-            .setInterpolator(fabInterpolator)
-            .setDuration(300)
-            .start()
-
+        binding.fabMain.animate().setInterpolator(fabInterpolator).setDuration(300).start()
         showFab(binding.tvFabAddTask)
         showFab(binding.tvFabAddSuggestion)
         showFab(binding.tvFabAddGasto)
@@ -265,11 +232,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun closeFabMenu() {
         isFabMenuOpen = false
-        binding.fabMain.animate()
-            .setInterpolator(fabInterpolator)
-            .setDuration(300)
-            .start()
-
+        binding.fabMain.animate().setInterpolator(fabInterpolator).setDuration(300).start()
         hideFab(binding.tvFabAddTask)
         hideFab(binding.tvFabAddSuggestion)
         hideFab(binding.tvFabAddGasto)
@@ -280,58 +243,33 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         fab.visibility = View.VISIBLE
         fab.alpha = 0f
         fab.translationY = 50f
-
-        fab.animate()
-            .alpha(1f)
-            .translationY(0f)
-            .setInterpolator(fabInterpolator)
-            .setDuration(300)
-            .start()
+        fab.animate().alpha(1f).translationY(0f).setInterpolator(fabInterpolator).setDuration(300).start()
     }
-
 
     private fun hideFab(fab: View) {
-        fab.animate()
-            .alpha(0f)
-            .translationY(50f)
-            .setInterpolator(fabInterpolator)
-            .setDuration(300)
-            .withEndAction {
-                fab.visibility = View.GONE
-            }
-            .start()
+        fab.animate().alpha(0f).translationY(50f).setInterpolator(fabInterpolator).setDuration(300)
+            .withEndAction { fab.visibility = View.GONE }.start()
     }
-
 
     private fun setupRecyclerView() {
         val snapHelper = PagerSnapHelper()
         binding.recyclerViewTasks.apply {
-            val linearLayoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-            layoutManager = linearLayoutManager
+            val lm = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            layoutManager = lm
             adapter = taskAdapter
             applyCarouselPadding()
             addOnScrollListener(CarouselScrollListener())
             itemAnimator = null
 
-            // Lógica de vibración y SINCRONIZACIÓN DE PUNTOS
             addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     super.onScrollStateChanged(recyclerView, newState)
-
                     if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-
-                        val centerView = snapHelper.findSnapView(linearLayoutManager) ?: return
-                        val newPosition = linearLayoutManager.getPosition(centerView)
-
+                        val centerView = snapHelper.findSnapView(lm) ?: return
+                        val newPosition = lm.getPosition(centerView)
                         if (newPosition != RecyclerView.NO_POSITION && newPosition != lastSnappedPosition) {
-
-                            // 1. Vibramos (como ya tenías)
                             vibratePhone(50)
-
-                            // 2. ⬇️ NUEVO: Seleccionamos el punto correspondiente ⬇️
                             binding.tabLayoutDots.getTabAt(newPosition)?.select()
-
-                            // 3. Actualizamos la posición
                             lastSnappedPosition = newPosition
                         }
                     }
@@ -341,17 +279,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         snapHelper.attachToRecyclerView(binding.recyclerViewTasks)
     }
 
-    /**
-     * ⬇️ NUEVA FUNCIÓN: Para que el usuario pueda pulsar los puntos ⬇️
-     */
     private fun setupDotIndicatorListener() {
         binding.tabLayoutDots.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 tab?.let {
-                    // Verificamos que el RecyclerView está listo
                     val lm = binding.recyclerViewTasks.layoutManager as? LinearLayoutManager
                     if (lm != null) {
-                        // Solo hacemos scroll si el usuario pulsó un punto DIFERENTE al actual
                         val currentPos = lm.findFirstCompletelyVisibleItemPosition()
                         if (currentPos != it.position) {
                             binding.recyclerViewTasks.smoothScrollToPosition(it.position)
@@ -363,9 +296,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             override fun onTabReselected(tab: TabLayout.Tab?) {}
         })
     }
-    /**
-     * Función de vibración (sin cambios)
-     */
+
     private fun vibratePhone(duration: Long) {
         val vibrator = context?.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
         vibrator?.let {
@@ -378,20 +309,15 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
     }
 
-
-
     private fun showTaskDetail(task: TaskDomain) {
         taskDetailBottomSheet?.dismiss()
         taskDetailBottomSheet = TaskDetailBottomSheet.newInstance(task)
         taskDetailBottomSheet?.show(childFragmentManager, TaskDetailBottomSheet.TAG)
     }
 
-    // Nueva función para configurar el botón
     private fun showAiButton() {
-
-            val bottomSheet = TaskIaBottomSheet()
-            bottomSheet.show(childFragmentManager, "TaskIaBottomSheet")
-
+        val bottomSheet = TaskIaBottomSheet()
+        bottomSheet.show(childFragmentManager, "TaskIaBottomSheet")
     }
 
     private fun shareTask(task: TaskDomain) {
@@ -401,7 +327,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             putExtra(Intent.EXTRA_TEXT, shareText)
             type = "text/plain"
         }
-
         val shareIntent = Intent.createChooser(sendIntent, "Compartir tarea")
         startActivity(shareIntent)
     }
@@ -458,26 +383,19 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private fun createGoogleCalendarLink(task: TaskDomain): String {
         val startCalendar = task.start.toCalendar()
         val endCalendar = task.end.toCalendar()
-
         val startTimeMillis = startCalendar.timeInMillis
         val endTimeMillis = endCalendar.timeInMillis
-
         val isoFormatter = SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US).apply {
             timeZone = TimeZone.getTimeZone("UTC")
         }
         val startTimeUtc = isoFormatter.format(Date(startTimeMillis))
         val endTimeUtc = isoFormatter.format(Date(endTimeMillis))
-
         val title = URLEncoder.encode(task.summary, "UTF-8")
         val dates = URLEncoder.encode("$startTimeUtc/$endTimeUtc", "UTF-8")
         val details = URLEncoder.encode(task.description ?: "", "UTF-8")
         val location = URLEncoder.encode(task.location ?: "", "UTF-8")
-
         return "https://www.google.com/calendar/render?action=TEMPLATE" +
-                "&text=$title" +
-                "&dates=$dates" +
-                "&details=$details" +
-                "&location=$location"
+                "&text=$title" + "&dates=$dates" + "&details=$details" + "&location=$location"
     }
 
     private fun navigateToContainerActivity(task: TaskDomain?) {

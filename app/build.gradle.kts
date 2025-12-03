@@ -49,6 +49,12 @@ android {
 
 dependencies {
 
+    // --- LIBRERÍA CALENDARIO (MAVEN CENTRAL - NO FALLA) ---
+    implementation("com.kizitonwose.calendar:view:2.6.0")
+
+    // Desugaring para fechas Java 8 en Android antiguos (Recomendado por la librería)
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+
     implementation("com.airbnb.android:lottie:6.4.1")
     val room_version = "2.6.1" // Última versión estable de Room
     implementation("androidx.room:room-runtime:$room_version")
