@@ -17,13 +17,13 @@ import java.util.Locale
 
 class WeekCalendarManager(
     private val calendarView: WeekCalendarView,
-    private val onDaySelected: (LocalDate) -> Unit
+    private val onDaySelected: (LocalDate) -> Unit,
+    private val onMonthChanged: (String) -> Unit
 ) {
 
     private var selectedDate: LocalDate = LocalDate.now()
     private val monthFormatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
 
-    // Esta función reemplaza a tu antiguo "generateWeekDays"
     fun generateWeekDays() {
         val currentDate = LocalDate.now()
         val currentMonth = YearMonth.now()
@@ -34,44 +34,55 @@ class WeekCalendarManager(
         calendarView.dayBinder = object : WeekDayBinder<DayViewContainer> {
             override fun create(view: View) = DayViewContainer(view)
             override fun bind(container: DayViewContainer, data: WeekDay) {
-                container.day = data
                 container.bind(data)
             }
+        }
+
+        calendarView.weekScrollListener = { weekDays ->
+            val firstDate = weekDays.days.first().date
+            val monthTitle = monthFormatter.format(firstDate)
+            onMonthChanged(monthTitle.replaceFirstChar { it.uppercase() })
         }
 
         calendarView.setup(startDate, endDate, firstDayOfWeek)
         calendarView.scrollToWeek(currentDate)
 
-        // Seleccionar hoy por defecto al iniciar
+        // Seleccionamos la fecha actual por defecto
         selectDate(currentDate)
     }
 
-    // Método público para cambiar la selección desde fuera (si lo necesitas)
-    fun selectDate(date: LocalDate) {
-        if (selectedDate != date) {
-            val oldDate = selectedDate
-            selectedDate = date
-            // Notificamos a la librería para que redibuje las celdas afectadas
-            calendarView.notifyDateChanged(oldDate)
-            calendarView.notifyDateChanged(date)
-        }
-        // Llamamos al callback
-        onDaySelected(date)
-    }
-
-    // Método de compatibilidad por si lo usas en HomeFragment para setup inicial
+    // --- ESTA ES LA FUNCIÓN QUE FALTABA ---
     fun setupCalendar(initialDate: LocalDate) {
-        // Si ya está generado, solo movemos la selección
+        // Si el calendario ya tiene adaptador, significa que ya se generó
         if (calendarView.adapter != null) {
             selectDate(initialDate)
             calendarView.scrollToWeek(initialDate)
         } else {
+            // Si no, lo generamos primero
             generateWeekDays()
+            // Y luego forzamos la fecha inicial que nos pide el fragmento
             selectDate(initialDate)
+            calendarView.scrollToWeek(initialDate)
         }
     }
+    // --------------------------------------
 
-    // --- CLASE INTERNA PARA CADA CELDA DEL DÍA ---
+    fun selectDate(date: LocalDate) {
+        if (selectedDate != date) {
+            val oldDate = selectedDate
+            selectedDate = date
+            calendarView.notifyDateChanged(oldDate)
+            calendarView.notifyDateChanged(date)
+        }
+        onDaySelected(date)
+    }
+
+    fun scrollToToday() {
+        val today = LocalDate.now()
+        selectDate(today)
+        calendarView.smoothScrollToWeek(today)
+    }
+
     inner class DayViewContainer(view: View) : ViewContainer(view) {
         val textView: TextView = view.findViewById(R.id.tvDayText)
         val selectionBg: View = view.findViewById(R.id.selectionBg)
@@ -79,12 +90,13 @@ class WeekCalendarManager(
 
         init {
             view.setOnClickListener {
-                // Al hacer click, actualizamos la selección interna y notificamos
-                val oldDate = selectedDate
-                selectedDate = day.date
-                calendarView.notifyDateChanged(oldDate)
-                calendarView.notifyDateChanged(selectedDate)
-                onDaySelected(selectedDate)
+                if (selectedDate != day.date) {
+                    val oldDate = selectedDate
+                    selectedDate = day.date
+                    calendarView.notifyDateChanged(oldDate)
+                    calendarView.notifyDateChanged(selectedDate)
+                    onDaySelected(selectedDate)
+                }
             }
         }
 
@@ -92,22 +104,31 @@ class WeekCalendarManager(
             this.day = data
             textView.text = data.date.dayOfMonth.toString()
 
-            if (data.date == selectedDate) {
-                // ESTILO SELECCIONADO (Fondo negro, texto blanco)
-                textView.setTextColor(Color.WHITE)
-                selectionBg.visibility = View.VISIBLE
-                // Asegúrate de que el background tint sea el color primario o negro según tu diseño
-                // selectionBg.background.setTint(...)
-            } else {
-                // ESTILO NORMAL
-                if (data.date == LocalDate.now()) {
-                    // Hoy (sin seleccionar): Color acento
-                    textView.setTextColor(view.context.getColor(R.color.black)) // O tu color primario
-                } else {
-                    // Otro día
-                    textView.setTextColor(Color.BLACK)
+            val isSelected = (data.date == selectedDate)
+            val isToday = (data.date == LocalDate.now())
+
+            selectionBg.visibility = View.VISIBLE
+
+            when {
+                // 1. SELECCIONADO (Prioridad máxima)
+                isSelected -> {
+                    textView.setTextColor(Color.WHITE)
+                    selectionBg.background.setTint(Color.BLACK)
+                    selectionBg.alpha = 1f
                 }
-                selectionBg.visibility = View.INVISIBLE
+
+                // 2. ES HOY (Pero no seleccionado) -> Fondo gris suave
+                isToday -> {
+                    textView.setTextColor(Color.BLACK)
+                    selectionBg.background.setTint(Color.LTGRAY)
+                    selectionBg.alpha = 0.5f
+                }
+
+                // 3. NORMAL
+                else -> {
+                    textView.setTextColor(Color.BLACK)
+                    selectionBg.visibility = View.INVISIBLE
+                }
             }
         }
     }

@@ -1,22 +1,17 @@
 package com.manuelbena.synkron.presentation.home
 
-import android.content.Context
-import android.content.Intent
-
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.domain.usecase.DeleteTaskUseCase
 import com.manuelbena.synkron.domain.usecase.GetTaskTodayUseCase
 import com.manuelbena.synkron.domain.usecase.UpdateTaskUseCase
-import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
 import com.manuelbena.synkron.presentation.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay // ⬅️ NUEVO IMPORT
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.flow.flow // ⬅️ NUEVO IMPORT
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -28,52 +23,55 @@ class HomeViewModel @Inject constructor(
     private val getTaskTodayUseCase: GetTaskTodayUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase
-    ) : ViewModel() {
+) : ViewModel() {
 
-    // --- ESTADO (StateFlow) ---
     private val _uiState = MutableStateFlow(HomeState())
     val uiState: StateFlow<HomeState> = _uiState.asStateFlow()
 
-    // --- ACCIÓN (SingleLiveEvent) ---
     private val _action = SingleLiveEvent<HomeAction>()
     val action: SingleLiveEvent<HomeAction> = _action
+
+    // 🔥 NUEVO: Gatillo para forzar la recarga manual
+    private val _refreshTrigger = MutableSharedFlow<Unit>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
 
     private val headerDateFormatter = DateTimeFormatter
         .ofPattern("EEEE, dd 'de' MMMM", Locale("es", "ES"))
 
-
     init {
+        // Inicializamos fecha hoy
         _uiState.update { it.copy(selectedDate = LocalDate.now()) }
-        // --- ¡PROGRAMACIÓN REACTIVA! ---
-        viewModelScope.launch {
-            _uiState.map { it.selectedDate }
-                .distinctUntilChanged()
-                .flatMapLatest { date ->
-                    _uiState.update { it.copy(isLoading = true) } // 1. Pone isLoading = true
 
-                    // ⬇️ INICIO DEL CAMBIO: Flow con delay ⬇️
-                    // 2. Creamos un flow que espera 300ms
+        viewModelScope.launch {
+            // 🔥 MERGE: Escuchamos cambios de fecha O el gatillo de refresco
+            merge(
+                _uiState.map { it.selectedDate }.distinctUntilChanged(), // 1. Si cambia la fecha
+                _refreshTrigger.map { _uiState.value.selectedDate }      // 2. Si forzamos refresh (usa la fecha actual)
+            )
+                .flatMapLatest { date ->
+                    _uiState.update { it.copy(isLoading = true) }
+
                     flow {
-                        delay(300L)
-                        // 3. Tras esperar, nos suscribimos al caso de uso
+                        delay(300L) // Mantenemos tu delay suave
                         getTaskTodayUseCase(date).collect { tasks ->
-                            emit(tasks) // 4. Emitimos las tareas
+                            emit(tasks)
                         }
                     }
-                    // ⬆️ FIN DEL CAMBIO ⬆️
                 }
                 .catch { e ->
                     _action.postValue(HomeAction.ShowErrorSnackbar(e.message ?: "Error al cargar tareas"))
+                    _uiState.update { it.copy(isLoading = false) }
                 }
                 .collect { tasks ->
-                    // 5. Este 'collect' solo se ejecuta después del delay + la
-                    //    llegada de datos, poniendo isLoading = false
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             tasks = tasks,
-                            headerText = it.selectedDate.format(headerDateFormatter).replaceFirstChar {
-                                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                            headerText = it.selectedDate.format(headerDateFormatter).replaceFirstChar { char ->
+                                if (char.isLowerCase()) char.titlecase(Locale.getDefault()) else char.toString()
                             }
                         )
                     }
@@ -82,22 +80,27 @@ class HomeViewModel @Inject constructor(
     }
 
     /**
-     * Llamado por la UI cuando el usuario selecciona una nueva fecha.
+     * 🔥 NUEVA FUNCIÓN: Llama a esto desde onResume()
      */
+    fun refreshData() {
+        _refreshTrigger.tryEmit(Unit)
+    }
+
     fun onDateSelected(date: LocalDate) {
         _uiState.update { it.copy(selectedDate = date) }
     }
 
-    /**
-     * Llamado por la UI para refrescar el calendario a "Hoy".
-     */
     fun refreshToToday() {
-        onDateSelected(LocalDate.now())
+        val today = LocalDate.now()
+        // Si ya estamos en hoy, forzamos el refresh manual, si no, cambiamos la fecha
+        if (_uiState.value.selectedDate == today) {
+            refreshData()
+        } else {
+            onDateSelected(today)
+        }
     }
 
-    /**
-     * Llamado cuando el usuario (des)marca una tarea.
-     */
+    // ... (El resto de funciones: onTaskCheckedChanged, onTaskMenuAction se mantienen igual) ...
     fun onTaskCheckedChanged(task: TaskDomain, isDone: Boolean) {
         viewModelScope.launch {
             try {
@@ -108,9 +111,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Llamado desde el menú de la tarjeta de tarea.
-     */
     fun onTaskMenuAction(action: TaskAdapter.TaskMenuAction) {
         viewModelScope.launch {
             when (action) {
@@ -131,5 +131,4 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-
 }

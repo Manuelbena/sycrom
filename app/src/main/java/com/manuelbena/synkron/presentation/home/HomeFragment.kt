@@ -97,8 +97,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override fun onResume() {
         super.onResume()
+
+        // 1. Registro del receiver de medianoche (tu código original)
         val filter = IntentFilter(Intent.ACTION_DATE_CHANGED)
         requireActivity().registerReceiver(midnightUpdateReceiver, filter)
+
+        // 2. 🔥 RECARGA FORZADA: Esto arregla el "bug visual" al volver
+        // Asegura que si editaste una tarea o la IA creó una, se repinte todo fresco.
+        viewModel.refreshData()
     }
 
     override fun onPause() {
@@ -139,18 +145,16 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun setupCalendar() {
-        // Inicializar el WeekCalendarManager con la vista correcta del XML
         weekManager = WeekCalendarManager(
             calendarView = binding.weekCalendarView,
             onDaySelected = { date ->
-                // Aquí es donde daba el error. Usamos el método directo o el evento si existe.
-                // viewModel.onEvent(HomeEvents.OnDateSelected(date))
-
-                // Si 'onEvent' no existe en tu VM actual, usa el método directo:
                 viewModel.onDateSelected(date)
+            },
+            onMonthChanged = { title ->
+                // CORRECCIÓN 1: Actualizamos el TextView del mes/año aquí
+                binding.tvMonthYear.text = title
             }
         )
-        // Este método debe existir en tu WeekCalendarManager actualizado
         weekManager.generateWeekDays()
     }
 
@@ -207,6 +211,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             tvFabAddIng.setOnClickListener {
                 closeFabMenu()
                 showAiButton()
+            }
+
+            btnToday.setOnClickListener {
+                // Navegar a la fecha actual
+                weekManager.scrollToToday()
             }
         }
     }
