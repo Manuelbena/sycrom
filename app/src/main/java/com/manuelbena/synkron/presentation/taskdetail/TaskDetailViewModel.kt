@@ -10,6 +10,7 @@ import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.domain.models.GoogleEventReminder
 import com.manuelbena.synkron.domain.usecase.DeleteTaskUseCase
 import com.manuelbena.synkron.domain.usecase.GetTaskTodayUseCase
+import com.manuelbena.synkron.domain.usecase.InsertNewTaskUseCase
 import com.manuelbena.synkron.domain.usecase.UpdateTaskUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +23,7 @@ class TaskDetailViewModel @Inject constructor(
     private val getTaskTodayUseCase: GetTaskTodayUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
+    private val insertNewTaskUseCase: InsertNewTaskUseCase,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -32,9 +34,28 @@ class TaskDetailViewModel @Inject constructor(
     val shouldDismiss: LiveData<Boolean> = _shouldDismiss
 
     init {
-        val taskId = savedStateHandle.get<Int>("TASK_ID")
-        if (taskId != null && taskId != 0) {
-            getTask(taskId)
+        // RECUPERAMOS EL OBJETO ENTERO
+        val taskFromArgs = savedStateHandle.get<TaskDomain>("arg_task_obj")
+
+        if (taskFromArgs != null) {
+            if (taskFromArgs.id == 0) {
+                // TAREA NUEVA (IA): Usamos el objeto de memoria
+                if (taskFromArgs.summary.isNotBlank()) {
+                    _task.value = taskFromArgs
+                } else {
+                    _shouldDismiss.value = true
+                }
+            } else {
+                // TAREA EXISTENTE: Mostramos inmediata y refrescamos de DB
+                _task.value = taskFromArgs
+                getTask(taskFromArgs.id)
+            }
+        } else {
+            // Fallback (por si acaso)
+            val taskId = savedStateHandle.get<Int>("TASK_ID")
+            if (taskId != null && taskId != 0) {
+                getTask(taskId)
+            }
         }
     }
 
@@ -44,6 +65,21 @@ class TaskDetailViewModel @Inject constructor(
                 val foundTask = taskList.find { it.id == id }
                 _task.postValue(foundTask)
             }
+        }
+    }
+
+    // NUEVO: Método para confirmar la tarea de la IA
+    fun saveOrUpdateTask() {
+        val currentTask = _task.value ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            if (currentTask.id == 0) {
+                // Insertar nueva (viene de IA)
+                insertNewTaskUseCase.invoke(currentTask)
+            } else {
+                // Actualizar existente
+                updateTaskUseCase.invoke(currentTask)
+            }
+            _shouldDismiss.postValue(true)
         }
     }
 
@@ -88,15 +124,23 @@ class TaskDetailViewModel @Inject constructor(
 
     fun deleteTask(task: TaskDomain) {
         viewModelScope.launch(Dispatchers.IO) {
-            deleteTaskUseCase.invoke(task)
+            if (task.id != 0) {
+                deleteTaskUseCase.invoke(task)
+            }
             _task.postValue(null)
             _shouldDismiss.postValue(true)
         }
     }
 
     private fun updateTask(task: TaskDomain) {
-        viewModelScope.launch(Dispatchers.IO) {
-            updateTaskUseCase.invoke(task)
+        if (task.id == 0) {
+            // Solo actualizamos memoria si aún no está guardada
+            _task.value = task
+        } else {
+            // Guardamos en DB
+            viewModelScope.launch(Dispatchers.IO) {
+                updateTaskUseCase.invoke(task)
+            }
         }
     }
 }

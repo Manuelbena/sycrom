@@ -11,3 +11,16 @@ fun Long.formatDate(): String {
 fun Long.formatTime(): String {
     return SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(this))
 }
+
+fun Long.toDurationString(): String {
+    if (this == 0L) return ""
+
+    val hours = this / 60
+    val minutes = this % 60
+
+    return when {
+        hours > 0 && minutes > 0 -> "$hours h $minutes min"
+        hours > 0 -> "$hours h"
+        else -> "$minutes min"
+    }
+}

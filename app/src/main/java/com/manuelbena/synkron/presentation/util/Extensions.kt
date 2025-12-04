@@ -7,6 +7,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 // --- FUNCIONES DE FECHA REPARADAS Y SEGURAS ---
 
@@ -29,16 +30,26 @@ fun GoogleEventDateTime?.toHourString(locale: Locale = Locale.getDefault()): Str
     }
 }
 
-fun getDurationInMinutes(start: GoogleEventDateTime?, end: GoogleEventDateTime?): Int {
-    val startMillis = start?.dateTime ?: return 0
-    val endMillis = end?.dateTime ?: return 0
+fun getDurationInMinutes(start: GoogleEventDateTime?, end: GoogleEventDateTime?): Long {
+    if (start == null || end == null) return 0L
 
-    return try {
-        val diffMillis = endMillis - startMillis
-        (diffMillis / 60000).toInt()
-    } catch (e: Exception) {
-        0
+    // Prioridad 1: Usar dateTime (fecha y hora exacta)
+    if (start.dateTime != null && end.dateTime != null) {
+        val diffMillis = end.dateTime - start.dateTime
+        return TimeUnit.MILLISECONDS.toMinutes(diffMillis)
     }
+
+    // Prioridad 2: Usar date (evento de día completo)
+    // Los eventos de todo el día suelen contar como 24h * días
+    if (start.dateTime != null && end.dateTime != null) {
+        // En Google Calendar, 'end.date' es exclusivo (el día siguiente).
+        // Calculamos la diferencia en días y pasamos a minutos.
+        // Nota: Esto es una aproximación simple.
+        val diffMillis = end.dateTime - start.dateTime
+        return TimeUnit.MILLISECONDS.toMinutes(diffMillis)
+    }
+
+    return 0L
 }
 
 fun Calendar.toGoogleEventDateTime(): GoogleEventDateTime {

@@ -23,6 +23,7 @@ import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseViewHolder
 import com.manuelbena.synkron.databinding.ItemTaskTodayBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
+import com.manuelbena.synkron.presentation.util.extensions.toDurationString
 import com.manuelbena.synkron.presentation.util.getCategoryColor
 import com.manuelbena.synkron.presentation.util.getCategoryIcon
 import com.manuelbena.synkron.presentation.util.getDurationInMinutes
