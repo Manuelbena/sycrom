@@ -36,10 +36,6 @@ class TaskAdapter(
     private val onTaskCheckedChange: (task: TaskDomain, isDone: Boolean) -> Unit
 ) : ListAdapter<TaskDomain, TaskAdapter.TaskViewHolder>(TaskDiffCallback()) {
 
-    init {
-        setHasStableIds(true)
-    }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val binding = ItemTaskTodayBinding.inflate(
             LayoutInflater.from(parent.context),
@@ -50,6 +46,10 @@ class TaskAdapter(
     }
 
 
+    override fun onViewRecycled(holder: TaskViewHolder) {
+        super.onViewRecycled(holder)
+        holder.unbind()
+    }
 
     @RequiresApi(Build.VERSION_CODES.P)
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
@@ -59,6 +59,11 @@ class TaskAdapter(
     inner class TaskViewHolder(
         private val binding: ItemTaskTodayBinding
     ) : BaseViewHolder<TaskDomain>(binding) {
+
+        fun unbind() {
+            binding.lottieCelebration.cancelAnimation()
+            binding.swTaskCompleted.setOnCheckedChangeListener(null)
+        }
 
         init {
             binding.root.setOnClickListener {
@@ -105,32 +110,26 @@ class TaskAdapter(
             binding.apply {
                 val context = binding.root.context
 
-                // =============================================================
-                // 1. MAPEO DE DATOS
-                // =============================================================
+                // 1. Datos Básicos
                 tvEventTitle.text = item.summary
 
-
-                // Icono y Tint
+                // Icono
                 ivCategoryIcon.setImageResource(item.typeTask.getCategoryIcon())
                 ivCategoryIcon.backgroundTintList = ContextCompat.getColorStateList(context, item.typeTask.getCategoryColor())
 
                 // Ubicación
-                if (item.location.isNullOrEmpty()) {
-                    tvEventLocation.visibility = View.GONE
-                    iconLocation.visibility = View.GONE
-                } else {
-                    tvEventLocation.visibility = View.VISIBLE
-                    iconLocation.visibility = View.VISIBLE
-                    tvEventLocation.text = item.location
-                }
+                tvEventLocation.isVisible = !item.location.isNullOrEmpty()
+                iconLocation.isVisible = !item.location.isNullOrEmpty()
+                tvEventLocation.text = item.location
 
-                // Hora y Duración
-                // 5. Hora y Duración
-                val startTime = item.start.toHourString()
+                // [FIX] Hora y Duración (Manejo seguro de nulos)
+                val startTime = item.start.toHourString() ?: "--:--"
+                // Si end es null (caso IA antiguo), no mostramos guión roto
                 val endTime = item.end.toHourString()
-                tvEventTime.text = "$startTime - $endTime"
 
+                tvEventTime.text = if (endTime != null) "$startTime - $endTime" else startTime
+
+                // Calculamos duración solo si tenemos ambas fechas
                 val durationMin = getDurationInMinutes(item.start, item.end)
                 if (durationMin > 0) {
                     tvDuration.isVisible = true
@@ -141,17 +140,19 @@ class TaskAdapter(
                     tvDuration.isVisible = false
                 }
 
-                // Subtareas
+                // 2. Subtareas (Solo Progress Bar por ahora, según tu XML)
                 val hasSubtasks = item.subTasks.isNotEmpty()
+                // Usamos isVisible para ser más concisos
+                progressBarTaskDetailProgress.isVisible = hasSubtasks
+                textViewTaskDetailProgressText.isVisible = hasSubtasks
+
                 if (hasSubtasks) {
-                    progressBarTaskDetailProgress.visibility = View.VISIBLE
-                    textViewTaskDetailProgressText.visibility = View.VISIBLE
                     val total = item.subTasks.size
                     val completed = item.subTasks.count { it.isDone }
                     val progress = if (total > 0) (completed * 100) / total else 0
                     progressBarTaskDetailProgress.progress = progress
                     textViewTaskDetailProgressText.text = "$completed de $total completadas"
-                } else {
+                }else {
                     progressBarTaskDetailProgress.visibility = View.INVISIBLE
                     textViewTaskDetailProgressText.visibility = View.INVISIBLE
                 }

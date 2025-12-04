@@ -9,7 +9,6 @@
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/card_margin_vertical"
     android:layout_marginBottom="@dimen/card_margin_vertical"
-    android:animateLayoutChanges="true"
     app:cardCornerRadius="@dimen/card_margin_horizontal"
     app:cardElevation="10dp"
     app:strokeWidth="1.5dp">

@@ -113,6 +113,13 @@ fun N8nChatResponse.toTaskDomain(): TaskDomain {
         )
     }
 
+    val endEvent = startEvent?.dateTime?.let { startMillis ->
+        GoogleEventDateTime(
+            dateTime = startMillis + 3600000, // +1 Hora
+            timeZone = java.util.TimeZone.getDefault().id
+        )
+    }
+
     // 1. Parseo de Subtareas (String -> List<SubTaskDomain>)
     val parsedSubTasks = try {
         if (!subTasksString.isNullOrEmpty()) {
@@ -136,18 +143,9 @@ fun N8nChatResponse.toTaskDomain(): TaskDomain {
         emptyList() // Fallback seguro
     }
 
-    // 2. Parseo de Fechas (Timestamp String -> GoogleEventDateTime)
-    // Asumo que tu GoogleEventDateTime tiene un constructor o setter compatible.
-    // Si no, ajusta esta parte según tu implementación de GoogleEventDateTime.
-    val startDate = startTimestamp?.toLongOrNull()?.let { millis ->
-        // Aquí necesitas convertir millis a tu objeto GoogleEventDateTime
-        // Ejemplo genérico (ajústalo a tu clase real):
-        // GoogleEventDateTime(dateTime = com.google.api.client.util.DateTime(millis))
-        null // TODO: ¡Reemplazar con tu constructor real de GoogleEventDateTime!
-    }
 
     return TaskDomain(
-        id = this.id?.toIntOrNull() ?: 0,
+        id = this.id?.toIntOrNull()?.takeIf { it != 0 } ?: (System.currentTimeMillis().toInt()),
         subTasks = parsedSubTasks,
         typeTask = this.typeTask ?: "PERSONAL",
         categoryIcon = this.categoryIcon ?: "ic_work",
@@ -159,6 +157,6 @@ fun N8nChatResponse.toTaskDomain(): TaskDomain {
         summary = this.title ?: "Nueva Tarea IA", // Usamos summary como título principal
         location = this.location,
         start = startEvent,
-        end = null
+        end = endEvent
     )
 }
