@@ -19,6 +19,10 @@ interface TaskDao {
     @Query("SELECT * FROM task_table WHERE id = :id LIMIT 1")
     suspend fun getTaskById(id: Int): TaskEntity?
 
+    // ✅ AHORA (Corregido con rango de inicio y fin):
+    @Query("SELECT * FROM task_table WHERE date BETWEEN :startOfDay AND :endOfDay ORDER BY date ASC")
+    fun getTasksBetween(startOfDay: Long, endOfDay: Long): Flow<List<TaskEntity>>
+
     // CORRECCIÓN 2: Añadido ': Long' para devolver el ID generado
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTask(task: TaskEntity): Long

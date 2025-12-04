@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import javax.inject.Inject
 
@@ -26,11 +27,20 @@ class TaskRepository @Inject constructor(
 ) : ITaskRepository {
 
     override fun getTasksForDate(date: LocalDate): Flow<List<TaskDomain>> {
-        val dayStart = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        val dayEnd = date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        // 1. Calculamos el inicio del día (00:00:00)
+        val startOfDay = date.atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
 
-        return taskDao.getTasksForDay(dayStart, dayEnd).map { entityList ->
-            entityList.map { it.toDomain() }
+        // 2. Calculamos el final del día (23:59:59.999...)
+        val endOfDay = date.atTime(LocalTime.MAX)
+            .atZone(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+
+        // 3. Pedimos al DAO solo ese rango exacto
+        return taskDao.getTasksBetween(startOfDay, endOfDay).map { entities ->
+            entities.map { it.toDomain() }
         }
     }
 

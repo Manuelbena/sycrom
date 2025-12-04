@@ -145,7 +145,8 @@ fun N8nChatResponse.toTaskDomain(): TaskDomain {
 
 
     return TaskDomain(
-        id = this.id?.toIntOrNull()?.takeIf { it != 0 } ?: (System.currentTimeMillis().toInt()),
+        id = this.id?.toIntOrNull() ?: 0,
+        summary = this.title ?: "Nueva Tarea IA",
         subTasks = parsedSubTasks,
         typeTask = this.typeTask ?: "PERSONAL",
         categoryIcon = this.categoryIcon ?: "ic_work",
@@ -154,7 +155,6 @@ fun N8nChatResponse.toTaskDomain(): TaskDomain {
         isActive = this.isActive.toBoolean(), // "true" -> true
         isDone = this.isDone.toBoolean(),
         description = this.description,
-        summary = this.title ?: "Nueva Tarea IA", // Usamos summary como título principal
         location = this.location,
         start = startEvent,
         end = endEvent

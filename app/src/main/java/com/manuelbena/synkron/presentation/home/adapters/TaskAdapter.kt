@@ -279,7 +279,14 @@ class TaskAdapter(
 
     private class TaskDiffCallback : DiffUtil.ItemCallback<TaskDomain>() {
         override fun areItemsTheSame(oldItem: TaskDomain, newItem: TaskDomain): Boolean {
-            return oldItem.id == newItem.id
+            // LÓGICA INTELIGENTE:
+            // 1. Si ambos tienen ID real (BD), comparamos IDs.
+            if (oldItem.id != 0 && newItem.id != 0) {
+                return oldItem.id == newItem.id
+            }
+            // 2. Si son tareas volátiles (IA con id 0), comparamos su contenido único (título + hora)
+            // Esto evita que el RecyclerView se líe y las oculte o mezcle.
+            return oldItem.summary == newItem.summary && oldItem.start == newItem.start
         }
 
         override fun areContentsTheSame(oldItem: TaskDomain, newItem: TaskDomain): Boolean {
