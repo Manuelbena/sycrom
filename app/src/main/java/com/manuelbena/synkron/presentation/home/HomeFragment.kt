@@ -44,6 +44,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
@@ -54,6 +55,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     override val viewModel: HomeViewModel by activityViewModels()
     private var isFabMenuOpen = false
     private lateinit var weekManager: WeekCalendarManager
+    private var displayedDate: LocalDate = LocalDate.now()
 
     private val fabInterpolator = OvershootInterpolator()
 
@@ -98,18 +100,32 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     override fun onResume() {
         super.onResume()
 
-        // 1. Registro del receiver de medianoche (tu código original)
-        val filter = IntentFilter(Intent.ACTION_DATE_CHANGED)
-        requireActivity().registerReceiver(midnightUpdateReceiver, filter)
+        // 1. Registrar el receiver para cambios de hora/fecha (mantiene la app viva si la dejas abierta)
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_TIME_TICK)
+            addAction(Intent.ACTION_DATE_CHANGED)
+            addAction(Intent.ACTION_TIME_CHANGED)
+        }
+        requireActivity().registerReceiver(timeUpdateReceiver, filter)
 
-        // 2. 🔥 RECARGA FORZADA: Esto arregla el "bug visual" al volver
-        // Asegura que si editaste una tarea o la IA creó una, se repinte todo fresco.
-        viewModel.refreshData()
-    }
+        // 2. 🔥 LÓGICA DE "SIEMPRE HOY" AL ENTRAR 🔥
+        // Esto asegura que si sales y vuelves, o si la app estaba en segundo plano,
+        // siempre aterrices en el día actual, reseteando cualquier navegación previa.
 
-    override fun onPause() {
-        super.onPause()
-        requireActivity().unregisterReceiver(midnightUpdateReceiver)
+        // Forzamos al ViewModel a seleccionar la fecha de hoy
+        viewModel.refreshToToday()
+
+        // 3. Forzamos visualmente al calendario a hacer scroll a hoy
+        // (Esto es útil si estabas viendo otra semana)
+        try {
+            weekManager.scrollToToday()
+        } catch (e: Exception) {
+            // Protección por si el calendario aún no se ha inicializado
+        }
+
+        // Actualizamos la variable interna de control
+        displayedDate = java.time.LocalDate.now()
+        setupHeader() // Refresca el texto "Hola Manuel, hoy es..."
     }
 
     override fun observe() {
@@ -134,6 +150,29 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 is HomeAction.NavigateToEditTask -> navigateToContainerActivity(action.task)
                 is HomeAction.ShareTask -> shareTask(action.task)
             }
+        }
+    }
+
+    private fun checkDateChange() {
+        val currentSystemDate = LocalDate.now()
+
+        // Si la fecha del sistema es diferente a la que estamos mostrando...
+        if (currentSystemDate != displayedDate) {
+            displayedDate = currentSystemDate
+
+            // 1. Actualizamos el Texto del Header ("Jueves, 5 de Diciembre")
+            setupHeader()
+
+            // 2. Movemos el calendario visualmente a Hoy
+            // (Asegúrate de que tu WeekCalendarManager tenga un método para esto o reinícialo)
+            try {
+                weekManager.scrollToToday() // O weekManager.selectDate(currentSystemDate)
+            } catch (e: Exception) {
+                // Fallback por si el manager no está listo
+            }
+
+            // 3. Pedimos al ViewModel que cargue las tareas del nuevo día
+            viewModel.refreshToToday()
         }
     }
 
@@ -418,6 +457,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         startActivity(intent)
     }
 
+    private val timeUpdateReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val action = intent?.action
+            if (action == Intent.ACTION_TIME_TICK || action == Intent.ACTION_DATE_CHANGED || action == Intent.ACTION_TIME_CHANGED) {
+                checkDateChange()
+            }
+        }
+    }
     private fun RecyclerView.applyCarouselPadding() {
         val itemWidthDp = 250
         val itemWidthPx = resources.displayMetrics.density * itemWidthDp

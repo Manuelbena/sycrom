@@ -92,7 +92,7 @@ class HomeViewModel @Inject constructor(
 
     fun refreshToToday() {
         val today = LocalDate.now()
-        // Si ya estamos en hoy, forzamos el refresh manual, si no, cambiamos la fecha
+        // Si ya estábamos en hoy, forzamos refresh de datos. Si no, cambiamos la fecha.
         if (_uiState.value.selectedDate == today) {
             refreshData()
         } else {
