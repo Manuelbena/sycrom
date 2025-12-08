@@ -1,10 +1,14 @@
 package com.manuelbena.synkron.presentation.taskIA
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -39,17 +43,12 @@ class TaskIaBottomSheet : BottomSheetDialogFragment() {
         viewModel.iaResponseState.observe(viewLifecycleOwner) { state ->
             when (state) {
                 is TaskIaViewModel.IaUiState.Loading -> {
-                    // Muestra feedback de que Synkrom está pensando 🤖
-                    binding.progressBar.isVisible = true // Asumiendo que tienes un progressBar en el XML
-                    binding.btnSend.isEnabled = false
+                    showLoadingAnimation(true)
                 }
 
                 is TaskIaViewModel.IaUiState.Success -> {
-                    binding.progressBar.isVisible = false
-                    binding.btnSend.isEnabled = true
 
-                    // ✅ CORRECCIÓN CRÍTICA AQUÍ:
-                    // Pasamos 'state.task' (el objeto TaskDomain), NO 'state' (el wrapper).
+                    showLoadingAnimation(false)
                     val intent = Intent(requireContext(), ContainerActivity::class.java).apply {
                         putExtra(ContainerActivity.TASK_TO_EDIT_KEY, state.task)
                     }
@@ -61,17 +60,72 @@ class TaskIaBottomSheet : BottomSheetDialogFragment() {
                 }
 
                 is TaskIaViewModel.IaUiState.Error -> {
-                    binding.progressBar.isVisible = false
-                    binding.btnSend.isEnabled = true
+                    showLoadingAnimation(false)
                     Toast.makeText(requireContext(), state.message, Toast.LENGTH_SHORT).show()
                 }
 
                 else -> {
                     // Idle state
-                    binding.progressBar.isVisible = false
+                    showLoadingAnimation(false)
                 }
             }
         }
+    }
+    private fun showLoadingAnimation(isLoading: Boolean) {
+        if (_binding == null) return
+
+        if (isLoading) {
+            // PASO CRÍTICO: Ocultar teclado y quitar foco antes de animar
+            hideKeyboard()
+
+            // 1. Ocultar Inputs
+            binding.groupInput.visibility = View.INVISIBLE
+
+            // 2. Mostrar Loading con animación
+            binding.layoutLoadingIa.apply {
+                alpha = 0f
+                scaleX = 0.8f
+                scaleY = 0.8f
+                isVisible = true
+                animate()
+                    .alpha(1f)
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(300)
+                    .setListener(null)
+                    .start()
+            }
+            binding.lottieThinking.playAnimation()
+        } else {
+            // Restaurar vista (código corregido del NPE anterior)
+            binding.layoutLoadingIa.animate()
+                .alpha(0f)
+                .setDuration(200)
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        _binding?.let { safeBinding ->
+                            safeBinding.layoutLoadingIa.isVisible = false
+                            safeBinding.groupInput.visibility = View.VISIBLE
+                            // Opcional: Si quieres que el teclado vuelva a salir al fallar, puedes solicitar foco aquí
+                        }
+                    }
+                })
+                .start()
+        }
+    }
+
+    // Función auxiliar para ocultar el teclado de forma segura
+    private fun hideKeyboard() {
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+
+        // Buscamos la vista que tiene el foco actualmente, o usamos el etInput por defecto
+        val currentFocusView = dialog?.currentFocus ?: binding.etInput
+
+        // Ocultamos el teclado
+        imm?.hideSoftInputFromWindow(currentFocusView.windowToken, 0)
+
+        // Quitamos el foco para que no se quede el cursor parpadeando o la línea del EditText resaltada
+        currentFocusView.clearFocus()
     }
 
     private fun setupListeners() {

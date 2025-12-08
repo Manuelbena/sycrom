@@ -11,37 +11,43 @@
         android:id="@+id/drag_handle"
         android:layout_width="40dp"
         android:layout_height="4dp"
+        android:layout_marginBottom="16dp"
         android:background="@drawable/ic_drag_handle"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="16dp"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Synkrón AI"
+        android:layout_marginTop="16dp"
         android:fontFamily="@font/nunito"
+        android:text="Synkrón AI"
         android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="20sp"
         android:textStyle="bold"
-        android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/drag_handle" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/groupInput"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="tvDescriptionIa,etInput,btnMic,btnSend" />
 
     <TextView
         android:id="@+id/tvDescriptionIa"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="¿Qué tienes en mente? Cuéntame tus tareas o gastos..."
+        android:layout_marginTop="4dp"
         android:fontFamily="@font/nunito"
+        android:text="¿Qué tienes en mente? Cuéntame tus tareas o gastos..."
         android:textColor="?attr/colorOnSurfaceVariant"
         android:textSize="14sp"
-        android:layout_marginTop="4dp"
-        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
 
     <EditText
         android:id="@+id/etInput"
@@ -50,14 +56,14 @@
         android:layout_marginTop="24dp"
         android:background="?attr/colorSurfaceVariant"
         android:backgroundTint="?attr/colorSurfaceVariant"
-        android:hint="Ej: Recordar llamar a Sergio mañana a las 5..."
-        android:textColorHint="#606060"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        android:gravity="top|start"
-        android:padding="16dp"
         android:fontFamily="@font/nunito"
-        app:layout_constraintStart_toStartOf="parent"
+        android:gravity="top|start"
+        android:hint="Ej: Recordar llamar a Sergio mañana a las 5..."
+        android:padding="16dp"
+        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textColorHint="#606060"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvDescriptionIa" />
 
     <ImageView
@@ -65,37 +71,77 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginTop="16dp"
-        android:src="@drawable/ic_mic"
         android:background="@drawable/shape_circle_background"
         android:backgroundTint="?attr/colorOnSurfaceVariant"
         android:padding="12dp"
-        app:tint="@color/white"
-        app:layout_constraintTop_toBottomOf="@id/etInput"
+        android:src="@drawable/ic_mic"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/etInput"
+        app:tint="@color/white" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:backgroundTint="?attr/colorSurfaceVariant"
         android:text="Procesar con IA"
         android:textColor="?attr/colorOnSurfaceVariant"
-        android:backgroundTint="?attr/colorSurfaceVariant"
         app:cornerRadius="20dp"
-
         app:iconTint="?attr/colorOnSurfaceVariant"
+        app:layout_constraintBottom_toBottomOf="@id/btnMic"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/btnMic"
-        app:layout_constraintBottom_toBottomOf="@id/btnMic"/>
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
+        app:layout_constraintTop_toTopOf="@id/btnMic" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layoutLoadingIa"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="@dimen/spacing_medium"
+        android:alpha="0"
         android:visibility="gone"
-        android:indeterminateTint="?attr/colorPrimary"
-        app:layout_constraintEnd_toStartOf="@id/btnSend"
-        app:layout_constraintTop_toTopOf="@id/btnSend"
-        app:layout_constraintBottom_toBottomOf="@id/btnSend"
-        android:layout_marginEnd="16dp"/>
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle">
+
+        <ImageView
+            android:id="@+id/imgSynkromBase"
+            android:layout_width="100dp"
+            android:layout_height="150dp"
+            android:src="@drawable/symkronpensando"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+           app:layout_constraintBottom_toTopOf="@+id/tv_text_loading" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottieThinking"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            app:lottie_rawRes="@raw/loadingstart"
+            android:scaleType="centerInside"
+            android:layout_marginStart="@dimen/card_margin_horizontal"
+            app:layout_constraintBottom_toTopOf="@id/imgSynkromBase"
+            app:layout_constraintEnd_toEndOf="@id/imgSynkromBase"
+            app:layout_constraintStart_toStartOf="@id/imgSynkromBase" />
+
+        <TextView
+            android:id="@+id/tv_text_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/nunito"
+            android:text="Synkrom está analizando..."
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

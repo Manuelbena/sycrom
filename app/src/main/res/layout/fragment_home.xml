@@ -134,16 +134,16 @@
                                 android:text="Diciembre 2025"
                                 android:textSize="@dimen/card_margin_horizontal"
                                 android:textStyle="bold"
-                                android:textColor="@color/black" />
+                                android:textColor="?attr/colorOnPrimary" />
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnToday"
-                                app:backgroundTint="?attr/colorPrimary"
+                                app:backgroundTint="?attr/colorOnSecondary"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Hoy"
                                 android:textStyle="bold"
-                                android:textColor="@color/black" />
+                                android:textColor="?attr/colorPrimary" />
                         </LinearLayout>
 
                         <!-- NOMBRES DÍAS SEMANA -->
@@ -153,13 +153,13 @@
                             android:orientation="horizontal"
                             android:paddingBottom="8dp">
                             <!-- Puedes reutilizar tu item_calendar_day_legend.xml si lo creaste, o ponerlo aquí directo -->
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Lun" android:textColor="@android:color/darker_gray"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Mar" android:textColor="@android:color/darker_gray"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Mie" android:textColor="@android:color/darker_gray"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Juv" android:textColor="@android:color/darker_gray"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Vie" android:textColor="@android:color/darker_gray"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Sab" android:textColor="@android:color/darker_gray"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Dom" android:textColor="@android:color/darker_gray"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Lun" android:textColor="?attr/colorTertiary"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Mar" android:textColor="?attr/colorTertiary"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Mie" android:textColor="?attr/colorTertiary"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Juv" android:textColor="?attr/colorTertiary"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Vie" android:textColor="?attr/colorTertiary"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Sab" android:textColor="?attr/colorTertiary"/>
+                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Dom" android:textColor="?attr/colorTertiary"/>
                         </LinearLayout>
 
                     </com.google.android.material.appbar.AppBarLayout>
@@ -484,10 +484,11 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Tarea"
-        android:textColor="?attr/colorOnPrimary"
+        android:textColor="?attr/colorPrimary"
         android:visibility="gone"
-        app:backgroundTint="?attr/colorPrimary"
-        app:iconTint="?attr/colorOnPrimary"
+        android:textStyle="bold"
+        app:backgroundTint="?attr/colorOnSecondary"
+        app:iconTint="?attr/colorPrimary"
         app:layout_constraintBottom_toTopOf="@+id/fabMain"
         app:layout_constraintEnd_toEndOf="@+id/fabMain" />
 
@@ -497,10 +498,11 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Tarea IA"
-        android:textColor="?attr/colorOnPrimary"
+        android:textColor="?attr/colorPrimary"
         android:visibility="gone"
-        app:backgroundTint="?attr/colorPrimary"
-        app:iconTint="?attr/colorOnPrimary"
+        android:textStyle="bold"
+        app:backgroundTint="?attr/colorOnSecondary"
+        app:iconTint="?attr/colorPrimary"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddTask"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddTask" />
 
@@ -510,10 +512,11 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Gasto"
-        android:textColor="?attr/colorOnPrimary"
+        android:textStyle="bold"
+        android:textColor="?attr/colorPrimary"
         android:visibility="gone"
-        app:backgroundTint="?attr/colorPrimary"
-        app:iconTint="?attr/colorOnPrimary"
+        app:backgroundTint="?attr/colorOnSecondary"
+        app:iconTint="?attr/colorPrimary"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddIng"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddIng" />
 
@@ -523,9 +526,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Ingreso"
-        android:textColor="?attr/colorOnPrimary"
+        android:textColor="?attr/colorPrimary"
         android:visibility="gone"
-        app:backgroundTint="?attr/colorPrimary"
+        android:textStyle="bold"
+        app:backgroundTint="?attr/colorOnSecondary"
         app:iconTint="?attr/colorPrimary"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddSuggestion"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddSuggestion" />
@@ -537,12 +541,13 @@
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="100dp"
         android:text="Añadir"
-        android:textColor="?attr/colorOnPrimary"
-        app:backgroundTint="?attr/colorPrimary"
+        android:textStyle="bold"
+        android:textColor="?attr/colorPrimary"
+        app:backgroundTint="?attr/colorOnSecondary"
         app:icon="@drawable/ic_plus"
-        app:iconTint="?attr/colorOnPrimary"
+        app:iconTint="?attr/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:tint="?attr/colorOnPrimary"/>
+        app:tint="?attr/colorPrimary"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

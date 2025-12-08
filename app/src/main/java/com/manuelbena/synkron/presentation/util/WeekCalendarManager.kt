@@ -1,8 +1,11 @@
 package com.manuelbena.synkron.presentation.util
 
+import android.app.Application
+import android.content.Context
 import android.graphics.Color
 import android.view.View
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import com.kizitonwose.calendar.core.WeekDay
 import com.kizitonwose.calendar.core.atStartOfMonth
 import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
@@ -18,7 +21,8 @@ import java.util.Locale
 class WeekCalendarManager(
     private val calendarView: WeekCalendarView,
     private val onDaySelected: (LocalDate) -> Unit,
-    private val onMonthChanged: (String) -> Unit
+    private val onMonthChanged: (String) -> Unit,
+    private val context: Context
 ) {
 
     private var selectedDate: LocalDate = LocalDate.now()
@@ -113,20 +117,20 @@ class WeekCalendarManager(
                 // 1. SELECCIONADO (Prioridad máxima)
                 isSelected -> {
                     textView.setTextColor(Color.WHITE)
-                    selectionBg.background.setTint(Color.BLACK)
+                    selectionBg.background.setTint((ContextCompat.getColor(context, R.color.md_theme_onSecondary)))
                     selectionBg.alpha = 1f
                 }
 
                 // 2. ES HOY (Pero no seleccionado) -> Fondo gris suave
                 isToday -> {
                     textView.setTextColor(Color.BLACK)
-                    selectionBg.background.setTint(Color.LTGRAY)
+                    selectionBg.background.setTint((ContextCompat.getColor(context, R.color.md_theme_onSecondary)))
                     selectionBg.alpha = 0.5f
                 }
 
                 // 3. NORMAL
                 else -> {
-                    textView.setTextColor(Color.BLACK)
+                    textView.setTextColor(ContextCompat.getColor(context, R.color.md_theme_tertiary))
                     selectionBg.visibility = View.INVISIBLE
                 }
             }

@@ -192,7 +192,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             onMonthChanged = { title ->
                 // CORRECCIÓN 1: Actualizamos el TextView del mes/año aquí
                 binding.tvMonthYear.text = title
-            }
+            },
+            requireContext()
         )
         weekManager.generateWeekDays()
     }
