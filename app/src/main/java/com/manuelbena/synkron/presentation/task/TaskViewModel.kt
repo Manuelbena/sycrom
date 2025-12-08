@@ -24,7 +24,6 @@ import javax.inject.Inject
 class TaskViewModel @Inject constructor(
     private val insertTaskUseCase: InsertNewTaskUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
-    private val taskRepository: ITaskRepository
 ) : BaseViewModel<TaskEvent>() {
 
     private val _state = MutableLiveData(TaskState())
@@ -191,6 +190,7 @@ class TaskViewModel @Inject constructor(
                     reminders = GoogleEventReminders(overrides = s.reminders),
                     // synkronRecurrence = s.recurrenceType,
                     synkronRecurrenceDays = s.selectedRecurrenceDays.toList(),
+
 
                     // Valores por defecto
                     isActive = true, isDone = false, isDeleted = false,

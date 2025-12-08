@@ -4,7 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import com.manuelbena.synkron.presentation.models.ReminderMethod
+import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Calendar
 import javax.inject.Inject
@@ -21,12 +21,14 @@ class BriefingScheduler @Inject constructor(
 
     // Programamos la alarma de la mañana (8:00)
     fun scheduleMorningBriefing() {
-        scheduleAlarm(8, 0, ID_MORNING, AlarmReceiver.ALARM_ACTION)
+        // 🔥 CORRECCIÓN 1: Pasamos el TIPO correcto, no la ACCIÓN
+        scheduleAlarm(8, 0, ID_MORNING, AlarmReceiver.TYPE_MORNING_BRIEFING)
     }
 
     // Programamos la alarma de la noche (20:00)
     fun scheduleEveningDebrief() {
-        scheduleAlarm(20, 0, ID_EVENING, AlarmReceiver.ALARM_ACTION)
+        // 🔥 CORRECCIÓN 1: Pasamos el TIPO correcto
+        scheduleAlarm(20, 0, ID_EVENING, AlarmReceiver.TYPE_EVENING_DEBRIEF)
     }
 
     private fun scheduleAlarm(hour: Int, minute: Int, reqCode: Int, type: String) {
@@ -43,7 +45,8 @@ class BriefingScheduler @Inject constructor(
         }
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
-            action = "com.manuelbena.synkron.ACTION_BRIEFING" // Acción específica
+            // 🔥 CORRECCIÓN 2: Usamos la MISMA acción que espera el Receiver
+            action = AlarmReceiver.ALARM_ACTION
             putExtra("EXTRA_TYPE", type)
         }
 
@@ -54,9 +57,9 @@ class BriefingScheduler @Inject constructor(
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        // 🔥 LA CLAVE: Usamos setAlarmClock igual que en las tareas
-        // Esto garantiza que el sistema nos despierte sí o sí.
         val alarmInfo = AlarmManager.AlarmClockInfo(calendar.timeInMillis, pendingIntent)
         alarmManager.setAlarmClock(alarmInfo, pendingIntent)
+
+        Log.d("SYCROM_ALARM", "Briefing ($type) programado para: ${calendar.time}")
     }
 }
