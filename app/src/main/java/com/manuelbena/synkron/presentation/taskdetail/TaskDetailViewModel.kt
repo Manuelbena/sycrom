@@ -15,7 +15,9 @@ import com.manuelbena.synkron.domain.usecase.UpdateTaskUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import javax.inject.Inject
 
 @HiltViewModel
@@ -47,23 +49,33 @@ class TaskDetailViewModel @Inject constructor(
                 }
             } else {
                 // TAREA EXISTENTE: Mostramos inmediata y refrescamos de DB
-                _task.value = taskFromArgs
-                getTask(taskFromArgs.id)
+                val taskDate = taskFromArgs.start?.dateTime?.let { millis ->
+                    Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+                } ?: LocalDate.now()
+
+                getTask(taskFromArgs.id, taskDate)
             }
         } else {
             // Fallback (por si acaso)
             val taskId = savedStateHandle.get<Int>("TASK_ID")
             if (taskId != null && taskId != 0) {
-                getTask(taskId)
+                // Si solo tenemos ID, asumimos hoy por defecto
+                getTask(taskId, LocalDate.now())
             }
         }
     }
 
-    fun getTask(id: Int) {
+    fun getTask(id: Int, date: LocalDate) {
         viewModelScope.launch(Dispatchers.IO) {
-            getTaskTodayUseCase.invoke(LocalDate.now()).collect { taskList ->
+            getTaskTodayUseCase.invoke(date).collect { taskList ->
                 val foundTask = taskList.find { it.id == id }
-                _task.postValue(foundTask)
+
+                // 🔥 FIX 3: Seguridad anti-nulos.
+                // Solo actualizamos si la encontramos. Si no (ej. tarea fantasma),
+                // nos quedamos con el objeto que pasamos por argumento que sí funciona.
+                if (foundTask != null) {
+                    _task.postValue(foundTask)
+                }
             }
         }
     }

@@ -26,7 +26,14 @@ class AlarmReceiver : BroadcastReceiver() {
 
     @SuppressLint("Wakelock")
     override fun onReceive(context: Context, intent: Intent?) {
-        if (intent?.action != ALARM_ACTION) return
+        // LOGUEAMOS TODO LO QUE ENTRE
+        val action = intent?.action
+        Log.d("SYCROM_DEBUG", "RECEIVER: 🔔 onReceive disparado. Action: $action")
+
+        if (action != ALARM_ACTION) {
+            Log.w("SYCROM_DEBUG", "RECEIVER: Ignorando intent porque la acción no coincide ($action)")
+            return
+        }
 
         val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
         val wakeLock = powerManager.newWakeLock(
@@ -36,34 +43,31 @@ class AlarmReceiver : BroadcastReceiver() {
         wakeLock.acquire(3000)
 
         try {
-            val message = intent.getStringExtra("EXTRA_MESSAGE") ?: "Recordatorio"
-            val title = intent.getStringExtra("EXTRA_TITLE") ?: "Sycrom"
-            val desc = intent.getStringExtra("EXTRA_DESC") ?: ""
-            val subtasks = intent.getStringExtra("EXTRA_SUBTASKS") ?: ""
-            val location = intent.getStringExtra("EXTRA_LOCATION") ?: ""
+            val message = intent?.getStringExtra("EXTRA_MESSAGE") ?: "Recordatorio"
+            val title = intent?.getStringExtra("EXTRA_TITLE") ?: "Sycrom"
+            val taskId = intent?.getStringExtra("EXTRA_TASK_ID") ?: "Unknown"
+            val type = intent?.getStringExtra("EXTRA_TYPE") ?: "NOTIFICATION"
 
-            val taskId = intent.getStringExtra("EXTRA_TASK_ID") ?: ""
-            val type = intent.getStringExtra("EXTRA_TYPE") ?: ReminderMethod.NOTIFICATION.name
-            val scheduledTime = intent.getLongExtra("EXTRA_TIME", System.currentTimeMillis())
+            Log.d("SYCROM_DEBUG", "RECEIVER: Procesando alarma. Tipo: $type, ID Tarea: $taskId, Mensaje: $message")
 
-            Log.d("SYCROM_DEBUG", "RECEIVER: Ejecutando $type para ID=$taskId")
-
-            if (type.equals(ReminderMethod.NOTIFICATION.name, ignoreCase = true)) {
+            if (type.equals(ReminderMethod.NOTIFICATION.name, ignoreCase = true) || type == "NOTIFICATION") {
+                Log.d("SYCROM_DEBUG", "RECEIVER: Lanzando Notificación Estándar...")
                 notificationHelper.showSycromNotification(
                     title = title,
-                    message = message, // El mensaje del recordatorio (ej: "10 min antes")
-                    description = desc,
-                    subtasks = subtasks,
-                    location = location,
+                    message = message,
+                    description = intent?.getStringExtra("EXTRA_DESC") ?: "",
+                    subtasks = intent?.getStringExtra("EXTRA_SUBTASKS") ?: "",
+                    location = intent?.getStringExtra("EXTRA_LOCATION") ?: "",
                     taskId = taskId,
-                    timestamp = scheduledTime
+                    timestamp = System.currentTimeMillis()
                 )
             } else {
+                Log.d("SYCROM_DEBUG", "RECEIVER: Lanzando Actividad de Alarma...")
                 launchAlarmActivity(context, message, taskId)
             }
 
         } catch (e: Exception) {
-            Log.e("SYCROM_DEBUG", "RECEIVER Error: ${e.message}")
+            Log.e("SYCROM_DEBUG", "RECEIVER CRITICAL ERROR: ${e.message}")
             e.printStackTrace()
         } finally {
             if (wakeLock.isHeld) wakeLock.release()
@@ -77,15 +81,23 @@ class AlarmReceiver : BroadcastReceiver() {
                 putExtra("EXTRA_TASK_ID", taskId)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NO_HISTORY
             }
+
+            // Usamos un requestCode único para el PendingIntent de la actividad también
+            val reqCode = taskId?.hashCode() ?: 0
             val pendingIntent = PendingIntent.getActivity(
-                context, taskId.hashCode(), fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                context, reqCode, fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
+
+            Log.d("SYCROM_DEBUG", "RECEIVER: Iniciando Activity...")
             context.startActivity(fullScreenIntent)
 
+            // Notificación insistente de respaldo
             val notif = notificationHelper.getAlarmNotificationBuilder(message, fullScreenPendingIntent = pendingIntent)
             notif.flags = notif.flags or Notification.FLAG_INSISTENT
             notificationHelper.getManager().notify(999, notif)
+
         } catch (e: Exception) {
+            Log.e("SYCROM_DEBUG", "RECEIVER Error lanzando activity: ${e.message}")
             e.printStackTrace()
         }
     }

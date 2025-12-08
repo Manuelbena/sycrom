@@ -34,6 +34,43 @@ class NotificationHelper @Inject constructor(
         "Mantén el ritmo, tienes esto pendiente.",
         "Un pequeño recordatorio para una gran tarea."
     )
+    /**
+     * Muestra una notificación estándar (Push Local).
+     * Reutilizable desde cualquier parte de la app.
+     */
+    fun showStandardNotification(title: String, message: String, taskId: String?) {
+        // Intent para abrir la app al tocar la notificación
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("EXTRA_TASK_ID", taskId) // Por si quieres navegar al detalle
+        }
+
+        // Usamos un requestCode único para evitar que los intents se sobrescriban si hay varios
+        val uniqueRequestCode = taskId?.hashCode() ?: System.currentTimeMillis().toInt()
+
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            uniqueRequestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.mipmap.ic_launcher)
+            .setContentTitle(title)
+            .setContentText(message)
+            // 🔥 CLAVE: Estilo expandible para que se lea todo el texto del resumen/briefing
+            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+            .build()
+
+        val notificationId = taskId?.hashCode() ?: System.currentTimeMillis().toInt()
+        notificationManager.notify(notificationId, notification)
+    }
 
     fun showSycromNotification(
         title: String,
@@ -76,7 +113,7 @@ class NotificationHelper @Inject constructor(
 
         // Construcción compatible con WEAR OS
         val builder = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(title)
             .setContentText(message)
             .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
@@ -116,7 +153,7 @@ class NotificationHelper @Inject constructor(
 
     fun getAlarmNotificationBuilder(message: String, fullScreenPendingIntent: PendingIntent): Notification {
         return NotificationCompat.Builder(context, ALARM_CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle("Sycrom - ¡Es hora!")
             .setContentText(message)
             .setPriority(NotificationCompat.PRIORITY_MAX)

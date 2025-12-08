@@ -70,6 +70,10 @@ dependencies {
     implementation(libs.androidx.hilt.work)
     kapt(libs.androidx.hilt.compiler)
 
+    implementation("androidx.work:work-runtime-ktx:2.9.0") // O la versión que uses
+    implementation("androidx.hilt:hilt-work:1.1.0")
+    kapt("androidx.hilt:hilt-compiler:1.1.0")
+
     // --- DEPENDENCIAS DE HILT ---
     implementation("com.google.dagger:hilt-android:2.50")
     kapt("com.google.dagger:hilt-compiler:2.50")

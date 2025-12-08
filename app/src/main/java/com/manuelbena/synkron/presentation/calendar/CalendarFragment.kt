@@ -1,161 +1,140 @@
 package com.manuelbena.synkron.presentation.calendar
 
-import android.content.Intent
-import android.os.Bundle
+import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
+import android.text.TextUtils
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.kizitonwose.calendar.core.WeekDay
-import com.kizitonwose.calendar.core.atStartOfMonth
-import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
+import androidx.core.view.children
+import com.kizitonwose.calendar.core.CalendarDay
+import com.kizitonwose.calendar.core.DayPosition
+import com.kizitonwose.calendar.view.MonthDayBinder
 import com.kizitonwose.calendar.view.ViewContainer
-import com.kizitonwose.calendar.view.WeekDayBinder
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentCalendarBinding
-import com.manuelbena.synkron.domain.models.TaskDomain
-import com.manuelbena.synkron.presentation.activitys.ContainerActivity
-import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
 import dagger.hilt.android.AndroidEntryPoint
-import java.time.LocalDate
 import java.time.YearMonth
-import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.time.temporal.WeekFields
 import java.util.Locale
 
 @AndroidEntryPoint
-class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel>() {
+class CalendarFragment(override val viewModel: CalendarViewModel) : BaseFragment<FragmentCalendarBinding, CalendarViewModel>() {
 
-    override val viewModel: CalendarViewModel by viewModels()
-
-    // CORRECCIÓN: Inicializamos el adaptador con los 3 parámetros requeridos
-    private val tasksAdapter by lazy {
-        TaskAdapter(
-            // 1. Click en la tarea (Editar)
-            onItemClick = { task ->
-                navigateToEditTask(task)
-            },
-            // 2. Click en el Checkbox (Marcar hecha)
-            onTaskCheckedChange = { task, isChecked ->
-                // Aquí puedes llamar al ViewModel para marcarla como hecha
-                // viewModel.onTaskStatusChanged(task, isChecked)
-            },
-            // 3. Acción de menú (Borrar/Editar/etc)
-            onMenuAction = { action ->
-                // Manejar acción del menú si es necesario
-            }
-        )
+    // Clase contenedora para las celdas (View Holder)
+    class DayViewContainer(view: View) : ViewContainer(view) {
+        val tvDayText: TextView = view.findViewById(R.id.tvDayText)
+        val viewSelectionBackground: View = view.findViewById(R.id.viewSelectionBackground)
+        val viewAllDayBorder: View = view.findViewById(R.id.viewAllDayBorder)
+        val layoutTaskPreview: LinearLayout = view.findViewById(R.id.layoutTaskPreview)
+        lateinit var day: CalendarDay // Referencia al día actual
     }
 
-    private var selectedDate: LocalDate = LocalDate.now()
-    private val monthFormatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
+    override fun setUI() = with(binding) {
+        // 1. CONFIGURACIÓN DEL BINDER (EL CEREBRO VISUAL)
+        calendarView.dayBinder = object : MonthDayBinder<DayViewContainer> {
 
-    override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentCalendarBinding {
-        return FragmentCalendarBinding.inflate(inflater, container, false)
-    }
-
-    override fun setUI() {
-        super.setUI()
-
-        setupRecyclerView()
-        setupCalendar()
-
-        binding.btnToday.setOnClickListener {
-            val today = LocalDate.now()
-            if (selectedDate != today) {
-                selectDate(today)
-                binding.weekCalendarView.scrollToWeek(today)
-            }
-        }
-    }
-
-    private fun setupRecyclerView() {
-        binding.rvTasks.apply {
-            layoutManager = LinearLayoutManager(requireContext())
-            adapter = tasksAdapter
-        }
-    }
-
-    private fun navigateToEditTask(task: TaskDomain) {
-        // Usamos el método estático corregido
-        ContainerActivity.start(requireContext(), task)
-    }
-
-    private fun setupCalendar() {
-        val currentDate = LocalDate.now()
-        val currentMonth = YearMonth.now()
-        val startDate = currentMonth.minusMonths(100).atStartOfMonth()
-        val endDate = currentMonth.plusMonths(100).atEndOfMonth()
-        val firstDayOfWeek = firstDayOfWeekFromLocale()
-
-        binding.weekCalendarView.dayBinder = object : WeekDayBinder<DayViewContainer> {
             override fun create(view: View) = DayViewContainer(view)
-            override fun bind(container: DayViewContainer, data: WeekDay) {
+
+            override fun bind(container: DayViewContainer, data: CalendarDay) {
                 container.day = data
-                container.bind(data)
+                val context = container.view.context
+
+                // A) HACER LA CELDA CUADRADA
+                val params = container.view.layoutParams
+                params.height = container.view.width
+                container.view.layoutParams = params
+
+                // B) DATOS BÁSICOS
+                container.tvDayText.text = data.date.dayOfMonth.toString()
+
+                // Limpiar vistas recicladas
+                container.viewAllDayBorder.visibility = View.INVISIBLE
+                container.layoutTaskPreview.removeAllViews()
+
+                if (data.position == DayPosition.MonthDate) {
+                    container.tvDayText.setTextColor(Color.BLACK)
+
+                    // AQUÍ IRÁ LA LÓGICA DE TAREAS (TODO: Conectar con ViewModel)
+                    // Por ahora dejo la estructura lista para recibir datos
+
+                    /* EJEMPLO DE CÓMO SE VERÁ (Descomentar para probar visualmente):
+                    if (data.date.dayOfMonth == 15) {
+                        // Simular Tarea Todo el día
+                        container.viewAllDayBorder.visibility = View.VISIBLE
+                        (container.viewAllDayBorder.background as GradientDrawable).setStroke(5, Color.RED)
+
+                        // Simular Micro-Tarjeta
+                        val taskView = TextView(context)
+                        taskView.text = "Reunión importante"
+                        taskView.textSize = 9f
+                        taskView.maxLines = 1
+                        taskView.ellipsize = TextUtils.TruncateAt.END
+                        taskView.setTextColor(Color.WHITE)
+                        val shape = GradientDrawable().apply {
+                            cornerRadius = 8f
+                            setColor(Color.RED)
+                        }
+                        taskView.background = shape
+                        container.layoutTaskPreview.addView(taskView)
+                    }
+                    */
+
+                    // C) SELECCIÓN
+                    // if (data.date == viewModel.selectedDate) ...
+
+                } else {
+                    container.tvDayText.setTextColor(Color.LTGRAY)
+                }
             }
         }
 
-        binding.weekCalendarView.setup(startDate, endDate, firstDayOfWeek)
-        binding.weekCalendarView.scrollToWeek(currentDate)
+        // 2. CONFIGURACIÓN INICIAL DEL CALENDARIO
+        val currentMonth = YearMonth.now()
+        val startMonth = currentMonth.minusMonths(12)
+        val endMonth = currentMonth.plusMonths(12)
+        val firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek
 
-        binding.weekCalendarView.weekScrollListener = { weekDays ->
-            val firstDate = weekDays.days.first().date
-            val yearMonth = YearMonth.from(firstDate)
-            binding.tvMonthYear.text = monthFormatter.format(yearMonth).replaceFirstChar { it.uppercase() }
+        calendarView.setup(startMonth, endMonth, firstDayOfWeek)
+        calendarView.scrollToMonth(currentMonth)
+
+        // Titulo inicial
+        val title = "${currentMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${currentMonth.year}"
+        tvMonthTitle.text = title.replaceFirstChar { it.uppercase() }
+
+        // 3. LISTENERS DE NAVEGACIÓN
+        btnNextMonth.setOnClickListener {
+            calendarView.findFirstVisibleMonth()?.let {
+                calendarView.smoothScrollToMonth(it.yearMonth.plusMonths(1))
+            }
+        }
+        btnPrevMonth.setOnClickListener {
+            calendarView.findFirstVisibleMonth()?.let {
+                calendarView.smoothScrollToMonth(it.yearMonth.minusMonths(1))
+            }
         }
 
-        selectDate(currentDate)
+        // Listener para actualizar título al hacer scroll
+        calendarView.monthScrollListener = { month ->
+            val newTitle = "${month.yearMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())} ${month.yearMonth.year}"
+            tvMonthTitle.text = newTitle.replaceFirstChar { it.uppercase() }
+        }
     }
 
-    private fun selectDate(date: LocalDate) {
-        if (selectedDate != date) {
-            val oldDate = selectedDate
-            selectedDate = date
-            binding.weekCalendarView.notifyDateChanged(oldDate)
-            binding.weekCalendarView.notifyDateChanged(date)
-        }
-        viewModel.getTasks(date)
+    override fun inflateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?
+    ): FragmentCalendarBinding {
+        TODO("Not yet implemented")
     }
 
     override fun observe() {
-        viewModel.tasks.observe(viewLifecycleOwner) { tasks ->
-            // Usamos submitList (asumiendo que es un ListAdapter)
-            tasksAdapter.submitList(tasks)
-
-            binding.tvEmptyState.isVisible = tasks.isEmpty()
-            binding.rvTasks.isVisible = tasks.isNotEmpty()
-        }
-    }
-
-    inner class DayViewContainer(view: View) : ViewContainer(view) {
-        val textView: TextView = view.findViewById(R.id.tvDayText)
-        val selectionBg: View = view.findViewById(R.id.selectionBg)
-        lateinit var day: WeekDay
-
-        init {
-            view.setOnClickListener {
-                selectDate(day.date)
-            }
-        }
-
-        fun bind(data: WeekDay) {
-            textView.text = data.date.dayOfMonth.toString()
-
-            if (data.date == selectedDate) {
-                textView.setTextColor(resources.getColor(R.color.white, null))
-                selectionBg.visibility = View.VISIBLE
-            } else {
-                if (data.date == LocalDate.now()) {
-                    textView.setTextColor(resources.getColor(com.google.android.material.R.color.design_default_color_primary, null))
-                } else {
-                    textView.setTextColor(resources.getColor(R.color.black, null))
-                }
-                selectionBg.visibility = View.INVISIBLE
-            }
-        }
+        TODO("Not yet implemented")
     }
 }

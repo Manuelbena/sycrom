@@ -44,20 +44,23 @@ class TaskRepository @Inject constructor(
         }
     }
 
-    override suspend fun insertTask(task: TaskDomain) = withContext(Dispatchers.IO) {
-        try {
-            // 1. Insertamos y guardamos el ID
-            val newId = taskDao.insertTask(task.toEntity())
-            Log.d("SYCROM_DEBUG", "REPO: Tarea insertada correctamente. ID generado: $newId")
+    // 🔥 CORRECCIÓN AQUÍ: Quitamos el "=" y usamos llaves para el cuerpo
+    override suspend fun insertTask(task: TaskDomain) {
+        withContext(Dispatchers.IO) {
+            try {
+                // 1. Insertamos y guardamos el ID
+                val newId = taskDao.insertTask(task.toEntity())
+                Log.d("SYCROM_DEBUG", "REPO: Tarea insertada correctamente. ID generado: $newId")
 
-            // 2. Actualizamos la tarea con el ID real para la alarma
-            val taskWithId = task.copy(id = newId.toInt())
+                // 2. Actualizamos la tarea con el ID real para la alarma
+                val taskWithId = task.copy(id = newId.toInt())
 
-            // 3. Programamos
-            alarmScheduler.schedule(taskWithId)
-        } catch (e: Exception) {
-            Log.e("SYCROM_DEBUG", "REPO ERROR: Fallo al insertar tarea: ${e.message}")
-            throw e
+                // 3. Programamos
+                alarmScheduler.schedule(taskWithId)
+            } catch (e: Exception) {
+                Log.e("SYCROM_DEBUG", "REPO ERROR: Fallo al insertar tarea: ${e.message}")
+                throw e
+            }
         }
     }
     override suspend fun getTaskById(id: Int): TaskDomain? = withContext(Dispatchers.IO) {
