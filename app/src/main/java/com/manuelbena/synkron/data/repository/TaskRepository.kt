@@ -44,6 +44,12 @@ class TaskRepository @Inject constructor(
         }
     }
 
+    override fun getTasksBetweenDates(start: Long, end: Long): Flow<List<TaskDomain>> {
+        return taskDao.getTasksBetweenDates(start, end).map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+
     // 🔥 CORRECCIÓN AQUÍ: Quitamos el "=" y usamos llaves para el cuerpo
     override suspend fun insertTask(task: TaskDomain) {
         withContext(Dispatchers.IO) {

@@ -3,15 +3,29 @@ package com.manuelbena.synkron.presentation.calendar
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.manuelbena.synkron.domain.interfaces.ITaskRepository
+import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.models.CalendarDayPresentation
+import com.manuelbena.synkron.presentation.util.toLocalDate
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel // [CRÍTICO] Necesario para que 'by viewModels()' funcione en el Fragment
-class CalendarViewModel @Inject constructor() : ViewModel() {
+class CalendarViewModel @Inject constructor(
+    private val repository: ITaskRepository
+) : ViewModel() {
 
     private val locale = Locale("es", "ES")
 
@@ -30,6 +44,49 @@ class CalendarViewModel @Inject constructor() : ViewModel() {
         loadMonth(0)
     }
 
+    // Mapa de Fecha -> Lista de Tareas
+    private val _tasks = MutableStateFlow<Map<LocalDate, List<TaskDomain>>>(emptyMap())
+    val tasks: StateFlow<Map<LocalDate, List<TaskDomain>>> = _tasks.asStateFlow()
+
+
+
+    private var loadJob: Job? = null
+
+    // Controlamos el mes que se está viendo para cargar datos
+    /**
+     * Carga las tareas para el mes visible (incluyendo días de relleno del mes anterior/siguiente).
+     */
+    fun loadEventsForMonth(yearMonth: YearMonth) {
+        // Cancelamos la carga anterior si el usuario hace scroll rápido
+        loadJob?.cancel()
+
+        loadJob = viewModelScope.launch {
+            // Calculamos el rango extendido (Mes anterior -> Mes siguiente)
+            // para cubrir toda la cuadrícula visual.
+            val startMonth = yearMonth.minusMonths(1)
+            val endMonth = yearMonth.plusMonths(1)
+
+            // Convertimos a milisegundos (Long) que es lo que Room entiende
+            val startEpoch = startMonth.atDay(1)
+                .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+            val endEpoch = endMonth.atEndOfMonth()
+                .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+            // Pedimos el Flow al repositorio
+            repository.getTasksBetweenDates(startEpoch, endEpoch).collect { taskList ->
+
+                // AGRUPACIÓN LIMPIA ✨
+                // Usamos tu extensión 'toLocalDate()' que ya maneja si es Long, si es todo el día, etc.
+                val grouped = taskList.groupBy { task ->
+                    task.start.toLocalDate()
+                }
+
+                // Emitimos el nuevo mapa
+                _tasks.value = grouped
+            }
+        }
+    }
     fun loadMonth(offset: Int) {
         currentOffset = offset
 

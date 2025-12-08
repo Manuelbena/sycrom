@@ -15,6 +15,7 @@ import java.time.ZonedDateTime
 data class GoogleEventDateTime(
 
     val dateTime: Long? = null,
+    val date: String? = null,
     val timeZone: String
 ) : Parcelable
 

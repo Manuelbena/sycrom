@@ -40,5 +40,7 @@ interface ITaskRepository {
 
     suspend fun getTaskById(id: Int): TaskDomain?
 
+     fun getTasksBetweenDates(start: Long, end: Long): Flow<List<TaskDomain>>
+
 
 }

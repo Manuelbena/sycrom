@@ -3,6 +3,7 @@ package com.manuelbena.synkron.presentation.util
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -10,23 +11,54 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 // --- FUNCIONES DE FECHA REPARADAS Y SEGURAS ---
-
 fun GoogleEventDateTime?.toHourString(locale: Locale = Locale.getDefault()): String {
-    val millis = this?.dateTime ?: return "--:--"
+    // Si dateTime es null, es una tarea de todo el día
+    if (this?.dateTime == null) {
+        return "Todo el día" // O devuelve "" si prefieres ocultarlo
+    }
 
+    // ... resto de tu lógica de formateo ...
     return try {
-        // CORRECCIÓN: Usamos 'this?.timeZone' de forma segura
-        val zoneId = try {
-            this?.timeZone?.let { ZoneId.of(it) } ?: ZoneId.systemDefault()
-        } catch (e: Exception) {
-            ZoneId.systemDefault()
-        }
-
-        val zonedDateTime = Instant.ofEpochMilli(millis).atZone(zoneId)
+        // ... (tu código existente para formatear millis) ...
+        val zone = if (this.timeZone.isNotEmpty()) ZoneId.of(this.timeZone) else ZoneId.systemDefault()
+        val zonedDateTime = java.time.Instant.ofEpochMilli(this.dateTime).atZone(zone)
         val timeFormatter = DateTimeFormatter.ofPattern("HH:mm", locale)
         zonedDateTime.format(timeFormatter)
     } catch (e: Exception) {
         "--:--"
+    }
+}
+
+fun GoogleEventDateTime?.toLocalDate(): LocalDate {
+    // 1. Si es nulo, devolvemos hoy
+    if (this == null) return LocalDate.now()
+
+    return try {
+        when {
+            // CASO 1: Tiene fecha exacta en milisegundos (Long)
+            this.dateTime != null -> {
+                // Intentamos usar la zona horaria del evento, si falla usamos la del sistema
+                val zone = try {
+                    if (this.timeZone.isNotEmpty()) ZoneId.of(this.timeZone)
+                    else ZoneId.systemDefault()
+                } catch (e: Exception) {
+                    ZoneId.systemDefault()
+                }
+
+                // Convertimos: Long -> Instant -> ZonedDateTime -> LocalDate
+                Instant.ofEpochMilli(this.dateTime).atZone(zone).toLocalDate()
+            }
+
+            // CASO 2: Es "Todo el día" (String "2025-12-08")
+            !this.date.isNullOrEmpty() -> {
+                LocalDate.parse(this.date)
+            }
+
+            // CASO 3: Fallback
+            else -> LocalDate.now()
+        }
+    } catch (e: Exception) {
+        LocalDate.now()
     }
 }
 
