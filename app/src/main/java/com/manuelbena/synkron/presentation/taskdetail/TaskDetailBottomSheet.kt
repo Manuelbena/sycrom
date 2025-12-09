@@ -32,6 +32,7 @@ import com.manuelbena.synkron.presentation.util.TASK_TO_EDIT_KEY
 import com.manuelbena.synkron.presentation.util.getCategoryColor
 import com.manuelbena.synkron.presentation.util.getCategoryIcon
 import com.manuelbena.synkron.presentation.util.getDurationInMinutes
+import com.manuelbena.synkron.presentation.util.getName
 import com.manuelbena.synkron.presentation.util.toCalendar
 import com.manuelbena.synkron.presentation.util.toDurationString
 import com.manuelbena.synkron.presentation.util.toHourString
@@ -139,7 +140,7 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
             chipPriority.chipIconTint = ColorStateList.valueOf(priorityColor)
 
             // CATEGORIA
-            chipCategory.text = task.typeTask
+            chipCategory.text = task.typeTask.getName()
             chipCategory.setChipIconResource(task.typeTask.getCategoryIcon())
             chipCategory.backgroundTintList = ContextCompat.getColorStateList(requireContext(), task.typeTask.getCategoryColor())
 

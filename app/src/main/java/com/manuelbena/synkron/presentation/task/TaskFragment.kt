@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
@@ -34,6 +35,9 @@ import com.manuelbena.synkron.presentation.task.adapter.SubtaskTouchHelperCallba
 import com.manuelbena.synkron.presentation.task.adapter.TaskCreationSubtaskAdapter
 import com.manuelbena.synkron.presentation.util.extensions.formatDate
 import com.manuelbena.synkron.presentation.util.extensions.formatTime
+import com.manuelbena.synkron.presentation.util.getCategoryColor
+import com.manuelbena.synkron.presentation.util.getCategoryIcon
+import com.manuelbena.synkron.presentation.util.getName
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.Calendar
 import java.util.UUID
@@ -247,9 +251,9 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             if (tabLayoutTaskType.selectedTabPosition != tabIdx) tabLayoutTaskType.getTabAt(tabIdx)?.select()
 
             val cat = CategoryType.getAll().find { it.title == state.category } ?: CategoryType.PERSONAL
-            categoryBinding.tvSelectedCategoryName.text = cat.title
-            categoryBinding.ivSelectedCategoryIcon.setImageResource(cat.iconRes)
-            categoryBinding.viewSelectedCategoryBackground.background.setTint(androidx.core.content.ContextCompat.getColor(requireContext(), cat.colorRes))
+            categoryBinding.tvSelectedCategoryName.text = state.category.getName()
+            categoryBinding.ivSelectedCategoryIcon.setImageResource(state.category.getCategoryIcon())
+            categoryBinding.viewSelectedCategoryBackground.backgroundTintList = ContextCompat.getColorStateList(requireContext(), state.category.getCategoryColor())
 
             subtaskAdapter.updateItems(state.subTasks)
             binding.rvSubtareas.isVisible = state.subTasks.isNotEmpty()

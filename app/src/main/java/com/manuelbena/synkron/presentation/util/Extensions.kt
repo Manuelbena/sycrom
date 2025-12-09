@@ -109,14 +109,28 @@ fun GoogleEventDateTime?.toCalendar(): Calendar {
 
 // --- RESTO DEL ARCHIVO (SIN CAMBIOS) ---
 
+// Mapeo seguro y rápido: String del Dominio -> Recurso de UI
 fun String.getCategoryIcon(): Int {
+    // Normalizamos el string para evitar errores de mayúsculas/minúsculas
     return when (this.uppercase()) {
         "WORK", "TRABAJO" -> R.drawable.ic_work
         "PERSONAL" -> R.drawable.ic_home_black_24dp
         "HEALTH", "SALUD" -> R.drawable.ic_health
-        "STUDIES", "ESTUDIOS" -> R.drawable.ic_book
+        "STUDY", "STUDIES", "ESTUDIOS" -> R.drawable.ic_book
         "FINANCE", "DINERO" -> R.drawable.ic_banck
-        else -> R.drawable.ic_other
+        else -> R.drawable.ic_other // Fallback seguro
+    }
+}
+
+fun String.getName(): String {
+    // Normalizamos el string para evitar errores de mayúsculas/minúsculas
+    return when (this.uppercase()) {
+        "WORK", "TRABAJO" -> "Trabajo"
+        "PERSONAL" -> "Personal"
+        "HEALTH", "SALUD" -> "Salud"
+        "STUDY", "STUDIES", "ESTUDIOS" -> "Estudios"
+        "FINANCE", "DINERO" -> "Finanzas"
+        else -> this // Fallback seguro
     }
 }
 
@@ -125,7 +139,7 @@ fun String.getCategoryColor(): Int {
         "WORK", "TRABAJO" -> R.color.cat_work
         "PERSONAL" -> R.color.cat_personal
         "HEALTH", "SALUD" -> R.color.cat_health
-        "STUDIES", "ESTUDIOS" -> R.color.cat_studies
+        "STUDY", "STUDIES", "ESTUDIOS" -> R.color.cat_studies
         "FINANCE", "DINERO" -> R.color.cat_finance
         else -> R.color.cat_default
     }

@@ -14,9 +14,9 @@ enum class CategoryType(
     WORK("work", "Trabajo", "9", R.drawable.ic_work, R.color.cat_work),
     PERSONAL("personal", "Personal", "2", R.drawable.ic_home_black_24dp, R.color.cat_personal),
     HEALTH("health", "Salud", "10", R.drawable.ic_health, R.color.cat_health),
-    FINANCE("finance", "Dinero", "6", R.drawable.ic_banck, R.color.cat_finance), // 6 = Mandarina
-    STUDY("study", "Estudios", "5", R.drawable.ic_book, R.color.cat_studies), // 5 = Amarillo huevo
-    OTHER("other", "Otros", "8", R.drawable.ic_other, R.color.cat_default); //
+    FINANCE("finance", "Dinero", "6", R.drawable.ic_banck, R.color.cat_finance),
+    STUDY("study", "Estudios", "5", R.drawable.ic_book, R.color.cat_studies),
+    OTHER("other", "Otros", "8", R.drawable.ic_other, R.color.cat_default);
 
 
 

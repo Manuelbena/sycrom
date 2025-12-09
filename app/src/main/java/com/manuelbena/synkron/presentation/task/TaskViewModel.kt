@@ -12,6 +12,7 @@ import com.manuelbena.synkron.domain.models.SubTaskDomain
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.domain.usecase.InsertNewTaskUseCase
 import com.manuelbena.synkron.domain.usecase.UpdateTaskUseCase
+import com.manuelbena.synkron.presentation.models.CategoryType
 import com.manuelbena.synkron.presentation.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -29,7 +30,32 @@ class TaskViewModel @Inject constructor(
     private val taskRepository: ITaskRepository
 ) : BaseViewModel<TaskEvent>() {
 
-    private val _state = MutableLiveData(TaskState())
+    companion object {
+        // Función auxiliar para obtener la siguiente hora en punto
+        private fun getNextCleanHour(): Calendar {
+            return Calendar.getInstance().apply {
+                if (get(Calendar.MINUTE) > 0) {
+                    add(Calendar.HOUR_OF_DAY, 1)
+                }
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+        }
+    }
+
+    // [CORRECCIÓN CLAVE] Inicialización Inteligente
+    private val _state = MutableLiveData(
+        TaskState(
+            isAllDay = false,
+            isNoDate = false,
+
+            // 2. Horas "Limpias": Redondeamos a la siguiente hora en punto
+            // (Ej: Si son las 10:25 -> Inicio 11:00, Fin 12:00)
+            startTime = getNextCleanHour(),
+            endTime = getNextCleanHour().apply { add(Calendar.HOUR_OF_DAY, 1) }
+        )
+    )
     val state: LiveData<TaskState> = _state
 
     private val _effect = SingleLiveEvent<TaskEffect>()
@@ -49,7 +75,7 @@ class TaskViewModel @Inject constructor(
 
             is TaskEvent.OnDateSelected -> {
                 val newCal = Calendar.getInstance().apply { timeInMillis = event.date }
-                // Mantenemos la hora, cambiamos el día
+                // Preservamos la hora que tuviera configurada
                 newCal.set(Calendar.HOUR_OF_DAY, current.startTime.get(Calendar.HOUR_OF_DAY))
                 newCal.set(Calendar.MINUTE, current.startTime.get(Calendar.MINUTE))
                 newCal.set(Calendar.SECOND, 0)
@@ -64,8 +90,10 @@ class TaskViewModel @Inject constructor(
                     set(Calendar.MINUTE, event.minute)
                     set(Calendar.SECOND, 0)
                 }
-                // Lógica de fin automático (+1 hora si es incongruente)
+                // [LÓGICA DE 1 HORA] Si cambia el inicio, empujamos el fin si es necesario
                 var newEnd = current.endTime
+                // Si el nuevo inicio es después o igual al fin, o si la duración era 0...
+                // Forzamos que el fin sea Start + 1h
                 if (newStart.after(newEnd) || newStart == newEnd) {
                     newEnd = (newStart.clone() as Calendar).apply { add(Calendar.HOUR_OF_DAY, 1) }
                 }
@@ -83,11 +111,13 @@ class TaskViewModel @Inject constructor(
                 updateState { copy(endTime = newEnd) }
             }
 
-            is TaskEvent.OnTaskTypeChanged -> updateState {
-                copy(isAllDay = event.tabIndex == 1, isNoDate = event.tabIndex == 2)
+            is TaskEvent.OnTaskTypeChanged -> {
+                // event.tabIndex -> 0: Evento, 1: Todo el día, 2: Sin Fecha
+                updateState {
+                    copy(isAllDay = event.tabIndex == 1, isNoDate = event.tabIndex == 2)
+                }
             }
 
-            // ... (Resto de eventos de Categoría, Prioridad, etc. igual que antes) ...
             is TaskEvent.OnCategorySelectorClicked -> _effect.value = TaskEffect.ShowCategoryDialog
             is TaskEvent.OnCategorySelected -> updateState { copy(category = event.category, colorId = event.colorId) }
             is TaskEvent.OnPrioritySelectorClicked -> _effect.value = TaskEffect.ShowPriorityDialog
@@ -117,13 +147,15 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    private fun loadTaskFromId(taskId: Int) {
-        // Implementar carga desde repositorio si es necesario
-    }
+    private fun loadTaskFromId(taskId: Int) { /* Implementar si es necesario */ }
 
     private fun loadTask(task: TaskDomain) {
         val startCal = googleDateToCalendar(task.start)
         val endCal = googleDateToCalendar(task.end)
+
+        // Recuperar categoría real
+        val catId = CategoryType.getAll().find { it.googleColorId == task.colorId }?.title ?: "other"
+
 
         updateState {
             copy(
@@ -131,18 +163,17 @@ class TaskViewModel @Inject constructor(
                 title = task.summary,
                 description = task.description ?: "",
                 location = task.location ?: "",
+
                 category = task.typeTask,
-                colorId = task.colorId,
+                colorId = catId,
                 priority = task.priority,
 
                 selectedDate = startCal,
                 startTime = startCal,
                 endTime = endCal,
 
-                // Detectamos "Todo el día" si hay date string y no hay dateTime
+                // Detectamos estados
                 isAllDay = task.start?.dateTime == null && !task.start?.date.isNullOrEmpty(),
-
-                // Detectamos "Sin fecha" si ambos son null
                 isNoDate = task.start == null,
 
                 subTasks = task.subTasks,
@@ -162,9 +193,7 @@ class TaskViewModel @Inject constructor(
         viewModelScope.launch {
             updateState { copy(isLoading = true) }
             try {
-                // [VALIDACIÓN DE UNICIDAD]
-                // Si es "Todo el día", verificamos que no exista otra en esa fecha.
-                // Pasamos s.id para excluir la propia tarea en caso de edición.
+                // Validación Todo el día único
                 if (s.isAllDay) {
                     val dateToCheck = java.time.LocalDateTime.ofInstant(
                         s.selectedDate.toInstant(),
@@ -172,15 +201,14 @@ class TaskViewModel @Inject constructor(
                     ).toLocalDate()
 
                     val exists = taskRepository.hasAllDayTaskOnDate(dateToCheck, s.id)
-
                     if (exists) {
                         updateState { copy(isLoading = false) }
                         _effect.value = TaskEffect.ShowMessage("⚠️ Ya tienes una tarea de 'Todo el día' para esta fecha.")
-                        return@launch // Cancelamos guardado
+                        return@launch
                     }
                 }
 
-                // --- Preparación de fechas ---
+                // Preparación de calendarios
                 val finalStart = (s.selectedDate.clone() as Calendar).apply {
                     set(Calendar.HOUR_OF_DAY, s.startTime.get(Calendar.HOUR_OF_DAY))
                     set(Calendar.MINUTE, s.startTime.get(Calendar.MINUTE))
@@ -192,22 +220,24 @@ class TaskViewModel @Inject constructor(
                     set(Calendar.SECOND, 0)
                 }
 
-                // Generamos los objetos GoogleEventDateTime correctos
+                // Generación de fechas según tipo
                 val (googleStart, googleEnd) = when {
-                    s.isNoDate -> Pair(null, null) // NULL = Sin fecha (se guarda como 0L en DB)
+                    s.isNoDate -> Pair(null, null)
                     s.isAllDay -> Pair(
-                        calendarToGoogleDateAllDay(finalStart), // String date, dateTime=null
+                        calendarToGoogleDateAllDay(finalStart),
                         calendarToGoogleDateAllDay(finalEnd)
                     )
                     else -> Pair(
-                        calendarToGoogleDateTimed(finalStart), // Long dateTime, date=null
+                        calendarToGoogleDateTimed(finalStart),
                         calendarToGoogleDateTimed(finalEnd)
                     )
                 }
 
+
+
                 val task = TaskDomain(
                     id = s.id,
-                    typeTask = s.category,
+                    typeTask = s.category, // <--- GUARDAMOS EL ID ("work"), NO EL NOMBRE
                     summary = s.title,
                     description = s.description,
                     location = s.location,
@@ -218,12 +248,9 @@ class TaskViewModel @Inject constructor(
                     subTasks = s.subTasks,
                     reminders = GoogleEventReminders(overrides = s.reminders),
                     synkronRecurrenceDays = s.selectedRecurrenceDays.toList(),
-
-                    // Si es "Sin fecha", archivamos automáticamente
                     isArchived = s.isNoDate,
-
-                    isActive = true, isDone = false, isDeleted = false,
-                    isPinned = false, transparency = "opaque", conferenceLink = ""
+                    isActive = true, isDone = false, isDeleted = false, isPinned = false,
+                    transparency = "opaque", conferenceLink = ""
                 )
 
                 if (s.id == 0) {
@@ -243,30 +270,21 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    // --- HELPERS ---
-
+    // --- Helpers ---
     private fun calendarToGoogleDateTimed(cal: Calendar): GoogleEventDateTime {
-        return GoogleEventDateTime(
-            dateTime = cal.timeInMillis,
-            date = null,
-            timeZone = TimeZone.getDefault().id
-        )
+        return GoogleEventDateTime(dateTime = cal.timeInMillis, date = null, timeZone = TimeZone.getDefault().id)
     }
 
     private fun calendarToGoogleDateAllDay(cal: Calendar): GoogleEventDateTime {
         val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        return GoogleEventDateTime(
-            dateTime = null,
-            date = format.format(cal.time),
-            timeZone = TimeZone.getDefault().id
-        )
+        return GoogleEventDateTime(dateTime = null, date = format.format(cal.time), timeZone = TimeZone.getDefault().id)
     }
 
     private fun googleDateToCalendar(gDate: GoogleEventDateTime?): Calendar {
         val cal = Calendar.getInstance()
         if (gDate != null) {
             if (gDate.dateTime != null) {
-                cal.timeInMillis = gDate.dateTime
+                cal.timeInMillis = gDate.dateTime!!
             } else if (!gDate.date.isNullOrEmpty()) {
                 try {
                     val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
