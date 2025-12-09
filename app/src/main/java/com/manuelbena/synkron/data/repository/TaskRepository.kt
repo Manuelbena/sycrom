@@ -69,6 +69,16 @@ class TaskRepository @Inject constructor(
             }
         }
     }
+    override suspend fun hasAllDayTaskOnDate(date: LocalDate, excludedId: Int): Boolean {
+        // Generamos el timestamp exactamente igual que en el Mapper de guardado (DomainToData)
+        // Inicio del día en la zona horaria del sistema.
+        val millis = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+        // Consultamos al DAO
+        val count = taskDao.checkAllDayTaskExists(millis, excludedId)
+
+        return count > 0 // True si ya existe alguna
+    }
     override suspend fun getTaskById(id: Int): TaskDomain? = withContext(Dispatchers.IO) {
         val entity = taskDao.getTaskById(id)
         entity?.toDomain()

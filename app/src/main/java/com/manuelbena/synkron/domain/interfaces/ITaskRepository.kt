@@ -42,5 +42,7 @@ interface ITaskRepository {
 
      fun getTasksBetweenDates(start: Long, end: Long): Flow<List<TaskDomain>>
 
+     suspend fun hasAllDayTaskOnDate(date: LocalDate, excludedId: Int): Boolean
+
 
 }

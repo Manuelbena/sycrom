@@ -110,14 +110,14 @@
             android:layout_width="100dp"
             android:layout_height="200dp"
             android:src="@drawable/symkronpensando"
-            app:layout_constraintEnd_toStartOf="@+id/lottieThinking"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
            app:layout_constraintBottom_toTopOf="@+id/tv_text_loading" />
 
         <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/lottieThinking"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             app:lottie_autoPlay="true"
             android:layout_marginBottom="@dimen/activity_horizontal_XL_margin"
             app:lottie_loop="true"
@@ -125,7 +125,6 @@
             android:scaleType="centerInside"
             app:layout_constraintStart_toEndOf="@+id/imgSynkromBase"
            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
 
 
          />

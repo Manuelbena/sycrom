@@ -28,6 +28,11 @@ interface TaskDao {
     @Query("SELECT * FROM task_table WHERE date >= :start AND date <= :end")
     fun getTasksBetweenDates(start: Long, end: Long): Flow<List<TaskEntity>>
 
+    // Busca si existe alguna tarea (hour = -1) en esa fecha exacta (date),
+    // EXCLUYENDO la tarea actual (id != currentId) para permitir editar la misma tarea.
+    @Query("SELECT COUNT(*) FROM task_table WHERE date = :dateMillis AND hour = -1 AND id != :excludedId")
+    suspend fun checkAllDayTaskExists(dateMillis: Long, excludedId: Int): Int
+
     @Update
     suspend fun updateTask(task: TaskEntity)
 
