@@ -122,22 +122,44 @@ class TaskAdapter(
                 iconLocation.isVisible = !item.location.isNullOrEmpty()
                 tvEventLocation.text = item.location
 
-                // [FIX] Hora y Duración (Manejo seguro de nulos)
-                val startTime = item.start.toHourString() ?: "--:--"
-                // Si end es null (caso IA antiguo), no mostramos guión roto
+                // 1. Obtenemos los textos formateados
+                val startTime = item.start.toHourString()
                 val endTime = item.end.toHourString()
 
-                tvEventTime.text = if (endTime != null) "$startTime - $endTime" else startTime
+                // 2. Detectamos si es "Todo el día" (usando la lógica segura del modelo)
+                val isAllDay = item.start?.dateTime == null && !item.start?.date.isNullOrEmpty()
 
-                // Calculamos duración solo si tenemos ambas fechas
-                val durationMin = getDurationInMinutes(item.start, item.end)
-                if (durationMin > 0) {
-                    tvDuration.isVisible = true
-                    iconRestant.visibility = View.VISIBLE
-                    tvDuration.text = durationMin.toDurationString()
+                // 3. Asignamos el texto con inteligencia
+                tvEventTime.text = if (isAllDay) {
+                    // CASO A: Todo el día -> Solo mostramos el texto una vez
+                    "Todo el día"
                 } else {
+                    // CASO B: Horas normales -> Mostramos rango si existe fin
+                    if (endTime != "--:--" && endTime.isNotEmpty() && endTime != startTime) {
+                        "$startTime - $endTime"
+                    } else {
+                        startTime
+                    }
+                }
+
+                // 4. Control de visibilidad de iconos (reloj vs calendario)
+                if (isAllDay) {
+                    tvDuration.visibility = View.GONE
                     iconRestant.visibility = View.GONE
-                    tvDuration.isVisible = false
+                    iconTime.setImageResource(R.drawable.ic_calendar_today)
+                } else {
+                    iconTime.setImageResource(R.drawable.ic_clock_complete)
+
+                    // Cálculo de duración
+                    val durationInMinutes = getDurationInMinutes(item.start, item.end)
+                    if (durationInMinutes > 0) {
+                        tvDuration.visibility = View.VISIBLE
+                        iconRestant.visibility = View.VISIBLE
+                        tvDuration.text = durationInMinutes.toDurationString()
+                    } else {
+                        tvDuration.visibility = View.GONE
+                        iconRestant.visibility = View.GONE
+                    }
                 }
 
                 // 2. Subtareas (Solo Progress Bar por ahora, según tu XML)

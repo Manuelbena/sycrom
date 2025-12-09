@@ -18,36 +18,35 @@ import java.util.Calendar
 import java.util.TimeZone
 import java.util.UUID
 import com.squareup.moshi.Types
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 
 fun TaskEntity.toDomain(): TaskDomain {
 
-    // 1. Reconstruir el objeto 'start'
-    val startDateTime = createGoogleEventDateTime(this.date, this.hour, this.timeZone)
+    // [DETECCIÓN SIN FECHA] Si la fecha es 0, start y end son NULL
+    val isNoDate = (this.date == 0L)
 
-    // 2. Reconstruir el objeto 'end'
-    val calendar = Calendar.getInstance().apply {
-        timeInMillis = this@toDomain.date
-        set(Calendar.HOUR_OF_DAY, this@toDomain.hour / 60)
-        set(Calendar.MINUTE, this@toDomain.hour % 60)
-    }
-    val endTimeMillis = calendar.timeInMillis + (this.duration * 60 * 1000)
+    val startDateTime = if (isNoDate) null else createGoogleEventDateTime(this.date, this.hour, this.timeZone)
 
-    // Aquí simplemente pasamos el Long directo
-    val endDateTime = createGoogleEventDateTime(endTimeMillis, this.timeZone)
-
-    // 3. Reconstruir 'attendees'
-    val attendees = this.attendeesEmails.map { email ->
-        GoogleEventAttendee(email = email, responseStatus = "needsAction")
+    val endDateTime = if (isNoDate) {
+        null
+    } else if (this.hour == -1) {
+        // Todo el día: Fin igual al inicio
+        createGoogleEventDateTime(this.date, -1, this.timeZone)
+    } else {
+        // Hora normal: Sumamos duración
+        val endTimeMillis = this.date + (this.duration * 60 * 1000)
+        createGoogleEventDateTime(endTimeMillis, -2, this.timeZone)
     }
 
-    // 4. Reconstruir 'reminders'
+    // Mapeo de listas auxiliares
+    val attendees = this.attendeesEmails.map { GoogleEventAttendee(it) }
     val reminders = GoogleEventReminders(
         useDefault = false,
-        overrides = this.reminderMinutes.map { minutes ->
-            GoogleEventReminder(method = "popup", minutes = minutes)
-        }
+        overrides = this.reminderMinutes.map { GoogleEventReminder("popup", it) }
     )
+    val recurrence = if (this.recurrenceRule != null) listOf(this.recurrenceRule) else emptyList()
 
     return TaskDomain(
         id = this.id,
@@ -58,7 +57,7 @@ fun TaskEntity.toDomain(): TaskDomain {
         start = startDateTime,
         end = endDateTime,
         attendees = attendees,
-        recurrence = if (this.recurrenceRule != null) listOf(this.recurrenceRule) else emptyList(),
+        recurrence = recurrence,
         reminders = reminders,
         transparency = this.transparency,
         conferenceLink = this.conferenceLink,
@@ -77,6 +76,28 @@ fun TaskEntity.toDomain(): TaskDomain {
     )
 }
 
+// --- LÓGICA DE RECONSTRUCCIÓN ---
+
+private fun createGoogleEventDateTime(dateMillis: Long, hourMinutes: Int, timeZone: String): GoogleEventDateTime {
+    val zoneId = try { ZoneId.of(timeZone) } catch (e: Exception) { ZoneId.systemDefault() }
+
+    return if (hourMinutes == -1) {
+        // CASO: TODO EL DÍA
+        val localDate = Instant.ofEpochMilli(dateMillis).atZone(zoneId).toLocalDate()
+        GoogleEventDateTime(
+            dateTime = null,
+            date = localDate.format(DateTimeFormatter.ISO_LOCAL_DATE),
+            timeZone = timeZone
+        )
+    } else {
+        // CASO: CON HORA
+        GoogleEventDateTime(
+            dateTime = dateMillis,
+            date = null,
+            timeZone = timeZone
+        )
+    }
+}
 // --- FUNCIONES CORREGIDAS PARA DEVOLVER LONG ---
 
 // Caso 1: Ya tenemos los milisegundos exactos (para el 'end')
@@ -85,18 +106,6 @@ private fun createGoogleEventDateTime(dateMillis: Long, timeZone: String): Googl
     return GoogleEventDateTime(dateTime = dateMillis, timeZone = timeZone)
 }
 
-// Caso 2: Tenemos fecha + hora en minutos (para el 'start')
-private fun createGoogleEventDateTime(dateMillis: Long, hourMinutes: Int, timeZone: String): GoogleEventDateTime {
-    val calendar = Calendar.getInstance().apply {
-        timeInMillis = dateMillis
-        set(Calendar.HOUR_OF_DAY, hourMinutes / 60)
-        set(Calendar.MINUTE, hourMinutes % 60)
-        set(Calendar.SECOND, 0)
-        set(Calendar.MILLISECOND, 0)
-    }
-    // Obtenemos los millis del calendario y los metemos en el objeto
-    return GoogleEventDateTime(dateTime = calendar.timeInMillis, timeZone = timeZone)
-}
 
 // Instancia de Moshi para parsear la lista interna.
 // Idealmente esto se inyectaría, pero en un mapper estático podemos usar una instancia local lazy.
