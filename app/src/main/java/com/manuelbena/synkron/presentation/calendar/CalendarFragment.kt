@@ -26,6 +26,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel>() {
@@ -48,16 +49,12 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel
         val endMonth = currentMonth.plusMonths(100)
         val firstDayOfWeek = firstDayOfWeekFromLocale()
 
-        // 1. Cargar datos iniciales
         viewModel.loadEventsForMonth(currentMonth)
 
-        // 2. Configurar calendario (con ajuste de altura diferido)
         binding.calendarView.post {
-            if (!isAdded ) return@post
-
+            if (!isAdded) return@post
             val viewHeight = binding.calendarView.height
             val dayHeight = if (viewHeight > 0) (viewHeight / 6) else ViewGroup.LayoutParams.WRAP_CONTENT
-
             configureCalendarWithHeight(startMonth, endMonth, firstDayOfWeek, currentMonth, dayHeight)
         }
     }
@@ -67,13 +64,12 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel
         endMonth: YearMonth,
         firstDayOfWeek: java.time.DayOfWeek,
         currentMonth: YearMonth,
-        dayHeight: Int // Puede ser un valor fijo o WRAP_CONTENT si el cálculo falla
+        dayHeight: Int
     ) {
         binding.calendarView.dayBinder = object : MonthDayBinder<MonthDayViewContainer> {
 
             override fun create(view: View): MonthDayViewContainer {
                 val container = MonthDayViewContainer(view)
-                // Aplicar altura calculada
                 if (dayHeight is Int && dayHeight > 0) {
                     val params = container.view.layoutParams
                     params.height = dayHeight
@@ -87,64 +83,73 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel
                 val layoutDots = container.binding.layoutEventIndicators
                 val context = container.view.context
 
+                // Resetear estados visuales
                 tvNumber.text = data.date.dayOfMonth.toString()
+                tvNumber.setTextColor(Color.BLACK) // Color base
+                tvNumber.background = null
                 layoutDots.removeAllViews()
 
-                // Recuperamos tareas
+                // Recuperar tareas del día
                 val tasksForDay = viewModel.tasks.value[data.date] ?: emptyList()
 
                 if (data.position == DayPosition.MonthDate) {
                     tvNumber.isVisible = true
                     container.view.visibility = View.VISIBLE
 
-                    // Estilo HOY
+                    // --- 1. SEPARAR TIPOS DE TAREAS ---
+                    // Todo el día (para el fondo)
+                    val allDayTask = tasksForDay.firstOrNull {
+                        it.start?.date != null && it.start?.dateTime == null
+                    }
+                    // Tareas con hora (para los puntos)
+                    val timedTasks = tasksForDay.filter {
+                        it.start?.dateTime != null
+                    }
+
+                    // --- 2. FONDO DE LA CELDA (Logica Todo el Día) ---
+                    if (allDayTask != null) {
+                        try {
+                            val colorResId = allDayTask.typeTask.getCategoryColor()
+                            val colorInt = ContextCompat.getColor(context, colorResId)
+
+                            // [TOQUE PREMIUM] Aplicar Alpha (25% opacidad)
+                            val pastelColor = adjustAlpha(colorInt, 0.25f)
+                            container.view.setBackgroundColor(pastelColor)
+
+                            // Texto en el color fuerte de la categoría para armonía
+                            // (O puedes dejarlo negro si prefieres contraste máximo)
+                            tvNumber.setTextColor(colorInt)
+
+                        } catch (e: Exception) {
+                            container.view.setBackgroundColor(Color.LTGRAY)
+                        }
+                    } else {
+                        // Fondo normal (blanco con borde)
+                        container.view.setBackgroundResource(R.drawable.bg_calendar_cell_border)
+                        tvNumber.setTextColor(Color.BLACK)
+                    }
+
+                    // --- 3. ESTILO "HOY" (Siempre encima de todo) ---
                     if (data.date == LocalDate.now()) {
                         tvNumber.setTextColor(Color.WHITE)
                         tvNumber.setBackgroundResource(R.drawable.bg_selected_day)
-                    } else {
-                        tvNumber.setTextColor(Color.BLACK)
-                        tvNumber.background = null
                     }
 
-                    // --- PINTAR PUNTOS CON COLOR DE CATEGORÍA ---
-                    if (tasksForDay.isNotEmpty()) {
+                    // --- 4. PUNTOS (Tareas normales con hora) ---
+                    if (timedTasks.isNotEmpty()) {
                         layoutDots.isVisible = true
-                        // Limitamos a 4 puntos
-                        tasksForDay.take(4).forEach { task ->
+                        timedTasks.take(4).forEach { task ->
                             val dot = View(context).apply {
                                 layoutParams = LinearLayout.LayoutParams(12, 12).apply {
                                     setMargins(3, 0, 3, 0)
                                 }
-
-                                // Detectar si es todo el día
-                                val isAllDay = task.start?.date != null && task.start?.dateTime == null
-
-                                if (isAllDay) {
-                                    // [OPCIÓN 1] PUNTITO CUADRADO para diferenciar
-                                    // Necesitarías crear un drawable 'bg_event_square.xml' o usar shape dinámico
-                                    setBackgroundResource(R.drawable.bg_event_square)
-
-                                    // O simplemente cambiar la opacidad
-                                    alpha = 0.6f
-                                } else {
-                                    setBackgroundResource(R.drawable.bg_event_dot)
-                                    alpha = 1.0f
-                                }
-
-                                // Drawable circular blanco base
                                 setBackgroundResource(R.drawable.bg_event_dot)
 
-                                // APLICAR COLOR DE LA TAREA
                                 try {
                                     val categoryName = task.typeTask
                                     if (categoryName.isNotEmpty()) {
-                                        // 1. Obtenemos el ID del recurso (R.color.xxx)
                                         val colorResId = categoryName.getCategoryColor()
-
-                                        // 2. [CORRECCIÓN] Convertimos ese ID en un Color Real
                                         val colorInt = ContextCompat.getColor(context, colorResId)
-
-                                        // 3. Pintamos
                                         background.setTint(colorInt)
                                     } else {
                                         background.setTint(Color.LTGRAY)
@@ -165,16 +170,15 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel
                     tvNumber.setTextColor(Color.LTGRAY)
                     tvNumber.background = null
                     layoutDots.isVisible = false
+                    container.view.setBackgroundResource(R.drawable.bg_calendar_cell_border)
                     container.view.visibility = View.VISIBLE
                 }
             }
         }
 
-        // Setup final
         binding.calendarView.setup(startMonth, endMonth, firstDayOfWeek)
         binding.calendarView.scrollToMonth(currentMonth)
 
-        // Scroll listener para cargar datos al cambiar de mes
         binding.calendarView.monthScrollListener = { month ->
             val title = titleFormatter.format(month.yearMonth)
             binding.tvMonthTitle.text = title.replaceFirstChar {
@@ -184,11 +188,22 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel
         }
     }
 
+    /**
+     * Función auxiliar para añadir transparencia a un color.
+     * @param color El color original (Int ARGB).
+     * @param factor Factor de opacidad (0.0 a 1.0). Ej: 0.2f es 20% visible.
+     */
+    private fun adjustAlpha(color: Int, factor: Float): Int {
+        val alpha = (Color.alpha(color) * factor).roundToInt()
+        val red = Color.red(color)
+        val green = Color.green(color)
+        val blue = Color.blue(color)
+        return Color.argb(alpha, red, green, blue)
+    }
+
     override fun observe() {
-        // --- FIX DEL CRASH AQUÍ ---
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.tasks.collect {
-                // Solo notificamos si el calendario ya tiene adaptador (setup completado)
                 if (binding.calendarView.adapter != null) {
                     binding.calendarView.notifyCalendarChanged()
                 }
