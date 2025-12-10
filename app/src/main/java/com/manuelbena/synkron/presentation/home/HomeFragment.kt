@@ -75,14 +75,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
     )
 
-    private val midnightUpdateReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == Intent.ACTION_DATE_CHANGED) {
-                viewModel.refreshToToday()
-            }
-        }
-    }
-
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentHomeBinding {
         return FragmentHomeBinding.inflate(inflater, container, false)
     }
@@ -213,7 +205,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             binding.recyclerViewTasks.isVisible = hasTasks
             binding.tabLayoutDots.isVisible = hasTasks
 
-            taskAdapter.submitList(state.tasks)
+            taskAdapter.submitList(state.tasks){
+                binding.recyclerViewTasks.scheduleLayoutAnimation()
+            }
+
 
             if (binding.tabLayoutDots.tabCount != state.tasks.size) {
                 binding.tabLayoutDots.removeAllTabs()

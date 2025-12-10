@@ -10,6 +10,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.DayPosition
 import com.kizitonwose.calendar.core.firstDayOfWeekFromLocale
@@ -19,9 +20,9 @@ import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentCalendarBinding
 import com.manuelbena.synkron.databinding.ItemCalendarMonthDayBinding
+import com.manuelbena.synkron.presentation.calendar.adapter.CalendarTaskAdapter
 import com.manuelbena.synkron.presentation.util.getCategoryColor
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -34,12 +35,15 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel
     override val viewModel: CalendarViewModel by viewModels()
     private val titleFormatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale("es", "ES"))
 
+    private lateinit var tasksAdapter: CalendarTaskAdapter
+
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentCalendarBinding {
         return FragmentCalendarBinding.inflate(inflater, container, false)
     }
 
     override fun setUI() {
         super.setUI()
+        setupRecycler()
         setupCalendar()
     }
 
@@ -173,7 +177,32 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel
                     container.view.setBackgroundResource(R.drawable.bg_calendar_cell_border)
                     container.view.visibility = View.VISIBLE
                 }
+
+                // [NUEVO] GESTIÓN DE SELECCIÓN VISUAL
+                // Obtenemos el día seleccionado actual del VM
+                val selectedDate = viewModel.selectedDate.value
+
+                if (data.date == selectedDate) {
+                    // Si es el día seleccionado, le ponemos un borde o fondo especial
+                    // Ejemplo: Un borde azul fuerte
+                    container.view.setBackgroundResource(R.drawable.day_selected_backgorund)
+                }
+
+                // [NUEVO] CLICK LISTENER
+                container.view.setOnClickListener {
+                    // 1. Actualizar VM
+                    viewModel.selectDate(data.date)
+
+                    // 2. Refrescar calendario para actualizar el borde de selección
+                    binding.calendarView.notifyCalendarChanged()
+
+                    // 3. [TRUCO DE ANIMACIÓN] Forzar la animación de la lista
+                    // Al cambiar los datos, el Adapter se actualiza, pero para ver la escalera
+                    // a veces ayuda forzarlo:
+                    binding.rvCalendarTasks.scheduleLayoutAnimation()
+                }
             }
+
         }
 
         binding.calendarView.setup(startMonth, endMonth, firstDayOfWeek)
@@ -202,8 +231,38 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel
     }
 
     override fun observe() {
+        // 1. Observar mapa de tareas (Puntitos)
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.tasks.collect {
+                // BLINDAJE 🛡️
+                if (binding.calendarView.adapter != null) {
+                    binding.calendarView.notifyCalendarChanged()
+                }
+            }
+        }
+
+        // 2. Observar lista filtrada (RecyclerView)
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.selectedDateTasks.collect { tasks ->
+                val date = viewModel.selectedDate.value
+                val formatter = DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale("es", "ES"))
+
+                binding.tvSelectedDateTitle.text = if (date == LocalDate.now()) {
+                    "Hoy"
+                } else {
+                    date.format(formatter).replaceFirstChar { it.uppercase() }
+                }
+
+                tasksAdapter.submitList(tasks) {
+                    binding.rvCalendarTasks.scheduleLayoutAnimation()
+                }
+            }
+        }
+
+        // 3. Observar día seleccionado (Borde de selección)
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.selectedDate.collect {
+                // BLINDAJE AQUÍ TAMBIÉN 🛡️ (Este era el que fallaba)
                 if (binding.calendarView.adapter != null) {
                     binding.calendarView.notifyCalendarChanged()
                 }
@@ -222,6 +281,26 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel
             binding.calendarView.findFirstVisibleMonth()?.let {
                 binding.calendarView.smoothScrollToMonth(it.yearMonth.minusMonths(1))
             }
+        }
+    }
+
+    private fun setupRecycler() {
+        // Inicializamos el NUEVO adaptador
+        tasksAdapter = CalendarTaskAdapter(
+            onItemClick = { task ->
+                // Navegar a detalle
+                // ContainerActivity.navigate(...)
+            },
+            onTaskCheckedChange = { task, isDone ->
+                // Actualizar estado en ViewModel (necesitarás crear este método en el VM)
+                // viewModel.updateTaskStatus(task, isDone)
+            }
+        )
+
+        binding.rvCalendarTasks.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = tasksAdapter
+            scheduleLayoutAnimation()
         }
     }
 }

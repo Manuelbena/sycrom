@@ -220,6 +220,7 @@
                         android:paddingStart="40dp"
                         android:paddingEnd="40dp"
                         android:visibility="gone"
+                        android:layoutAnimation="@anim/layout_animation_fall_down"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:listitem="@layout/item_task_today" />
                     <com.google.android.material.tabs.TabLayout

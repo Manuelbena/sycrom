@@ -36,6 +36,21 @@ class CalendarViewModel @Inject constructor(
     private val _currentMonthTitle = MutableLiveData<String>()
     val currentMonthTitle: LiveData<String> = _currentMonthTitle
 
+    private val _tasks = MutableStateFlow<Map<LocalDate, List<TaskDomain>>>(emptyMap())
+    val tasks: StateFlow<Map<LocalDate, List<TaskDomain>>> = _tasks.asStateFlow()
+
+    // 2. [NUEVO] Día Seleccionado (Por defecto Hoy)
+    private val _selectedDate = MutableStateFlow(LocalDate.now())
+    val selectedDate: StateFlow<LocalDate> = _selectedDate.asStateFlow()
+
+    // 3. [NUEVO] Tareas FILTRADAS para la lista (Reactivo: se actualiza si cambian tasks o selectedDate)
+    // Combinamos los dos flujos para obtener la lista exacta
+    val selectedDateTasks =
+        kotlinx.coroutines.flow.combine(_tasks, _selectedDate) { tasksMap, date ->
+            tasksMap[date] ?: emptyList()
+        }
+
+
     private var currentOffset = 0
     private var selectedDay: Int? = null
 
@@ -44,10 +59,10 @@ class CalendarViewModel @Inject constructor(
         loadMonth(0)
     }
 
-    // Mapa de Fecha -> Lista de Tareas
-    private val _tasks = MutableStateFlow<Map<LocalDate, List<TaskDomain>>>(emptyMap())
-    val tasks: StateFlow<Map<LocalDate, List<TaskDomain>>> = _tasks.asStateFlow()
 
+    fun selectDate(date: LocalDate) {
+        _selectedDate.value = date
+    }
 
 
     private var loadJob: Job? = null
@@ -87,6 +102,7 @@ class CalendarViewModel @Inject constructor(
             }
         }
     }
+
     fun loadMonth(offset: Int) {
         currentOffset = offset
 
