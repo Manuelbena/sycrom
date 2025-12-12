@@ -86,8 +86,24 @@ class TaskRepository @Inject constructor(
 
 
     override suspend fun updateTask(task: TaskDomain) = withContext(Dispatchers.IO) {
+        try {
+            // 1. Recuperar la tarea ANTIGUA de la BD antes de sobreescribirla
+            val oldTask = taskDao.getTaskById(task.id)?.toDomain()
+
+            // 2. Si existía, cancelamos SUS alarmas (usando los minutos que tenía antes)
+            if (oldTask != null) {
+                alarmScheduler.cancel(oldTask)
+                Log.d("SYCROM_DEBUG", "REPO: Alarmas antiguas canceladas para ID: ${task.id}")
+            }
+        } catch (e: Exception) {
+            Log.e("SYCROM_DEBUG", "REPO: Error cancelando alarmas viejas: ${e.message}")
+        }
+
+        // 3. Guardar la NUEVA versión
         taskDao.updateTask(task.toEntity())
-        Log.d("SYCROM_DEBUG", "REPO: Tarea actualizada. ID: ${task.id}")
+        Log.d("SYCROM_DEBUG", "REPO: Tarea actualizada ID: ${task.id}")
+
+        // 4. Programar las NUEVAS alarmas
         alarmScheduler.schedule(task)
     }
 

@@ -5,10 +5,12 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.os.Build
 import android.util.Log
+import com.manuelbena.synkron.data.local.notification.QuickAccessService
 import com.manuelbena.synkron.data.scheduler.BriefingScheduler
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -31,6 +33,13 @@ class App : Application() {
         // Iniciamos los briefings diarios (8:00 y 20:00)
         briefingScheduler.scheduleMorningBriefing()
         briefingScheduler.scheduleEveningDebrief()
+
+        val serviceIntent = Intent(this, QuickAccessService::class.java)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
     }
 
     private fun createNotificationChannels() {

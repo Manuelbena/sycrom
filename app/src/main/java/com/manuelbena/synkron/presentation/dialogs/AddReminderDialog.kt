@@ -72,18 +72,6 @@ class AddReminderDialog(
 
             val now = Calendar.getInstance()
 
-            // VALIDACIÓN 1: El recordatorio NO puede ser en el pasado
-            if (reminderTime.before(now)) {
-                Toast.makeText(requireContext(), "La hora del aviso ya ha pasado", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            // VALIDACIÓN 2 (AJUSTADA): El recordatorio NO puede ser después de que acabe la tarea
-            // (Permitimos avisos DURANTE la tarea, ej. 14:00 en una tarea de 8 a 17)
-            if (reminderTime.after(taskEndTime)) {
-                Toast.makeText(requireContext(), "El aviso debe ser antes de que acabe la tarea", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
 
             // Cálculo de antelación (Minutos) respecto al INICIO
             // NOTA: Si es durante la tarea, el resultado será negativo (ej. -120 min).

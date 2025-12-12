@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="64dp"
+    android:background="#FFFFFF"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp">
+
+    <ImageView
+        android:id="@+id/imgLogo"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@mipmap/ic_launcher_round" />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" />
+
+    <ImageButton
+        android:id="@+id/btnHome"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_home_black_24dp"
+        android:scaleType="centerInside"
+        android:contentDescription="Home"
+     />
+
+    <ImageButton
+        android:id="@+id/btnCalendar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_calendar_today"
+        android:scaleType="centerInside"
+        android:contentDescription="Calendario"
+      />
+
+    <ImageButton
+        android:id="@+id/btnNewTask"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_plus"
+        android:scaleType="centerInside"
+        android:contentDescription="Nueva Tarea"
+       />
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1" />
+
+    <ImageButton
+        android:id="@+id/btnClose"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_close"
+        android:scaleType="centerInside"
+        android:contentDescription="Cerrar"
+  />
+
+</LinearLayout>

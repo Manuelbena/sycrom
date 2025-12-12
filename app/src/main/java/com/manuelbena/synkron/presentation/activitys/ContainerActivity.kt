@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import androidx.navigation.findNavController
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseActivity
@@ -22,7 +22,7 @@ class ContainerActivity : BaseActivity<ActivityContainerBinding>() {
         const val EXTRA_FRAGMENT_TYPE = "FRAGMENT_TYPE"
         const val FRAGMENT_TYPE_TASK = "TASK"
         const val TASK_TO_EDIT_KEY = "TASK_TO_EDIT"
-
+        const val EXTRA_START_FRAGMENT = "EXTRA_START_FRAGMENT"
 
         fun start(context: Context, task: TaskDomain) {
             val intent = Intent(context, ContainerActivity::class.java).apply {
@@ -33,55 +33,65 @@ class ContainerActivity : BaseActivity<ActivityContainerBinding>() {
         }
     }
 
-
     override fun inflateView(inflater: LayoutInflater) = ActivityContainerBinding.inflate(inflater)
 
+    // Helper para obtener el NavController de forma segura
+    private val navController: NavController
+        get() {
+            val navHostFragment = supportFragmentManager
+                .findFragmentById(R.id.fragment_container_view) as NavHostFragment
+            return navHostFragment.navController
+        }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        handleNavigationIntent()
+    }
+
     override fun setUI() {
+        // Nada aquí
+    }
+
+    private fun handleNavigationIntent() {
         val taskToEdit = intent.getParcelableExtra<TaskDomain>(TASK_TO_EDIT_KEY)
+        val startFragment = intent.getStringExtra(EXTRA_START_FRAGMENT)
 
-
-
-        if (taskToEdit != null) {
-            // FLUJO EDICIÓN: Abrimos el fragmento con los datos de la tarea
-            setEditTaskFragment(taskToEdit)
-        } else {
-            // FLUJO CREACIÓN: Verificamos qué tipo de creación se solicita
-            intent.getStringExtra(ADD_TASK)?.let {
-                setAddTaskFragment()
-            } ?: run {
-                intent.getStringExtra(ADD_MONEY)?.let {
-                    setAddMoneyFragment()
-                }
-            }
+        when {
+            taskToEdit != null -> setEditTaskFragment(taskToEdit)
+            startFragment == "NEW_TASK" -> setAddTaskFragment()
+            startFragment == "CALENDAR" -> setCalendarFragment()
+            intent.hasExtra(ADD_TASK) -> setAddTaskFragment()
+            intent.hasExtra(ADD_MONEY) -> setAddMoneyFragment()
         }
     }
 
-    /**
-     * 🔥 NUEVO: Método helper para cerrar la actividad indicando ÉXITO.
-     * Los Fragments (TaskFragment) deben llamar a esto cuando el ViewModel confirme el guardado.
-     */
     fun closeWithSuccess() {
         setResult(Activity.RESULT_OK)
         finish()
     }
 
-    private fun setEditTaskFragment(task: TaskDomain) {
-        val navController = binding.fragmentContainerView.findNavController()
+    // --- MÉTODOS DE NAVEGACIÓN ---
 
-        // Pasamos la tarea como argumento al grafo de navegación
+    private fun setEditTaskFragment(task: TaskDomain) {
         val bundle = Bundle().apply {
             putParcelable(TASK_TO_EDIT_KEY, task)
         }
-
-        // Navegamos al grafo de "nueva tarea" (que se reutiliza para edición)
+        // Usamos la propiedad segura 'navController'
         navController.setGraph(R.navigation.new_task, bundle)
     }
 
     private fun setAddTaskFragment() {
-        binding.fragmentContainerView.findNavController().setGraph(R.navigation.new_task)
+        navController.setGraph(R.navigation.new_task)
     }
 
     private fun setAddMoneyFragment() {
-        binding.fragmentContainerView.findNavController().setGraph(R.navigation.new_money)
+        navController.setGraph(R.navigation.new_money)
+    }
+
+    private fun setCalendarFragment() {
+        // Cargamos el grafo principal y forzamos inicio en Calendario
+        val graph = navController.navInflater.inflate(R.navigation.mobile_navigation)
+        graph.setStartDestination(R.id.navigation_calendar) // Asegúrate que este ID es correcto en tu XML
+        navController.graph = graph
     }
 }

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.manuelbena.synkron.base.BaseViewModel
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
+import com.manuelbena.synkron.domain.models.GoogleEventReminder
 import com.manuelbena.synkron.domain.models.GoogleEventReminders
 import com.manuelbena.synkron.domain.models.SubTaskDomain
 import com.manuelbena.synkron.domain.models.TaskDomain
@@ -49,11 +50,11 @@ class TaskViewModel @Inject constructor(
         TaskState(
             isAllDay = false,
             isNoDate = false,
-
-            // 2. Horas "Limpias": Redondeamos a la siguiente hora en punto
-            // (Ej: Si son las 10:25 -> Inicio 11:00, Fin 12:00)
             startTime = getNextCleanHour(),
-            endTime = getNextCleanHour().apply { add(Calendar.HOUR_OF_DAY, 1) }
+            endTime = getNextCleanHour().apply { add(Calendar.HOUR_OF_DAY, 1) },
+            reminders = listOf(
+                GoogleEventReminder(method = "popup", minutes = 30)
+            )
         )
     )
     val state: LiveData<TaskState> = _state

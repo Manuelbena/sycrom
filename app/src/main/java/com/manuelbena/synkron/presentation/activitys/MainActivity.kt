@@ -1,10 +1,12 @@
 package com.manuelbena.synkron.presentation.activitys
 
+import android.Manifest
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -12,12 +14,15 @@ import android.provider.Settings
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseActivity
 import com.manuelbena.synkron.data.local.notification.NotificationHelper
+import com.manuelbena.synkron.data.local.notification.QuickAccessService
 import com.manuelbena.synkron.databinding.ActivityMainBinding
 
 
@@ -34,11 +39,22 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         return ActivityMainBinding.inflate(inflater)
     }
 
+    // 1. Definimos el lanzador para pedir el permiso
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Si el usuario dice SÍ, arrancamos el panel
+            startQuickAccessService()
+        }
+    }
+
 
     override fun onResume() {
         super.onResume()
         // Comprobamos permisos cada vez que el usuario vuelve a la app
         checkPermissions()
+        checkAndStartService()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -101,6 +117,33 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                     Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT
                 )
             }
+        }
+    }
+
+    private fun checkAndStartService() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // En Android 13+ hay que pedir permiso
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                startQuickAccessService()
+            } else {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            // En versiones antiguas no hace falta pedir permiso
+            startQuickAccessService()
+        }
+    }
+
+    private fun startQuickAccessService() {
+        val intent = Intent(this, QuickAccessService::class.java)
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(intent)
+            } else {
+                startService(intent)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 
