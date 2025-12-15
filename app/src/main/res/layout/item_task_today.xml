@@ -5,20 +5,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card_task_root"
     style="@style/Widget.Material3.CardView.Elevated"
-    android:layout_width="200dp"
+    android:layout_width="300dp"
     android:layout_height="wrap_content"
     android:layout_marginTop="@dimen/card_margin_vertical"
     android:layout_marginBottom="@dimen/card_margin_vertical"
-    app:cardCornerRadius="@dimen/card_margin_horizontal"
-    app:cardElevation="10dp"
-    app:strokeWidth="1.5dp">
+
+    app:cardBackgroundColor="@android:color/transparent"
+    app:strokeWidth="1dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clTask"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
-        android:background="@drawable/bg_task_card_priority"
+        android:background="@drawable/background_primary"
         android:paddingStart="20dp"
         android:paddingEnd="16dp"
         android:paddingTop="16dp"
@@ -30,7 +30,7 @@
             android:layout_height="0dp"
             android:src="@drawable/ic_check"
             android:alpha="0.15"
-            app:tint="?attr/colorOnSecondary"
+            app:tint="?attr/colorSecondary"
             android:scaleType="fitCenter"
             android:visibility="gone"
             android:layout_margin="24dp"
@@ -71,7 +71,7 @@
                 android:src="@drawable/ic_more_vert"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:tint="?attr/colorOnPrimary" />
+                app:tint="?attr/colorSecondary" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
@@ -84,7 +84,7 @@
             android:ellipsize="end"
             android:maxLines="2"
             android:minHeight="40dp"
-            android:textColor="?attr/colorOnPrimary"
+            android:textColor="?attr/colorSecondary"
             android:textSize="@dimen/txt_dimen_xxl"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -110,7 +110,7 @@
                     android:layout_height="12dp"
                     android:layout_marginEnd="@dimen/spacing_s"
                     android:src="@drawable/ic_location"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorSecondary" />
 
                 <TextView
                     android:id="@+id/tvEventLocation"
@@ -120,7 +120,7 @@
                     android:ellipsize="end"
                     android:visibility="visible"
                     android:maxLines="1"
-                    android:textColor="?attr/colorOnPrimary"
+                    android:textColor="?attr/colorSecondary"
                     android:textSize="@dimen/txt_dimen_xl"
                     tools:text="Córdoba, Oficina Principal" />
             </LinearLayout>
@@ -137,7 +137,7 @@
                     android:layout_height="12dp"
                     android:layout_marginEnd="@dimen/spacing_s"
                     android:src="@drawable/ic_clock_complete"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorSecondary" />
 
                 <TextView
                     android:id="@+id/tvEventTime"
@@ -146,7 +146,7 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:textColor="?attr/colorOnPrimary"
+                    android:textColor="?attr/colorSecondary"
                     android:textSize="@dimen/txt_dimen_xl"
                     tools:text="10:30" />
 
@@ -165,7 +165,7 @@
                     android:contentDescription="TODO"
                     android:layout_marginEnd="@dimen/spacing_s"
                     android:src="@drawable/ic_time_restart"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorSecondary" />
 
                 <TextView
                     android:id="@+id/tvDuration"
@@ -175,7 +175,7 @@
                     android:ellipsize="end"
                     android:maxLines="1"
 
-                    android:textColor="?attr/colorOnPrimary"
+                    android:textColor="?attr/colorSecondary"
                     android:textSize="@dimen/txt_dimen_xl"
                     tools:text="1 h 30 min" />
             </LinearLayout>
@@ -207,13 +207,13 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:textSize="@dimen/txt_dimen_m"
-                    android:textColor="?attr/colorOnPrimary"
+                    android:textColor="?attr/colorSecondary"
                     tools:text="2 de 5 completadas"/>
             </RelativeLayout>
 
             <com.google.android.material.progressindicator.LinearProgressIndicator
                 android:id="@+id/progressBar_taskDetail_progress"
-                app:indicatorColor="?attr/colorOnPrimary"
+                app:indicatorColor="?attr/colorSecondary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
@@ -231,7 +231,7 @@
             android:text="¿Evento terminado?"
             android:maxLines="1"
             android:layout_marginEnd="@dimen/card_elevation"
-            android:textColor="?attr/colorOnPrimary"
+            android:textColor="?attr/colorSecondary"
             android:textSize="@dimen/txt_dimen_l"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -244,7 +244,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             app:thumbIcon="@drawable/ic_switch_thumb_selector"
-            app:thumbIconTint="@color/switch_thumb_icon_tint_selector"
+            app:thumbIconTint="?attr/colorSecondary"
             android:scaleX="0.7"
             android:scaleY="0.7"
             app:layout_constraintBottom_toBottomOf="parent"

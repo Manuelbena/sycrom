@@ -183,14 +183,6 @@ class TaskAdapter(
                 // 2. COLORES Y ESTADO VISUAL (Tick y Fondo Verde)
                 // =============================================================
 
-                // Color de prioridad (barra lateral)
-                val priorityColorRes = when (item.priority) {
-                    "Alta" -> R.color.priority_high
-                    "Media" -> R.color.priority_medium
-                    "Baja" -> R.color.priority_low
-                    else -> R.color.priority_default
-                }
-                val priorityColor = ContextCompat.getColor(context, priorityColorRes)
 
                 // Colores de fondo
                 val typedValue = TypedValue()
@@ -203,15 +195,9 @@ class TaskAdapter(
                  * Función local para actualizar el aspecto visual sin lógica de negocio
                  */
                 fun updateVisualState(isDone: Boolean) {
-                    val layerDrawable = binding.clTask.background.mutate() as LayerDrawable
-                    val bgShape = layerDrawable.findDrawableByLayerId(R.id.content_background_shape)
-                    val priorityShape = layerDrawable.findDrawableByLayerId(R.id.priority_bar_shape)
-
-                    // Tinte barra prioridad
-                    DrawableCompat.setTint(priorityShape, priorityColor)
 
                     if (isDone) {
-                        DrawableCompat.setTint(bgShape, doneBackgroundColor)
+
                         tvfinish.text = "Tarea Terminada"
                         try {
                             binding.ivDoneBackground.visibility = View.VISIBLE
@@ -221,7 +207,6 @@ class TaskAdapter(
                         tvEventTitle.paintFlags = tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                     } else {
                         tvfinish.text = "¿Tarea terminada?"
-                        DrawableCompat.setTint(bgShape, defaultBackgroundColor)
                         try {
                             binding.ivDoneBackground.visibility = View.GONE
                         } catch (e: Exception) { }

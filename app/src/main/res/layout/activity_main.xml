@@ -4,19 +4,22 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorPrimary"
+    android:background="?attr/colorOnBackground"
     android:fitsSystemWindows="true">
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/nav_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:backgroundTint="?attr/colorPrimary"
-        app:horizontalItemTextAppearanceActive="?attr/colorOnSurfaceVariant"
+
         app:itemGravity="center"
-        app:itemIconTint="?attr/colorOnSurfaceVariant"
+        app:backgroundTint="?attr/colorOnBackground"
+        app:horizontalItemTextAppearanceActive="?attr/colorPrimary"
+        app:itemIconTint="?attr/colorSecondary"
+        app:itemRippleColor="?attr/colorPrimary"
+        android:backgroundTint="?attr/colorPrimary"
         app:itemTextAppearanceActiveBoldEnabled="true"
-        app:itemTextColor="?attr/colorOnSurfaceVariant"
+        app:itemTextColor="?attr/colorSecondary"
         app:labelVisibilityMode="selected"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"

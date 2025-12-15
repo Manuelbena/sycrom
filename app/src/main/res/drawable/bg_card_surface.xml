@@ -8,7 +8,7 @@
             <gradient
                 android:angle="45"
                 android:endColor="?attr/colorSecondaryContainer"
-
+                android:startColor="?attr/colorOnSurfaceVariant"
                 android:type="linear" />
         </shape>
     </item>

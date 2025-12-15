@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background_primary">
+    android:background="?attr/colorOnBackground">
 
     <TextView
         android:id="@+id/textGreeting"
@@ -13,7 +13,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="32dp"
         android:text="Hola, Manuel"
-        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textColor="?attr/colorSecondary"
         android:textSize="@dimen/txt_dimen_extra"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -25,9 +25,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textColor="?attr/colorSecondary"
         android:textSize="@dimen/txt_dimen_l"
         android:visibility="visible"
+        android:paddingBottom="@dimen/activity_horizontal_XL_margin"
         app:layout_constraintStart_toStartOf="@id/textGreeting"
         app:layout_constraintTop_toBottomOf="@id/textGreeting"
         tools:ignore="SpUsage"
@@ -41,8 +42,7 @@
         android:contentDescription="TODO"
         android:src="@drawable/ic_sol"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="?attr/colorOnSurfaceVariant"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/textTemperature"
@@ -50,7 +50,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:text="17°C"
-        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textColor="?attr/colorSecondary"
         android:textSize="@dimen/txt_dimen_l"
         app:layout_constraintEnd_toEndOf="@id/iconWeather"
         app:layout_constraintStart_toStartOf="@+id/iconWeather"
@@ -77,7 +77,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="24dp"
-                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -105,7 +105,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Tareas programadas"
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="?attr/colorSecondary"
                             android:textSize="@dimen/txt_dimen_xxl"
                             android:textStyle="bold"
                             tools:ignore="SpUsage" />
@@ -134,16 +134,16 @@
                                 android:text="Diciembre 2025"
                                 android:textSize="@dimen/card_margin_horizontal"
                                 android:textStyle="bold"
-                                android:textColor="?attr/colorOnPrimary" />
+                                android:textColor="?attr/colorSecondary"/>
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnToday"
-                                app:backgroundTint="?attr/colorOnSecondary"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:backgroundTint="?attr/colorOnSecondary"
                                 android:text="Hoy"
                                 android:textStyle="bold"
-                                android:textColor="?attr/colorPrimary" />
+                                android:textColor="?attr/colorOnPrimary" />
                         </LinearLayout>
 
                         <!-- NOMBRES DÍAS SEMANA -->
@@ -176,9 +176,10 @@
                         android:id="@+id/progress_indicator"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:backgroundTint="?attr/colorOnSecondary"
+                        android:backgroundTint="?attr/colorOnSecondaryContainer"
                         android:indeterminate="true"
-                        android:visibility="visible" app:indicatorSize="40dp"
+                        android:visibility="visible"
+                        app:indicatorSize="40dp"
                         app:trackThickness="4dp" />
 
                     <LinearLayout
@@ -196,7 +197,7 @@
                             android:gravity="center"
                             android:padding="16dp"
                             android:text="¡Todo despejado, Manuel! Disfruta tu día."
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="?attr/colorSecondary"
                             android:textSize="16sp"
                             android:visibility="gone"
                             tools:visibility="visible" />
@@ -206,7 +207,7 @@
                             android:layout_height="130dp"
                             android:layout_gravity="center"
                             android:src="@drawable/synkrom_sintareas"
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="?attr/colorSecondary"
                             tools:visibility="visible" />
                     </LinearLayout>
 
@@ -249,7 +250,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="24dp"
-                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -274,7 +275,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="0.3"
                             android:text="Te sugiero..."
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="?attr/colorSecondary"
                             android:textSize="@dimen/txt_dimen_xxl"
                             android:textStyle="bold"
                             tools:ignore="SpUsage" />
@@ -292,12 +293,6 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/ly_header_suggestion">
-                        <ImageView
-                            android:layout_width="80dp"
-                            android:layout_height="150dp"
-                            android:layout_marginEnd="@dimen/card_margin_horizontal"
-                            android:layout_marginStart="@dimen/txt_dimen_xl"
-                            android:src="@drawable/synkron_conunatarea" />
 
                         <TextView
                             android:id="@+id/textSugerencia"
@@ -305,7 +300,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
                             android:text="Tienes una hora libre a las 17:00. ¿Por qué no dar un paseo por el Parque del Retiro?"
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="?attr/colorSecondary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
@@ -333,7 +328,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:text="17:00"
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="?attr/colorSecondary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
@@ -350,7 +345,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:text="Parque del Retiro"
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="?attr/colorSecondary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
@@ -365,7 +360,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_margin="24dp"
-                app:cardBackgroundColor="?attr/colorSurfaceVariant"
+                app:cardBackgroundColor="?attr/colorSurface"
                 app:cardCornerRadius="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -383,7 +378,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
                         android:text="Resumen Cartera"
-                        android:textColor="?attr/colorOnPrimary"
+                        android:textColor="?attr/colorSecondary"
                         android:textSize="@dimen/txt_dimen_xxl"
                         android:textStyle="bold"
                         app:layout_constraintStart_toStartOf="parent"
@@ -421,7 +416,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
                             android:text="Gastos"
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="?attr/colorSecondary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
@@ -431,7 +426,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:text="-500€"
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="?attr/colorSecondary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
                     </LinearLayout>
@@ -457,7 +452,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
                             android:text="Ingresos"
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="?attr/colorSecondary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
 
@@ -467,7 +462,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
                             android:text="500€"
-                            android:textColor="?attr/colorOnPrimary"
+                            android:textColor="?attr/colorSecondary"
                             android:textSize="@dimen/txt_dimen_xl"
                             tools:ignore="SpUsage" />
                     </LinearLayout>
@@ -485,11 +480,10 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Tarea"
-        android:textColor="?attr/colorPrimary"
+        android:textColor="@android:color/black"
         android:visibility="gone"
         android:textStyle="bold"
-        app:backgroundTint="?attr/colorOnSecondary"
-        app:iconTint="?attr/colorPrimary"
+        app:iconTint="@android:color/black"
         app:layout_constraintBottom_toTopOf="@+id/fabMain"
         app:layout_constraintEnd_toEndOf="@+id/fabMain" />
 
@@ -499,11 +493,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Tarea IA"
-        android:textColor="?attr/colorPrimary"
+        android:textColor="@android:color/black"
         android:visibility="gone"
         android:textStyle="bold"
-        app:backgroundTint="?attr/colorOnSecondary"
-        app:iconTint="?attr/colorPrimary"
+        app:iconTint="@android:color/black"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddTask"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddTask" />
 
@@ -514,10 +507,9 @@
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Gasto"
         android:textStyle="bold"
-        android:textColor="?attr/colorPrimary"
+        android:textColor="@android:color/black"
         android:visibility="gone"
-        app:backgroundTint="?attr/colorOnSecondary"
-        app:iconTint="?attr/colorPrimary"
+        app:iconTint="@android:color/black"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddIng"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddIng" />
 
@@ -527,11 +519,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/activity_horizontal_margin"
         android:text="Ingreso"
-        android:textColor="?attr/colorPrimary"
+        android:textColor="@android:color/black"
         android:visibility="gone"
         android:textStyle="bold"
-        app:backgroundTint="?attr/colorOnSecondary"
-        app:iconTint="?attr/colorPrimary"
+        app:iconTint="@android:color/black"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddSuggestion"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddSuggestion" />
 
@@ -543,12 +534,10 @@
         android:layout_marginBottom="100dp"
         android:text="Añadir"
         android:textStyle="bold"
-        android:textColor="?attr/colorPrimary"
-        app:backgroundTint="?attr/colorOnSecondary"
+        android:textColor="@android:color/black"
         app:icon="@drawable/ic_plus"
-        app:iconTint="?attr/colorPrimary"
+        app:iconTint="@android:color/black"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:tint="?attr/colorPrimary"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

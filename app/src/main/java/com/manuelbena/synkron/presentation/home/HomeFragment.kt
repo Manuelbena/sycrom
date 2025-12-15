@@ -13,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.activityViewModels
@@ -75,12 +76,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
     )
 
+
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentHomeBinding {
         return FragmentHomeBinding.inflate(inflater, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupButtomFloating()
         setupHeader()
         // Inicializamos el calendario AQUÍ, antes de llamar a métodos sobre él
         setupCalendar()
@@ -143,6 +146,18 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 is HomeAction.ShareTask -> shareTask(action.task)
             }
         }
+    }
+    private fun setupButtomFloating(){
+        binding.fabMain.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_fab_gradiant)
+        binding.fabMain.backgroundTintList = null
+        binding.tvFabAddTask.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_fab_gradiant)
+        binding.tvFabAddTask.backgroundTintList = null
+        binding.tvFabAddSuggestion.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_fab_gradiant)
+        binding.tvFabAddSuggestion.backgroundTintList = null
+        binding.tvFabAddIng.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_fab_gradiant)
+        binding.tvFabAddIng.backgroundTintList = null
+        binding.tvFabAddGasto.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_fab_gradiant)
+        binding.tvFabAddGasto.backgroundTintList = null
     }
 
     private fun checkDateChange() {
@@ -462,7 +477,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
     }
     private fun RecyclerView.applyCarouselPadding() {
-        val itemWidthDp = 250
+        val itemWidthDp = 350
         val itemWidthPx = resources.displayMetrics.density * itemWidthDp
         val screenWidthPx = resources.displayMetrics.widthPixels
         val padding = (screenWidthPx / 2f - itemWidthPx / 2f).toInt().coerceAtLeast(0)

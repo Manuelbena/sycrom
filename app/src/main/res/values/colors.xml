@@ -2,14 +2,14 @@
 <resources>
 
 
-    <color name="md_theme_primary">#F4F6F8</color>
-    <color name="md_theme_onPrimary">#1F1F1F</color>
-    <color name="md_theme_primaryContainer">#FFFFFF</color>
-    <color name="md_theme_onPrimaryContainer">#042043</color>
+    <color name="md_theme_primary">#025E73</color>
+    <color name="md_theme_onPrimary">#FAFAF9</color>
+    <color name="md_theme_primaryContainer">#025E73</color>
+    <color name="md_theme_onPrimaryContainer">#025E73</color>
 
-    <color name="md_theme_secondary">#022B3A</color>
-    <color name="md_theme_onSecondary">#D3C3AE</color>
-    <color name="md_theme_secondaryContainer">#D3C3AE</color>
+    <color name="md_theme_secondary">#1C1917</color>
+    <color name="md_theme_onSecondary">#025E73</color>
+    <color name="md_theme_secondaryContainer">#025E73</color>
     <color name="md_theme_onSecondaryContainer">#FBEDD4</color>
 
     <color name="cat_work">#2196F3</color>
@@ -19,7 +19,7 @@
     <color name="cat_finance">#9C27B0</color>
     <color name="cat_default">#607D8B</color>
 
-    <color name="md_theme_tertiary">#1F1F1F</color>
+    <color name="md_theme_tertiary">#78716C</color>
     <color name="md_theme_onTertiary">#FFFFFF</color>
     <color name="md_theme_tertiaryContainer">#F4FFF2</color>
     <color name="md_theme_onTertiaryContainer">#002114</color>
@@ -29,16 +29,16 @@
     <color name="md_theme_errorContainer">#FFDAD6</color>
     <color name="md_theme_onErrorContainer">#410002</color>
 
-    <color name="md_theme_background">#FDFBFF</color>
-    <color name="md_theme_onBackground">#1A1C1E</color>
+    <color name="md_theme_background">#A1A2A6</color>
+    <color name="md_theme_onBackground">#A1A2A6</color>
 
     <color name="md_theme_surface">#F5F8FF</color>
     <color name="md_theme_onSurface">#1A1C1E</color>
 
-    <color name="md_theme_surfaceVariant">#FFFFFF</color>
+    <color name="md_theme_surfaceVariant">#FAFAF9</color>
     <color name="md_theme_onSurfaceVariant">#1F1F1F</color>
 
-    <color name="md_theme_outline">#73777F</color>
+    <color name="md_theme_outline">#E7E5E4</color>
 
     <color name="priority_high">#FF4D4D</color>
     <color name="priority_medium">#FFC107</color>
