@@ -1,489 +1,328 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorOnBackground">
+    android:background="#F9FAFB">
 
-    <TextView
-        android:id="@+id/textGreeting"
-        android:layout_width="wrap_content"
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/lyHeader"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="32dp"
-        android:text="Hola, Manuel"
-        android:textColor="?attr/colorSecondary"
-        android:textSize="@dimen/txt_dimen_extra"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
+        android:background="?attr/colorSurface"
+        android:fitsSystemWindows="true"
         app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="SpUsage" />
-
-    <TextView
-        android:id="@+id/textDate"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:textColor="?attr/colorSecondary"
-        android:textSize="@dimen/txt_dimen_l"
-        android:visibility="visible"
-        android:paddingBottom="@dimen/activity_horizontal_XL_margin"
-        app:layout_constraintStart_toStartOf="@id/textGreeting"
-        app:layout_constraintTop_toBottomOf="@id/textGreeting"
-        tools:ignore="SpUsage"
-        tools:text="12 de mayo de 2025" />
-
-    <ImageView
-        android:id="@+id/iconWeather"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_margin="24dp"
-        android:contentDescription="TODO"
-        android:src="@drawable/ic_sol"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:elevation="0dp">
 
-    <TextView
-        android:id="@+id/textTemperature"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:text="17°C"
-        android:textColor="?attr/colorSecondary"
-        android:textSize="@dimen/txt_dimen_l"
-        app:layout_constraintEnd_toEndOf="@id/iconWeather"
-        app:layout_constraintStart_toStartOf="@+id/iconWeather"
-        app:layout_constraintTop_toBottomOf="@+id/iconWeather"
-        tools:ignore="SpUsage" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/clHeaderContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
+
+            <TextView
+                android:id="@+id/textGreeting"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="16dp"
+                android:fontFamily="@font/nunitoextrabold"
+                android:textColor="?attr/colorOnSurface"
+                android:textSize="28sp"
+                app:layout_constraintEnd_toStartOf="@+id/lyWeatherActions"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Hola, Manuel" />
+
+            <TextView
+                android:id="@+id/textDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:fontFamily="@font/nunitosemibold"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:textSize="14sp"
+                app:layout_constraintStart_toStartOf="@id/textGreeting"
+                app:layout_constraintTop_toBottomOf="@id/textGreeting"
+                tools:text="12 de mayo de 2025" />
+
+            <LinearLayout
+                android:id="@+id/lyWeatherActions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                app:layout_constraintBottom_toBottomOf="@+id/textDate"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/textGreeting">
+
+                <LinearLayout
+                    android:id="@+id/lyWeatherWidget"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/shape_tag_background_small"
+                    android:backgroundTint="?attr/colorSurfaceContainerHigh"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="8dp">
+
+                    <ImageView
+                        android:id="@+id/iconWeather"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:contentDescription="Clima"
+                        android:src="@drawable/ic_sol" />
+
+                    <TextView
+                        android:id="@+id/textTemperature"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:fontFamily="@font/nunitobold"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="14sp"
+                        tools:text="17°C" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSettings"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="4dp"
+                    android:contentDescription="Ajustes"
+                    app:icon="@drawable/ic_more_vert"
+                    app:iconTint="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
+
+            <com.google.android.material.divider.MaterialDivider
+                android:id="@+id/dividerHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                app:dividerColor="?attr/colorOutline"
+                app:layout_constraintTop_toBottomOf="@+id/textDate" />
+
+            <LinearLayout
+                android:id="@+id/lyCalendarContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical"
+                app:layout_constraintTop_toBottomOf="@+id/dividerHeader">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvMonthYear"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/nunitobold"
+                        android:textColor="?attr/colorOnSurface"
+                        android:textSize="20sp"
+                        tools:text="Diciembre 2025" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnToday"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/nunitobold"
+                        android:minHeight="40dp"
+                        android:text="Hoy"
+                        android:textColor="?attr/colorOnSecondaryContainer"
+                        app:backgroundTint="?attr/colorSecondaryContainer" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/CalendarDayLegend"
+                        android:text="Lun" />
+
+                    <TextView
+                        style="@style/CalendarDayLegend"
+                        android:text="Mar" />
+
+                    <TextView
+                        style="@style/CalendarDayLegend"
+                        android:text="Mie" />
+
+                    <TextView
+                        style="@style/CalendarDayLegend"
+                        android:text="Jue" />
+
+                    <TextView
+                        style="@style/CalendarDayLegend"
+                        android:text="Vie" />
+
+                    <TextView
+                        style="@style/CalendarDayLegend"
+                        android:text="Sab" />
+
+                    <TextView
+                        style="@style/CalendarDayLegend"
+                        android:text="Dom" />
+                </LinearLayout>
+
+                <com.kizitonwose.calendar.view.WeekCalendarView
+                    android:id="@+id/weekCalendarView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cv_dayViewResource="@layout/item_calendar_day_new" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nested_scroll_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingBottom="100dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textDate">
+        app:layout_constraintTop_toBottomOf="@id/lyHeader">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
             android:id="@+id/ly_body_home"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginBottom="100dp">
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardTasks"
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="24dp"
-                app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                android:layout_marginTop="24dp"
+                android:gravity="center"
+                android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="525dp"
-                    android:orientation="vertical"
-                    android:gravity="center_horizontal"
-                    android:clipChildren="false"
-                    android:clipToPadding="false"
-                    android:paddingBottom="@dimen/activity_horizontal_XL_margin">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="@dimen/txt_dimen_xl"
-                        android:clipChildren="false"
-                        android:clipToPadding="false"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:text="Tareas programadas"
-                            android:textColor="?attr/colorSecondary"
-                            android:textSize="@dimen/txt_dimen_xxl"
-                            android:textStyle="bold"
-                            tools:ignore="SpUsage" />
-
-                    </LinearLayout>
-
-                    <!-- AQUÍ HE INSERTADO EL BLOQUE QUE ME PEDISTE -->
-                    <com.google.android.material.appbar.AppBarLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="@dimen/txt_dimen_xl"
-                        android:background="@android:color/transparent"
-                        app:elevation="0dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <TextView
-                                android:id="@+id/tvMonthYear"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:text="Diciembre 2025"
-                                android:textSize="@dimen/card_margin_horizontal"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorSecondary"/>
-
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnToday"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:backgroundTint="?attr/colorOnSecondary"
-                                android:text="Hoy"
-                                android:textStyle="bold"
-                                android:textColor="?attr/colorOnPrimary" />
-                        </LinearLayout>
-
-                        <!-- NOMBRES DÍAS SEMANA -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:paddingBottom="8dp">
-                            <!-- Puedes reutilizar tu item_calendar_day_legend.xml si lo creaste, o ponerlo aquí directo -->
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Lun" android:textColor="?attr/colorTertiary"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Mar" android:textColor="?attr/colorTertiary"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Mie" android:textColor="?attr/colorTertiary"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Juv" android:textColor="?attr/colorTertiary"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Vie" android:textColor="?attr/colorTertiary"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Sab" android:textColor="?attr/colorTertiary"/>
-                            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Dom" android:textColor="?attr/colorTertiary"/>
-                        </LinearLayout>
-
-                    </com.google.android.material.appbar.AppBarLayout>
-                    <com.kizitonwose.calendar.view.WeekCalendarView
-                        android:id="@+id/weekCalendarView"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginHorizontal="@dimen/txt_dimen_xl"
-                        app:cv_dayViewResource="@layout/item_calendar_day_new"
-                       />
-
-
-                    <com.google.android.material.loadingindicator.LoadingIndicator
-                        android:id="@+id/progress_indicator"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:backgroundTint="?attr/colorOnSecondaryContainer"
-                        android:indeterminate="true"
-                        android:visibility="visible"
-                        app:indicatorSize="40dp"
-                        app:trackThickness="4dp" />
-
-                    <LinearLayout
-                        android:id="@+id/ivNoTasks"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:visibility="gone">
-
-                        <TextView
-                            android:id="@+id/tvNoTasks"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:padding="16dp"
-                            android:text="¡Todo despejado, Manuel! Disfruta tu día."
-                            android:textColor="?attr/colorSecondary"
-                            android:textSize="16sp"
-                            android:visibility="gone"
-                            tools:visibility="visible" />
-
-                        <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="130dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/synkrom_sintareas"
-                            android:textColor="?attr/colorSecondary"
-                            tools:visibility="visible" />
-                    </LinearLayout>
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/recyclerViewTasks"
-                        android:layout_width="match_parent"
-                        android:clipChildren="false"
-                        android:layout_height="wrap_content"
-                        android:clipToPadding="false"
-                        android:orientation="horizontal"
-                        android:paddingStart="40dp"
-                        android:paddingEnd="40dp"
-                        android:visibility="gone"
-                        android:layoutAnimation="@anim/layout_animation_fall_down"
-                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                        tools:listitem="@layout/item_task_today" />
-                    <com.google.android.material.tabs.TabLayout
-                        android:id="@+id/tabLayoutDots"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@android:color/transparent"
-                        app:layout_constraintTop_toBottomOf="@id/recyclerViewTasks"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        android:layout_marginTop="8dp"
-                        android:visibility="gone"
-                        tools:visibility="visible"
-                        app:tabBackground="@null"
-                        app:tabIndicatorHeight="0dp"
-                        app:tabPaddingStart="0dp"
-                        app:tabPaddingEnd="0dp"
-                        app:tabPaddingTop="0dp"
-                        app:tabPaddingBottom="0dp"
-                        />
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardSuggestion"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="24dp"
-                app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/cardTasks">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_margin="@dimen/txt_dimen_xl">
-
-                    <LinearLayout
-                        android:id="@+id/ly_header_suggestion"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="0.3"
-                            android:text="Te sugiero..."
-                            android:textColor="?attr/colorSecondary"
-                            android:textSize="@dimen/txt_dimen_xxl"
-                            android:textStyle="bold"
-                            tools:ignore="SpUsage" />
-
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/ly_body_suggestion"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="start"
-
-                        android:orientation="horizontal"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/ly_header_suggestion">
-
-                        <TextView
-                            android:id="@+id/textSugerencia"
-                            android:layout_width="210dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:text="Tienes una hora libre a las 17:00. ¿Por qué no dar un paseo por el Parque del Retiro?"
-                            android:textColor="?attr/colorSecondary"
-                            android:textSize="@dimen/txt_dimen_xl"
-                            tools:ignore="SpUsage" />
-
-
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="end"
-                        android:orientation="horizontal"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/ly_body_suggestion">
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_clock"
-                            app:tint="?attr/colorOnPrimary" />
-
-                        <TextView
-                            android:id="@+id/textHora"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="17:00"
-                            android:textColor="?attr/colorSecondary"
-                            android:textSize="@dimen/txt_dimen_xl"
-                            tools:ignore="SpUsage" />
-
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_marginStart="16dp"
-                            android:src="@drawable/ic_location"
-                            app:tint="?attr/colorOnPrimary" />
-
-                        <TextView
-                            android:id="@+id/textLugar"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="Parque del Retiro"
-                            android:textColor="?attr/colorSecondary"
-                            android:textSize="@dimen/txt_dimen_xl"
-                            tools:ignore="SpUsage" />
-
-                    </LinearLayout>
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-            </androidx.cardview.widget.CardView>
-
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cardResumenMoney"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_margin="24dp"
-                app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="16dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/cardSuggestion">
-
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="16dp">
+                    android:layout_marginBottom="16dp"
+                    android:fontFamily="@font/nunitobold"
+                    android:paddingHorizontal="24dp"
+                    android:text="Tareas programadas"
+                    android:textColor="#1F2937"
+                    android:textSize="20sp" />
+
+                <com.google.android.material.loadingindicator.LoadingIndicator
+                    android:id="@+id/progress_indicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:indeterminate="true"
+                    android:visibility="gone"
+                    app:indicatorSize="40dp" />
+
+                <LinearLayout
+                    android:id="@+id/ivNoTasks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="24dp"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="160dp"
+                        android:layout_height="160dp"
+                        android:src="@drawable/synkrom_sintareas" />
 
                     <TextView
-                        android:id="@+id/tv_wallet"
-                        android:layout_width="wrap_content"
+                        android:id="@+id/tvNoTasks"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:text="Resumen Cartera"
-                        android:textColor="?attr/colorSecondary"
-                        android:textSize="@dimen/txt_dimen_xxl"
-                        android:textStyle="bold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        tools:ignore="SpUsage" />
+                        android:layout_marginTop="16dp"
+                        android:fontFamily="@font/nunitosemibold"
+                        android:gravity="center"
+                        android:text="¡Todo despejado! Disfruta tu día."
+                        android:textColor="#6B7280"
+                        android:textSize="16sp" />
+                </LinearLayout>
 
-                    <com.manuelbena.synkron.presentation.components.FinancePieView
-                        android:id="@+id/financePie"
-                        android:layout_width="120dp"
-                        android:layout_height="150dp"
-                        android:layout_gravity="top"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tv_wallet" />
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerViewTasks"
+                    android:layout_width="match_parent"
+                    android:clipChildren="false"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:paddingStart="40dp"
+                    android:paddingEnd="40dp"
+                    android:visibility="gone"
+                    android:layoutAnimation="@anim/layout_animation_fall_down"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_task_today" />
 
-                    <LinearLayout
-                        android:id="@+id/ly_gastos"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="18dp"
-                        android:gravity="top"
-                        android:orientation="horizontal"
-                        android:paddingTop="20dp"
-                        app:layout_constraintStart_toEndOf="@+id/financePie"
-                        app:layout_constraintTop_toBottomOf="@+id/tv_wallet">
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tabLayoutDots"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    app:layout_constraintTop_toBottomOf="@id/recyclerViewTasks"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginTop="8dp"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    app:tabBackground="@null"
+                    app:tabIndicatorHeight="0dp"
+                    app:tabPaddingStart="0dp"
+                    app:tabPaddingEnd="0dp"
+                    app:tabPaddingTop="0dp"
+                    app:tabPaddingBottom="0dp"
+                    />
 
-                        <View
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_marginEnd="8dp"
-                            android:background="@drawable/circle_legend"
-                            android:backgroundTint="?attr/colorError" />
+            </LinearLayout>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="4dp"
-                            android:text="Gastos"
-                            android:textColor="?attr/colorSecondary"
-                            android:textSize="@dimen/txt_dimen_xl"
-                            tools:ignore="SpUsage" />
-
-                        <TextView
-                            android:id="@+id/textGastos"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:text="-500€"
-                            android:textColor="?attr/colorSecondary"
-                            android:textSize="@dimen/txt_dimen_xl"
-                            tools:ignore="SpUsage" />
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="18dp"
-                        android:gravity="center_horizontal"
-                        android:orientation="horizontal"
-                        app:layout_constraintStart_toEndOf="@+id/financePie"
-                        app:layout_constraintTop_toBottomOf="@+id/ly_gastos">
-
-                        <View
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_marginEnd="8dp"
-                            android:background="@drawable/circle_legend"
-                            android:backgroundTint="?attr/colorTertiary" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="4dp"
-                            android:text="Ingresos"
-                            android:textColor="?attr/colorSecondary"
-                            android:textSize="@dimen/txt_dimen_xl"
-                            tools:ignore="SpUsage" />
-
-                        <TextView
-                            android:id="@+id/textIngresos"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="4dp"
-                            android:text="500€"
-                            android:textColor="?attr/colorSecondary"
-                            android:textSize="@dimen/txt_dimen_xl"
-                            tools:ignore="SpUsage" />
-                    </LinearLayout>
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </androidx.cardview.widget.CardView>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <View
+        android:id="@+id/bg_fab_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/tvFabAddTask"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="?attr/colorPrimary"
+        android:fontFamily="@font/nunitobold"
         android:text="Tarea"
-        android:textColor="@android:color/black"
+        android:textColor="@color/white"
         android:visibility="gone"
-        android:textStyle="bold"
-        app:iconTint="@android:color/black"
+        app:icon="@drawable/ic_edit"
+        app:iconTint="@color/white"
         app:layout_constraintBottom_toTopOf="@+id/fabMain"
         app:layout_constraintEnd_toEndOf="@+id/fabMain" />
 
@@ -491,12 +330,14 @@
         android:id="@+id/tvFabAddSuggestion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="#8B5CF6"
+        android:fontFamily="@font/nunitobold"
         android:text="Tarea IA"
-        android:textColor="@android:color/black"
+        android:textColor="@color/white"
         android:visibility="gone"
-        android:textStyle="bold"
-        app:iconTint="@android:color/black"
+        app:icon="@drawable/ic_suggestion"
+        app:iconTint="@color/white"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddTask"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddTask" />
 
@@ -504,12 +345,10 @@
         android:id="@+id/tvFabAddGasto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="@font/nunitobold"
         android:text="Gasto"
-        android:textStyle="bold"
-        android:textColor="@android:color/black"
         android:visibility="gone"
-        app:iconTint="@android:color/black"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddIng"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddIng" />
 
@@ -517,12 +356,10 @@
         android:id="@+id/tvFabAddIng"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="16dp"
+        android:fontFamily="@font/nunitobold"
         android:text="Ingreso"
-        android:textColor="@android:color/black"
         android:visibility="gone"
-        android:textStyle="bold"
-        app:iconTint="@android:color/black"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddSuggestion"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddSuggestion" />
 
@@ -531,12 +368,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
-        android:layout_marginBottom="100dp"
+        android:layout_marginBottom="24dp"
+        android:backgroundTint="?attr/colorPrimary"
+        android:fontFamily="@font/nunitobold"
         android:text="Añadir"
-        android:textStyle="bold"
-        android:textColor="@android:color/black"
+        android:textColor="@color/white"
         app:icon="@drawable/ic_plus"
-        app:iconTint="@android:color/black"
+        app:iconTint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

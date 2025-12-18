@@ -477,7 +477,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
     }
     private fun RecyclerView.applyCarouselPadding() {
-        val itemWidthDp = 350
+        val itemWidthDp = 300
         val itemWidthPx = resources.displayMetrics.density * itemWidthDp
         val screenWidthPx = resources.displayMetrics.widthPixels
         val padding = (screenWidthPx / 2f - itemWidthPx / 2f).toInt().coerceAtLeast(0)

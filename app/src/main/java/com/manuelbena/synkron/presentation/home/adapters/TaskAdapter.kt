@@ -113,14 +113,7 @@ class TaskAdapter(
                 // 1. Datos Básicos
                 tvEventTitle.text = item.summary
 
-                // Icono
-                ivCategoryIcon.setImageResource(item.typeTask.getCategoryIcon())
-                ivCategoryIcon.backgroundTintList = ContextCompat.getColorStateList(context, item.typeTask.getCategoryColor())
 
-                // Ubicación
-                tvEventLocation.isVisible = !item.location.isNullOrEmpty()
-                iconLocation.isVisible = !item.location.isNullOrEmpty()
-                tvEventLocation.text = item.location
 
                 // 1. Obtenemos los textos formateados
                 val startTime = item.start.toHourString()
@@ -145,7 +138,7 @@ class TaskAdapter(
                 // 4. Control de visibilidad de iconos (reloj vs calendario)
                 if (isAllDay) {
                     tvDuration.visibility = View.GONE
-                    iconRestant.visibility = View.GONE
+
                     iconTime.setImageResource(R.drawable.ic_calendar_today)
                 } else {
                     iconTime.setImageResource(R.drawable.ic_clock_complete)
@@ -154,28 +147,28 @@ class TaskAdapter(
                     val durationInMinutes = getDurationInMinutes(item.start, item.end)
                     if (durationInMinutes > 0) {
                         tvDuration.visibility = View.VISIBLE
-                        iconRestant.visibility = View.VISIBLE
+
                         tvDuration.text = durationInMinutes.toDurationString()
                     } else {
                         tvDuration.visibility = View.GONE
-                        iconRestant.visibility = View.GONE
+
                     }
                 }
 
                 // 2. Subtareas (Solo Progress Bar por ahora, según tu XML)
                 val hasSubtasks = item.subTasks.isNotEmpty()
                 // Usamos isVisible para ser más concisos
-                progressBarTaskDetailProgress.isVisible = hasSubtasks
+
                 textViewTaskDetailProgressText.isVisible = hasSubtasks
 
                 if (hasSubtasks) {
                     val total = item.subTasks.size
                     val completed = item.subTasks.count { it.isDone }
                     val progress = if (total > 0) (completed * 100) / total else 0
-                    progressBarTaskDetailProgress.progress = progress
+
                     textViewTaskDetailProgressText.text = "$completed de $total completadas"
                 }else {
-                    progressBarTaskDetailProgress.visibility = View.INVISIBLE
+
                     textViewTaskDetailProgressText.visibility = View.INVISIBLE
                 }
 
@@ -198,17 +191,16 @@ class TaskAdapter(
 
                     if (isDone) {
 
-                        tvfinish.text = "Tarea Terminada"
+
                         try {
-                            binding.ivDoneBackground.visibility = View.VISIBLE
+
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
                         tvEventTitle.paintFlags = tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                     } else {
-                        tvfinish.text = "¿Tarea terminada?"
+
                         try {
-                            binding.ivDoneBackground.visibility = View.GONE
                         } catch (e: Exception) { }
                         tvEventTitle.paintFlags = tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                     }

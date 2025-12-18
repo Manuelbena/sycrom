@@ -2,14 +2,14 @@
 <resources>
 
 
-    <color name="md_theme_primary">#025E73</color>
+    <color name="md_theme_primary">#4C594F</color>
     <color name="md_theme_onPrimary">#FAFAF9</color>
-    <color name="md_theme_primaryContainer">#025E73</color>
-    <color name="md_theme_onPrimaryContainer">#025E73</color>
+    <color name="md_theme_primaryContainer">#4C594F</color>
+    <color name="md_theme_onPrimaryContainer">#4C594F</color>
 
-    <color name="md_theme_secondary">#1C1917</color>
-    <color name="md_theme_onSecondary">#025E73</color>
-    <color name="md_theme_secondaryContainer">#025E73</color>
+    <color name="md_theme_secondary">#232625</color>
+    <color name="md_theme_onSecondary">#4C594F</color>
+    <color name="md_theme_secondaryContainer">#4C594F</color>
     <color name="md_theme_onSecondaryContainer">#FBEDD4</color>
 
     <color name="cat_work">#2196F3</color>
@@ -18,6 +18,12 @@
     <color name="cat_studies">#FF9800</color>
     <color name="cat_finance">#9C27B0</color>
     <color name="cat_default">#607D8B</color>
+
+    <color name="violet_500">#8b5cf6</color>
+    <color name="purple_600">#9333ea</color>
+
+    <color name="white_alpha_90">#E6FFFFFF</color>
+    <color name="white_alpha_60">#99FFFFFF</color>
 
     <color name="md_theme_tertiary">#78716C</color>
     <color name="md_theme_onTertiary">#FFFFFF</color>
@@ -29,8 +35,8 @@
     <color name="md_theme_errorContainer">#FFDAD6</color>
     <color name="md_theme_onErrorContainer">#410002</color>
 
-    <color name="md_theme_background">#A1A2A6</color>
-    <color name="md_theme_onBackground">#A1A2A6</color>
+    <color name="md_theme_background">#BFBFB8</color>
+    <color name="md_theme_onBackground">#BFBFB8</color>
 
     <color name="md_theme_surface">#F5F8FF</color>
     <color name="md_theme_onSurface">#1A1C1E</color>
