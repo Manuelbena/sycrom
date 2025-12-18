@@ -148,15 +148,15 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
     }
     private fun setupButtomFloating(){
-        binding.fabMain.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_fab_gradiant)
+        binding.fabMain.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_add_buttom)
         binding.fabMain.backgroundTintList = null
-        binding.tvFabAddTask.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_fab_gradiant)
+        binding.tvFabAddTask.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_add_buttom)
         binding.tvFabAddTask.backgroundTintList = null
-        binding.tvFabAddSuggestion.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_fab_gradiant)
+        binding.tvFabAddSuggestion.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_add_buttom)
         binding.tvFabAddSuggestion.backgroundTintList = null
-        binding.tvFabAddIng.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_fab_gradiant)
+        binding.tvFabAddIng.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_add_buttom)
         binding.tvFabAddIng.backgroundTintList = null
-        binding.tvFabAddGasto.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_fab_gradiant)
+        binding.tvFabAddGasto.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_add_buttom)
         binding.tvFabAddGasto.backgroundTintList = null
     }
 

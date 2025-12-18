@@ -60,5 +60,43 @@
 
     <string name="recurrence_none">No se repite</string>
 
+    //home
+
+    <string name="home_greeting_placeholder">Hola, Manuel</string>
+    <string name="home_date_placeholder">12 de mayo de 2025</string>
+    <string name="home_temp_placeholder">17°C</string>
+    <string name="home_btn_today">Hoy</string>
+    <string name="home_calendar_placeholder">Diciembre 2025</string>
+
+    <string name="day_short_mon">Lun</string>
+    <string name="day_short_tue">Mar</string>
+    <string name="day_short_wed">Mie</string>
+    <string name="day_short_thu">Jue</string>
+    <string name="day_short_fri">Vie</string>
+    <string name="day_short_sat">Sab</string>
+    <string name="day_short_sun">Dom</string>
+
+    <string name="home_tasks_title">Tareas de hoy</string>
+    <string name="home_tasks_subtitle_placeholder">0 de 4 completadas</string>
+    <string name="home_tasks_progress_label">Progreso</string>
+    <string name="home_tasks_empty_title">¡Todo despejado! Disfruta tu día.</string>
+
+    <string name="home_summary_title">Resumen</string>
+    <string name="home_card_prod_title">Productividad</string>
+    <string name="home_card_prod_subtitle">Esta semana</string>
+    <string name="home_card_habits_title">Hábitos</string>
+    <string name="home_card_habits_subtitle">Hoy</string>
+    <string name="home_card_balance_title">Balance este mes</string>
+
+    <string name="fab_task">Tarea</string>
+    <string name="fab_task_ai">Tarea IA</string>
+    <string name="fab_expense">Gasto</string>
+    <string name="fab_income">Ingreso</string>
+    <string name="fab_add">Añadir</string>
+
+    <string name="cd_weather_icon">Icono del clima</string>
+    <string name="cd_settings">Ajustes</string>
+    <string name="cd_no_tasks">Imagen sin tareas pendientes</string>
+
 
 </resources>

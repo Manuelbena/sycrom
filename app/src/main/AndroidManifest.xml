@@ -23,9 +23,10 @@
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:screenOrientation="portrait"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Synkron"
+        android:theme="@style/Base.Theme.Sycrom"
         tools:targetApi="31"
         tools:ignore="Instantiatable">
         <service
@@ -52,7 +53,7 @@
             android:exported="false"
             android:launchMode="singleTask"
             android:taskAffinity=""
-            android:theme="@style/Theme.Synkron"
+            android:theme="@style/Base.Theme.Sycrom"
             android:showOnLockScreen="true"
             android:showWhenLocked="true"
             android:turnScreenOn="true"

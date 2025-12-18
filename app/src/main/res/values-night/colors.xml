@@ -30,6 +30,9 @@
     <color name="md_theme_onSurfaceVariant">#9481FF</color>
     <color name="md_theme_outline">#8D9199</color>
 
+    <color name="bg_home">@color/slate_900</color>
+    <color name="secondary_text">@color/slate_400</color>
+    <color name="priority_low">@color/slate_400</color>
 
 
 </resources>

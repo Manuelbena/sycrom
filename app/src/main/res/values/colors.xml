@@ -2,14 +2,14 @@
 <resources>
 
 
-    <color name="md_theme_primary">#4C594F</color>
+    <color name="md_theme_primary">#8B5CF6</color>
     <color name="md_theme_onPrimary">#FAFAF9</color>
-    <color name="md_theme_primaryContainer">#4C594F</color>
-    <color name="md_theme_onPrimaryContainer">#4C594F</color>
+    <color name="md_theme_primaryContainer">#8B5CF6</color>
+    <color name="md_theme_onPrimaryContainer">#8B5CF6</color>
 
     <color name="md_theme_secondary">#232625</color>
-    <color name="md_theme_onSecondary">#4C594F</color>
-    <color name="md_theme_secondaryContainer">#4C594F</color>
+    <color name="md_theme_onSecondary">#8B5CF6</color>
+    <color name="md_theme_secondaryContainer">#8B5CF6</color>
     <color name="md_theme_onSecondaryContainer">#FBEDD4</color>
 
     <color name="cat_work">#2196F3</color>
@@ -19,8 +19,36 @@
     <color name="cat_finance">#9C27B0</color>
     <color name="cat_default">#607D8B</color>
 
-    <color name="violet_500">#8b5cf6</color>
-    <color name="purple_600">#9333ea</color>
+    <color name="violet_500">#8B5CF6</color>
+    <color name="purple_600">#9333EA</color>
+
+    <color name="slate_50">#F8FAFC</color>
+    <color name="slate_100">#F1F5F9</color>
+    <color name="slate_200">#E2E8F0</color>
+    <color name="slate_300">#CBD5E1</color>
+    <color name="slate_400">#94A3B8</color>
+    <color name="slate_500">#64748B</color>
+    <color name="slate_600">#475569</color>
+    <color name="slate_700">#334155</color>
+    <color name="slate_800">#1E293B</color>
+    <color name="slate_900">#0F172A</color>
+
+    <color name="green_500">#22C55E</color>
+    <color name="amber_500">#F59E0B</color>
+    <color name="blue_500">#3B82F6</color>
+    <color name="red_500">#EF4444</color>
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <color name="color_card">@color/white</color>
+
+    <color name="color_primary">@color/violet_500</color>
+
+    <color name="bg_home">@color/slate_50</color>
+
+    <color name="secondary_text">@color/slate_600</color>
+    <color name="priority_low">@color/slate_500</color>
+    <color name="priority_high">@color/red_500</color>
 
     <color name="white_alpha_90">#E6FFFFFF</color>
     <color name="white_alpha_60">#99FFFFFF</color>
@@ -35,10 +63,10 @@
     <color name="md_theme_errorContainer">#FFDAD6</color>
     <color name="md_theme_onErrorContainer">#410002</color>
 
-    <color name="md_theme_background">#BFBFB8</color>
-    <color name="md_theme_onBackground">#BFBFB8</color>
+    <color name="md_theme_background">@color/slate_50</color>
+    <color name="md_theme_onBackground">@color/slate_50</color>
 
-    <color name="md_theme_surface">#F5F8FF</color>
+    <color name="md_theme_surface">@color/white</color>
     <color name="md_theme_onSurface">#1A1C1E</color>
 
     <color name="md_theme_surfaceVariant">#FAFAF9</color>
@@ -46,20 +74,18 @@
 
     <color name="md_theme_outline">#E7E5E4</color>
 
-    <color name="priority_high">#FF4D4D</color>
+
     <color name="priority_medium">#FFC107</color>
-    <color name="priority_low">#4CAF50</color>
+
     <color name="priority_default">#E0E0E0</color>
 
-    <color name="color_primary">#223042</color>
+
     <color name="color_surface">#223042</color>
 
-    <color name="black">#111111</color>
-    <color name="white">#F3F6F7</color>
     <color name="red">#B0422C</color>
 
     <color name="background_primary">@color/color_primary</color>
-    <color name="secondary_text">@color/color_primary</color>
+
     <color name="ivory">#F3F6F7</color>
 
     <color name="color_tree">#BFC9D7</color>
