@@ -2,25 +2,26 @@
     <!-- Base application theme. -->
 
 
-    <style name="Base.Theme.Sycrom" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.Sycrom" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+
         <item name="colorPrimary">@color/violet_500</item>
         <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/slate_600</item>
+
+        <item name="android:colorBackground">@color/slate_50</item>
 
         <item name="colorSurface">@color/white</item>
         <item name="colorOnSurface">@color/slate_900</item>
+
+        <item name="elevationOverlayEnabled">false</item>
+
         <item name="colorOnSurfaceVariant">@color/slate_600</item>
-        <item name="colorSurfaceContainerHigh">@color/slate_100</item>
-        <item name="colorOnSecondaryContainer">@color/violet_500</item>
-        <item name="colorSecondaryContainer">@color/slate_100</item>
         <item name="colorOutline">@color/slate_200</item>
-
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-
-        <item name="android:windowLightStatusBar" tools:targetApi="m">
-            true
-        </item>
     </style>
+
+    <style name="Theme.Sycrom" parent="Base.Theme.Sycrom" />
 
 
     <style name="CalendarWeekDayLegend">
@@ -81,7 +82,7 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
         <item name="android:gravity">center</item>
-        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
+        <item name="android:textColor">@color/secondary_text</item>
         <item name="android:fontFamily">@font/nunitosemibold</item>
         <item name="android:textSize">13sp</item>
     </style>

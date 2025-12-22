@@ -40,6 +40,7 @@
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
 
+
     <color name="color_card">@color/white</color>
 
     <color name="color_primary">@color/violet_500</color>
@@ -65,6 +66,10 @@
 
     <color name="md_theme_background">@color/slate_50</color>
     <color name="md_theme_onBackground">@color/slate_50</color>
+
+    <color name="color_camp">#F59E0B</color>
+    <color name="color_body">@color/slate_100</color>
+    <color name="border">@color/slate_200</color>
 
     <color name="md_theme_surface">@color/white</color>
     <color name="md_theme_onSurface">#1A1C1E</color>

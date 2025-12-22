@@ -5,6 +5,25 @@
     <color name="md_theme_primaryContainer">#0062A1</color>
     <color name="md_theme_onPrimaryContainer">#D1E4FF</color>
 
+
+    <color name="slate_50">#F8FAFC</color>
+    <color name="slate_100">#F1F5F9</color>
+    <color name="slate_200">#E2E8F0</color>
+    <color name="slate_300">#CBD5E1</color>
+    <color name="slate_400">#94A3B8</color>
+    <color name="slate_500">#64748B</color>
+    <color name="slate_600">#475569</color>
+    <color name="slate_700">#334155</color>
+    <color name="slate_800">#1E293B</color>
+    <color name="slate_900">#0F172A</color>
+
+    <color name="color_card">@color/slate_800</color>
+    <color name="color_body">@color/slate_700</color>
+    <color name="border">@color/slate_700</color>
+
+    <color name="color_primary">@color/violet_500</color>
+    <color name="md_theme_surface">@color/slate_900</color>
+
     <color name="md_theme_secondary">#F1F5F9</color>
     <color name="md_theme_onSecondary">#0062A1</color>
     <color name="md_theme_secondaryContainer">#0062A1</color>
@@ -24,14 +43,13 @@
     <color name="md_theme_onBackground">#0F172A</color>
 
 
-    <color name="md_theme_surface">#1E293B</color>
-    <color name="md_theme_onSurface">#C9D1D9</color>
+    <color name="md_theme_onSurface">@color/white</color>
     <color name="md_theme_surfaceVariant">#1E293B</color>
     <color name="md_theme_onSurfaceVariant">#9481FF</color>
     <color name="md_theme_outline">#8D9199</color>
 
     <color name="bg_home">@color/slate_900</color>
-    <color name="secondary_text">@color/slate_400</color>
+    <color name="secondary_text">@color/slate_200</color>
     <color name="priority_low">@color/slate_400</color>
 
 
