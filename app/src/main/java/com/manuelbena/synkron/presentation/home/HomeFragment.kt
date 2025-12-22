@@ -73,6 +73,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         },
         onTaskCheckedChange = { task, isDone ->
             viewModel.onTaskCheckedChanged(task, isDone)
+        },
+        onSubTaskChange = { taskId, subTask ->
+            viewModel.onSubTaskChanged(taskId, subTask)
         }
     )
 
@@ -220,9 +223,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             binding.recyclerViewTasks.isVisible = hasTasks
             binding.tabLayoutDots.isVisible = hasTasks
 
-            taskAdapter.submitList(state.tasks){
-                binding.recyclerViewTasks.scheduleLayoutAnimation()
-            }
+            taskAdapter.submitList(state.tasks)
 
 
             if (binding.tabLayoutDots.tabCount != state.tasks.size) {

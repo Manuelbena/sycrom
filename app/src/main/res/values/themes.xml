@@ -19,6 +19,9 @@
 
         <item name="colorOnSurfaceVariant">@color/slate_600</item>
         <item name="colorOutline">@color/slate_200</item>
+
+        <item name="popupMenuStyle">@style/MyPopupMenuStyle</item>
+        <item name="android:popupMenuStyle">@style/MyPopupMenuStyle</item>
     </style>
 
     <style name="Theme.Sycrom" parent="Base.Theme.Sycrom" />
@@ -91,6 +94,7 @@
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">16dp</item>
     </style>
+
 
 
     <style name="CalendarDay">

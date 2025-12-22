@@ -2,6 +2,7 @@ package com.manuelbena.synkron.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.manuelbena.synkron.domain.models.SubTaskDomain // <--- IMPORTANTE
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.domain.usecase.DeleteTaskUseCase
 import com.manuelbena.synkron.domain.usecase.GetTaskTodayUseCase
@@ -31,7 +32,6 @@ class HomeViewModel @Inject constructor(
     private val _action = SingleLiveEvent<HomeAction>()
     val action: SingleLiveEvent<HomeAction> = _action
 
-    // 🔥 NUEVO: Gatillo para forzar la recarga manual
     private val _refreshTrigger = MutableSharedFlow<Unit>(
         replay = 0,
         extraBufferCapacity = 1,
@@ -42,20 +42,17 @@ class HomeViewModel @Inject constructor(
         .ofPattern("EEEE, dd 'de' MMMM", Locale("es", "ES"))
 
     init {
-        // Inicializamos fecha hoy
         _uiState.update { it.copy(selectedDate = LocalDate.now()) }
 
         viewModelScope.launch {
-            // 🔥 MERGE: Escuchamos cambios de fecha O el gatillo de refresco
             merge(
-                _uiState.map { it.selectedDate }.distinctUntilChanged(), // 1. Si cambia la fecha
-                _refreshTrigger.map { _uiState.value.selectedDate }      // 2. Si forzamos refresh (usa la fecha actual)
+                _uiState.map { it.selectedDate }.distinctUntilChanged(),
+                _refreshTrigger.map { _uiState.value.selectedDate }
             )
                 .flatMapLatest { date ->
                     _uiState.update { it.copy(isLoading = true) }
-
                     flow {
-                        delay(300L) // Mantenemos tu delay suave
+                        delay(300L)
                         getTaskTodayUseCase(date).collect { tasks ->
                             emit(tasks)
                         }
@@ -79,9 +76,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    /**
-     * 🔥 NUEVA FUNCIÓN: Llama a esto desde onResume()
-     */
     fun refreshData() {
         _refreshTrigger.tryEmit(Unit)
     }
@@ -92,7 +86,6 @@ class HomeViewModel @Inject constructor(
 
     fun refreshToToday() {
         val today = LocalDate.now()
-        // Si ya estábamos en hoy, forzamos refresh de datos. Si no, cambiamos la fecha.
         if (_uiState.value.selectedDate == today) {
             refreshData()
         } else {
@@ -100,13 +93,38 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // ... (El resto de funciones: onTaskCheckedChanged, onTaskMenuAction se mantienen igual) ...
     fun onTaskCheckedChanged(task: TaskDomain, isDone: Boolean) {
         viewModelScope.launch {
             try {
                 updateTaskUseCase(task.copy(isDone = isDone))
             } catch (e: Exception) {
                 _action.postValue(HomeAction.ShowErrorSnackbar(e.message ?: "Error al actualizar"))
+            }
+        }
+    }
+
+    // 🔥 NUEVA FUNCIÓN: Maneja el cambio de una subtarea individual 🔥
+    fun onSubTaskChanged(taskId: Int, updatedSubTask: SubTaskDomain) {
+        viewModelScope.launch {
+            // 1. Buscamos la tarea padre en la lista actual (para no tener que ir a BD a leerla)
+            val currentTasks = _uiState.value.tasks
+            val parentTask = currentTasks.find { it.id == taskId }
+
+            if (parentTask != null) {
+                // 2. Creamos una nueva lista de subtareas reemplazando la modificada
+                val newSubTasks = parentTask.subTasks.map {
+                    if (it.id == updatedSubTask.id) updatedSubTask else it
+                }
+
+                // 3. Copiamos la tarea con la nueva lista
+                val updatedTask = parentTask.copy(subTasks = newSubTasks)
+
+                // 4. Guardamos en BD
+                try {
+                    updateTaskUseCase(updatedTask)
+                } catch (e: Exception) {
+                    _action.postValue(HomeAction.ShowErrorSnackbar("Error al guardar subtarea"))
+                }
             }
         }
     }

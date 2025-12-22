@@ -145,6 +145,11 @@ fun String.getCategoryColor(): Int {
     }
 }
 
+fun String.getPriorityIcon(): Int {
+    // Asumo que tienes un icono 'ic_mark' o 'ic_flag' para la bandera
+    // Puedes cambiar el icono según la prioridad si tienes banderas de distintos colores o formas
+    return R.drawable.flag
+}
 fun String.getPriorityColor(): Int {
     return when (this.uppercase()) {
         "HIGH", "ALTA" -> R.color.priority_high

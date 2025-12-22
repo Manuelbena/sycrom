@@ -1,24 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:gravity="center_vertical"
-    android:paddingVertical="4dp">
+    android:paddingVertical="0dp"
+    android:minHeight="32dp">
 
-    <CheckBox
+    <com.google.android.material.checkbox.MaterialCheckBox
         android:id="@+id/cbSubtask"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         android:minWidth="0dp"
-        android:minHeight="0dp" />
+        android:minHeight="0dp"
+        android:padding="0dp"
+        app:useMaterialThemeColors="true"/>
 
     <TextView
         android:id="@+id/tvSubtaskTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:text="Subtarea"
-        android:textSize="16sp"
-        android:textColor="?attr/colorOnSurface" />
+        tools:text="Preparar documentación"
+        android:textSize="14sp"
+        android:fontFamily="@font/nunito"
+        android:textColor="@color/secondary_text" />
 </LinearLayout>

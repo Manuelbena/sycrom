@@ -2,39 +2,42 @@ package com.manuelbena.synkron.presentation.home.adapters
 
 import android.animation.Animator
 import android.annotation.SuppressLint
-import android.content.Context
+import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.drawable.LayerDrawable
-import android.os.Build
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.DrawableCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.R as R_Material
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseViewHolder
 import com.manuelbena.synkron.databinding.ItemTaskTodayBinding
+import com.manuelbena.synkron.domain.models.SubTaskDomain
 import com.manuelbena.synkron.domain.models.TaskDomain
+import com.manuelbena.synkron.presentation.util.adapters.SubTaskAdapter
 import com.manuelbena.synkron.presentation.util.extensions.toDurationString
 import com.manuelbena.synkron.presentation.util.getCategoryColor
 import com.manuelbena.synkron.presentation.util.getCategoryIcon
 import com.manuelbena.synkron.presentation.util.getDurationInMinutes
-import com.manuelbena.synkron.presentation.util.toDurationString
+import com.manuelbena.synkron.presentation.util.getName
+import com.manuelbena.synkron.presentation.util.getPriorityColor
+import com.manuelbena.synkron.presentation.util.getPriorityIcon
 import com.manuelbena.synkron.presentation.util.toHourString
 
 class TaskAdapter(
     private val onItemClick: (TaskDomain) -> Unit,
     private val onMenuAction: (TaskMenuAction) -> Unit,
-    private val onTaskCheckedChange: (task: TaskDomain, isDone: Boolean) -> Unit
+    private val onTaskCheckedChange: (task: TaskDomain, isDone: Boolean) -> Unit,
+    private val onSubTaskChange: (taskId: Int, subTask: SubTaskDomain) -> Unit
 ) : ListAdapter<TaskDomain, TaskAdapter.TaskViewHolder>(TaskDiffCallback()) {
+
+    private val expandedTaskIds = mutableSetOf<Int>()
+    private val subtasksSnapshot = mutableMapOf<Int, List<SubTaskDomain>>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val binding = ItemTaskTodayBinding.inflate(
@@ -45,24 +48,29 @@ class TaskAdapter(
         return TaskViewHolder(binding)
     }
 
+    override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
+        holder.bind(getItem(position))
+    }
 
     override fun onViewRecycled(holder: TaskViewHolder) {
         super.onViewRecycled(holder)
         holder.unbind()
     }
 
-    @RequiresApi(Build.VERSION_CODES.P)
-    override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
-        holder.bind(getItem(position))
-    }
-
     inner class TaskViewHolder(
         private val binding: ItemTaskTodayBinding
     ) : BaseViewHolder<TaskDomain>(binding) {
 
+        private var subTaskAdapter: SubTaskAdapter? = null
+
+        // Bandera para diferenciar acciones del Usuario vs del Sistema
+        private var isAutoChecking = false
+
         fun unbind() {
             binding.lottieCelebration.cancelAnimation()
+            binding.lottieCelebration.visibility = View.GONE
             binding.swTaskCompleted.setOnCheckedChangeListener(null)
+            binding.ivChevron.animate().cancel()
         }
 
         init {
@@ -71,204 +79,307 @@ class TaskAdapter(
                     onItemClick(getItem(bindingAdapterPosition))
                 }
             }
-
             binding.btnTaskOptions.setOnClickListener {
                 if (bindingAdapterPosition != RecyclerView.NO_POSITION) {
-                    showPopupMenu(binding.btnTaskOptions, getItem(bindingAdapterPosition))
+                    showPopupMenu(it, getItem(bindingAdapterPosition))
                 }
             }
         }
 
-        private fun showPopupMenu(anchorView: View, task: TaskDomain) {
-            val popup = PopupMenu(anchorView.context, anchorView)
-            // Asegúrate que tu XML 'menu_item_task' tenga el ID 'action_edit_task'
-            popup.menuInflater.inflate(R.menu.menu_item_task, popup.menu)
-
-            popup.setOnMenuItemClickListener { menuItem ->
-                when (menuItem.itemId) {
-                    // Aquí despachamos la acción al Fragment a través del Sealed Class
-                    R.id.action_edit_task -> {
-                        onMenuAction(TaskMenuAction.OnEdit(task))
-                        true
-                    }
-                    R.id.action_delete_task -> {
-                        onMenuAction(TaskMenuAction.OnDelete(task))
-                        true
-                    }
-                    R.id.action_share_task -> {
-                        onMenuAction(TaskMenuAction.OnShare(task))
-                        true
-                    }
-                    else -> false
-                }
-            }
-            popup.show()
-        }
         @SuppressLint("SetTextI18n")
-        @RequiresApi(Build.VERSION_CODES.P)
         override fun bind(item: TaskDomain) {
-            binding.apply {
-                val context = binding.root.context
-
-                // 1. Datos Básicos
+            with(binding) {
+                // 1. Datos básicos
                 tvEventTitle.text = item.summary
+                tvDescription.text = item.description
+                tvDescription.isVisible = !item.description.isNullOrEmpty()
 
+                setupTimeSection(item)
+                setupMetadataSection(item)
+                setupTagsSection(item)
 
+                // 2. Subtareas (Copia mutable local)
+                val mutableSubtasks = item.subTasks.toMutableList()
 
-                // 1. Obtenemos los textos formateados
-                val startTime = item.start.toHourString()
-                val endTime = item.end.toHourString()
+                // 3. Configuración Lógica
+                setupSubtasksSection(item, mutableSubtasks)
+                setupCompletionState(item, mutableSubtasks)
+            }
+        }
 
-                // 2. Detectamos si es "Todo el día" (usando la lógica segura del modelo)
-                val isAllDay = item.start?.dateTime == null && !item.start?.date.isNullOrEmpty()
+        private fun setupCompletionState(item: TaskDomain, mutableSubtasks: MutableList<SubTaskDomain>) {
+            binding.swTaskCompleted.setOnCheckedChangeListener(null)
 
-                // 3. Asignamos el texto con inteligencia
-                tvEventTime.text = if (isAllDay) {
-                    // CASO A: Todo el día -> Solo mostramos el texto una vez
-                    "Todo el día"
-                } else {
-                    // CASO B: Horas normales -> Mostramos rango si existe fin
-                    if (endTime != "--:--" && endTime.isNotEmpty() && endTime != startTime) {
-                        "$startTime - $endTime"
-                    } else {
-                        startTime
-                    }
-                }
+            // Estado visual inicial
+            binding.swTaskCompleted.isChecked = item.isDone
+            updateVisualDoneState(item.isDone)
 
-                // 4. Control de visibilidad de iconos (reloj vs calendario)
-                if (isAllDay) {
-                    tvDuration.visibility = View.GONE
+            if (!item.isDone) {
+                binding.lottieCelebration.visibility = View.GONE
+            }
 
-                    iconTime.setImageResource(R.drawable.ic_calendar_today)
-                } else {
-                    iconTime.setImageResource(R.drawable.ic_clock_complete)
+            binding.swTaskCompleted.setOnCheckedChangeListener { _, isChecked ->
+                updateVisualDoneState(isChecked)
 
-                    // Cálculo de duración
-                    val durationInMinutes = getDurationInMinutes(item.start, item.end)
-                    if (durationInMinutes > 0) {
-                        tvDuration.visibility = View.VISIBLE
+                if (mutableSubtasks.isNotEmpty()) {
+                    val newSubtasksList: List<SubTaskDomain>
 
-                        tvDuration.text = durationInMinutes.toDurationString()
-                    } else {
-                        tvDuration.visibility = View.GONE
-
-                    }
-                }
-
-                // 2. Subtareas (Solo Progress Bar por ahora, según tu XML)
-                val hasSubtasks = item.subTasks.isNotEmpty()
-                // Usamos isVisible para ser más concisos
-
-                textViewTaskDetailProgressText.isVisible = hasSubtasks
-
-                if (hasSubtasks) {
-                    val total = item.subTasks.size
-                    val completed = item.subTasks.count { it.isDone }
-                    val progress = if (total > 0) (completed * 100) / total else 0
-
-                    textViewTaskDetailProgressText.text = "$completed de $total completadas"
-                }else {
-
-                    textViewTaskDetailProgressText.visibility = View.INVISIBLE
-                }
-
-                // =============================================================
-                // 2. COLORES Y ESTADO VISUAL (Tick y Fondo Verde)
-                // =============================================================
-
-
-                // Colores de fondo
-                val typedValue = TypedValue()
-                context.theme.resolveAttribute(R_Material.attr.colorSurfaceVariant, typedValue, true)
-                val defaultBackgroundColor = typedValue.data
-                // Usamos priority_low_bg (verde clarito) para las tareas completadas
-                val doneBackgroundColor = ContextCompat.getColor(context, R.color.md_theme_surfaceVariant)
-
-                /**
-                 * Función local para actualizar el aspecto visual sin lógica de negocio
-                 */
-                fun updateVisualState(isDone: Boolean) {
-
-                    if (isDone) {
-
-
-                        try {
-
-                        } catch (e: Exception) {
-                            e.printStackTrace()
+                    if (isChecked) {
+                        // CASO 1: Tarea COMPLETADA
+                        if (!isAutoChecking) {
+                            // Solo guardamos foto si fue MANUAL.
+                            subtasksSnapshot[item.id] = mutableSubtasks.toList()
                         }
-                        tvEventTitle.paintFlags = tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                        // Marcamos todas como hechas
+                        newSubtasksList = mutableSubtasks.map { it.copy(isDone = true) }
                     } else {
-
-                        try {
-                        } catch (e: Exception) { }
-                        tvEventTitle.paintFlags = tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                    }
-                }
-
-                // =============================================================
-                // 3. CONFIGURACIÓN DE LISTENERS Y ANIMACIÓN
-                // =============================================================
-
-                // Limpieza previa
-                swTaskCompleted.setOnCheckedChangeListener(null)
-                lottieCelebration.removeAllAnimatorListeners()
-                lottieCelebration.cancelAnimation()
-
-                // Estado inicial
-                swTaskCompleted.isChecked = item.isDone
-                lottieCelebration.visibility = View.GONE
-
-                // Aplicar estilo visual inicial
-                updateVisualState(item.isDone)
-
-                // Listener del Switch
-                swTaskCompleted.setOnCheckedChangeListener { _, isChecked ->
-
-                    // 1. Cambio visual inmediato
-                    updateVisualState(isChecked)
-
-                    binding.root.post {
-                        if (isChecked) {
-                            // ANIMACIÓN CELEBRACIÓN -> GUARDAR
-                            lottieCelebration.visibility = View.VISIBLE
-                            lottieCelebration.speed = 1f
-                            lottieCelebration.repeatCount = 0
-                            lottieCelebration.progress = 0f
-
-                            lottieCelebration.removeAllAnimatorListeners()
-                            lottieCelebration.addAnimatorListener(object : Animator.AnimatorListener {
-                                override fun onAnimationStart(animation: Animator) {}
-                                override fun onAnimationEnd(animation: Animator) {
-                                    try {
-                                        lottieCelebration.visibility = View.GONE
-                                        if (swTaskCompleted.isChecked) {
-                                            onTaskCheckedChange(item, true)
-                                        }
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
-                                    }
-                                }
-                                override fun onAnimationCancel(animation: Animator) {
-                                    lottieCelebration.visibility = View.GONE
-                                }
-                                override fun onAnimationRepeat(animation: Animator) {}
-                            })
-                            lottieCelebration.playAnimation()
-
+                        // CASO 2: Tarea DESMARCADA
+                        if (isAutoChecking) {
+                            // Si el sistema desmarca (porque quité una subtarea), NO restauramos snapshot.
+                            // Mantenemos la lista tal cual está (con una subtarea unchecked).
+                            newSubtasksList = mutableSubtasks.toList()
                         } else {
-                            // DESMARCAR -> GUARDAR INMEDIATO
-                            lottieCelebration.cancelAnimation()
-                            lottieCelebration.visibility = View.GONE
-                            onTaskCheckedChange(item, false)
+                            // Si el usuario desmarca el padre, restauramos su estado anterior (snapshot)
+                            val snapshot = subtasksSnapshot[item.id]
+                            newSubtasksList = snapshot ?: mutableSubtasks.map { it.copy(isDone = false) }
+                        }
+                    }
+
+                    // Actualizar UI y Lista Local
+                    mutableSubtasks.clear()
+                    mutableSubtasks.addAll(newSubtasksList)
+                    subTaskAdapter?.submitList(newSubtasksList)
+                    updateSubtasksHeaderUI(newSubtasksList)
+
+                    // Guardamos Padre + Hijos
+                    val updatedTask = item.copy(subTasks = newSubtasksList)
+                    if (isChecked) playConfettiAnimation(updatedTask)
+                    else onTaskCheckedChange(updatedTask, false)
+
+                } else {
+                    // Sin subtareas
+                    if (isChecked) playConfettiAnimation(item)
+                    else onTaskCheckedChange(item, false)
+                }
+            }
+        }
+
+        private fun setupSubtasksSection(item: TaskDomain, mutableSubtasks: MutableList<SubTaskDomain>) {
+            val hasSubtasks = mutableSubtasks.isNotEmpty()
+            binding.lySubtasksHeader.isVisible = hasSubtasks
+
+            if (hasSubtasks) {
+                updateSubtasksHeaderUI(mutableSubtasks)
+
+                subTaskAdapter = SubTaskAdapter { subTask, isChecked ->
+                    val index = mutableSubtasks.indexOfFirst { it.id == subTask.id }
+                    if (index != -1) {
+                        val updatedSubtask = subTask.copy(isDone = isChecked)
+                        mutableSubtasks[index] = updatedSubtask
+
+                        updateSubtasksHeaderUI(mutableSubtasks)
+
+                        // Verificación Maestra
+                        val areAllDone = mutableSubtasks.all { it.isDone }
+                        val isParentChecked = binding.swTaskCompleted.isChecked
+
+                        if (areAllDone && !isParentChecked) {
+                            // CASO A: Todas completas -> Marcar Padre
+                            // TRUCO: NO llamamos a onSubTaskChange aquí. Dejamos que el padre guarde todo.
+                            // Esto evita la doble actualización y el parpadeo/corte de animación.
+                            binding.root.post {
+                                isAutoChecking = true
+                                binding.swTaskCompleted.isChecked = true
+                                isAutoChecking = false
+                            }
+                        } else {
+                            // CASO B: Cambio normal -> Guardar subtarea individual
+                            onSubTaskChange(item.id, updatedSubtask)
+
+                            if (!areAllDone && isParentChecked) {
+                                // CASO C: Se desmarcó una -> Desmarcar Padre
+                                binding.root.post {
+                                    isAutoChecking = true
+                                    binding.swTaskCompleted.isChecked = false
+                                    isAutoChecking = false
+                                }
+                            }
                         }
                     }
                 }
+
+                binding.rvSubtasks.apply {
+                    layoutManager = LinearLayoutManager(context)
+                    adapter = subTaskAdapter
+                    isNestedScrollingEnabled = false
+                    setRecycledViewPool(RecyclerView.RecycledViewPool())
+                }
+                subTaskAdapter?.submitList(mutableSubtasks.toList())
+
+                // Lógica de Expansión
+                val isExpanded = expandedTaskIds.contains(item.id)
+                binding.llSubtasksContainer.visibility = if (isExpanded) View.VISIBLE else View.GONE
+                binding.ivChevron.rotation = if (isExpanded) 90f else -90f
+
+                binding.lySubtasksHeader.setOnClickListener {
+                    if (binding.llSubtasksContainer.visibility == View.VISIBLE) {
+                        expandedTaskIds.remove(item.id)
+                        binding.llSubtasksContainer.visibility = View.GONE
+                        binding.ivChevron.animate().rotation(-90f).start()
+                    } else {
+                        expandedTaskIds.add(item.id)
+                        binding.llSubtasksContainer.visibility = View.VISIBLE
+                        binding.ivChevron.animate().rotation(90f).start()
+                    }
+                }
+            } else {
+                binding.llSubtasksContainer.visibility = View.GONE
+            }
+        }
+
+        private fun playConfettiAnimation(task: TaskDomain) {
+            binding.lottieCelebration.apply {
+                visibility = View.VISIBLE
+                playAnimation()
+                removeAllAnimatorListeners()
+                addAnimatorListener(object : Animator.AnimatorListener {
+                    override fun onAnimationEnd(animation: Animator) {
+                        visibility = View.GONE
+                        onTaskCheckedChange(task, true)
+                    }
+                    override fun onAnimationStart(animation: Animator) {}
+                    override fun onAnimationCancel(animation: Animator) { visibility = View.GONE }
+                    override fun onAnimationRepeat(animation: Animator) {}
+                })
+            }
+        }
+
+        private fun updateSubtasksHeaderUI(subtasks: List<SubTaskDomain>) {
+            val total = subtasks.size
+            val completed = subtasks.count { it.isDone }
+            binding.textViewTaskDetailProgressText.text = "Subtareas ($completed/$total)"
+            if (completed == total && total > 0) {
+                binding.textViewTaskDetailProgressText.paintFlags = binding.textViewTaskDetailProgressText.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            } else {
+                binding.textViewTaskDetailProgressText.paintFlags = binding.textViewTaskDetailProgressText.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            }
+        }
+
+        private fun updateVisualDoneState(isDone: Boolean) {
+            if (isDone) {
+                binding.tvEventTitle.paintFlags = binding.tvEventTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                binding.tvEventTitle.alpha = 0.5f
+            } else {
+                binding.tvEventTitle.paintFlags = binding.tvEventTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                binding.tvEventTitle.alpha = 1.0f
+            }
+        }
+
+        // --- Helpers de UI ---
+        private fun setupTimeSection(item: TaskDomain) {
+            val startStr = item.start?.toHourString() ?: "--:--"
+            val endStr = item.end?.toHourString() ?: "--:--"
+            val isAllDay = item.start?.dateTime == null && !item.start?.date.isNullOrEmpty()
+            if (isAllDay) {
+                binding.tvEventTime.text = "Todo el día"
+                binding.tvDuration.isVisible = false
+                binding.iconTime.setImageResource(R.drawable.ic_calendar_today)
+            } else {
+                binding.tvEventTime.text = if (endStr != "--:--" && endStr != startStr) "$startStr - $endStr" else startStr
+                binding.iconTime.setImageResource(R.drawable.ic_clock_complete)
+                val duration = getDurationInMinutes(item.start, item.end)
+                binding.tvDuration.isVisible = duration > 0
+                if (duration > 0) binding.tvDuration.text = duration.toDurationString()
+            }
+        }
+        private fun setupMetadataSection(item: TaskDomain) {
+            val isRecurring = item.recurrence.isNotEmpty()
+            binding.ivRepeat.parent.let { (it as View).isVisible = isRecurring }
+            if (isRecurring) binding.tvFrequency.text = "Repetir"
+            val remindersCount = item.reminders.overrides?.size ?: 0
+            val hasAlerts = remindersCount > 0
+            binding.ivAlert.parent.let { (it as View).isVisible = hasAlerts }
+            if (hasAlerts) binding.tvAlertCount.text = remindersCount.toString()
+        }
+        private fun setupTagsSection(item: TaskDomain) {
+            val context = binding.root.context
+
+            // Función auxiliar para convertir DP a Píxeles
+            fun dpToPx(dp: Int): Int {
+                return (dp * context.resources.displayMetrics.density).toInt()
+            }
+
+            // Tamaño deseado para los iconos (ej: 12dp)
+            val iconSize = dpToPx(12)
+
+            // ==========================================
+            // 1. CONFIGURACIÓN DE CATEGORÍA
+            // ==========================================
+            val categoryName = item.typeTask.ifEmpty { "General" }
+            val catColorRes = categoryName.getCategoryColor()
+            val catIconRes = categoryName.getCategoryIcon()
+
+            val catColor = ContextCompat.getColor(context, catColorRes)
+
+            binding.tvCategoryTag.apply {
+                text = categoryName.getName()
+                setTextColor(catColor)
+
+                background.setTint(catColor)
+                background.alpha = 50
+
+                val icon = ContextCompat.getDrawable(context, catIconRes)
+                icon?.setTint(catColor)
+
+                // AQUÍ ESTÁ EL CAMBIO: Definimos tamaño y usamos setCompoundDrawables
+                icon?.setBounds(0, 0, iconSize, iconSize)
+                setCompoundDrawables(icon, null, null, null) // Sin "WithIntrinsicBounds"
+            }
+
+            // ==========================================
+            // 2. CONFIGURACIÓN DE PRIORIDAD
+            // ==========================================
+            val priorityName = item.priority
+            binding.tvPriorityTag.isVisible = priorityName.isNotEmpty()
+
+            if (priorityName.isNotEmpty()) {
+                val prioColorRes = priorityName.getPriorityColor()
+                val prioIconRes = R.drawable.flag
+
+                val prioColor = ContextCompat.getColor(context, prioColorRes)
+
+                binding.tvPriorityTag.apply {
+                    text = priorityName
+                    setTextColor(prioColor)
+
+                    background.setTint(prioColor)
+                    background.alpha = 50
+
+                    val flagIcon = ContextCompat.getDrawable(context, prioIconRes)
+                    flagIcon?.setTint(prioColor)
+
+                    // AQUÍ TAMBIÉN
+                    flagIcon?.setBounds(0, 0, iconSize, iconSize)
+                    setCompoundDrawables(flagIcon, null, null, null)
+                }
+            }
+        }
+
+        private fun showPopupMenu(view: View, task: TaskDomain) {
+            PopupMenu(view.context, view).apply {
+                menuInflater.inflate(R.menu.menu_item_task, menu)
+                setOnMenuItemClickListener { menuItem ->
+                    when (menuItem.itemId) {
+                        R.id.action_edit_task -> { onMenuAction(TaskMenuAction.OnEdit(task)); true }
+                        R.id.action_delete_task -> { onMenuAction(TaskMenuAction.OnDelete(task)); true }
+                        R.id.action_share_task -> { onMenuAction(TaskMenuAction.OnShare(task)); true }
+                        else -> false
+                    }
+                }
+                show()
             }
         }
     }
-
-
 
     sealed class TaskMenuAction {
         data class OnEdit(val task: TaskDomain) : TaskMenuAction()
@@ -277,19 +388,8 @@ class TaskAdapter(
     }
 
     private class TaskDiffCallback : DiffUtil.ItemCallback<TaskDomain>() {
-        override fun areItemsTheSame(oldItem: TaskDomain, newItem: TaskDomain): Boolean {
-            // LÓGICA INTELIGENTE:
-            // 1. Si ambos tienen ID real (BD), comparamos IDs.
-            if (oldItem.id != 0 && newItem.id != 0) {
-                return oldItem.id == newItem.id
-            }
-            // 2. Si son tareas volátiles (IA con id 0), comparamos su contenido único (título + hora)
-            // Esto evita que el RecyclerView se líe y las oculte o mezcle.
-            return oldItem.summary == newItem.summary && oldItem.start == newItem.start
-        }
-
-        override fun areContentsTheSame(oldItem: TaskDomain, newItem: TaskDomain): Boolean {
-            return oldItem == newItem
-        }
+        override fun areItemsTheSame(oldItem: TaskDomain, newItem: TaskDomain) =
+            if (oldItem.id != 0 && newItem.id != 0) oldItem.id == newItem.id else oldItem.summary == newItem.summary
+        override fun areContentsTheSame(oldItem: TaskDomain, newItem: TaskDomain) = oldItem == newItem
     }
 }

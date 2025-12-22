@@ -34,6 +34,8 @@
             android:layout_marginEnd="@dimen/spacing_medium"
             android:fontFamily="@font/nunitoextrabold"
             android:text="@string/home_greeting_placeholder"
+            android:maxLines="1"
+
             android:textColor="@color/md_theme_onSurface"
             android:textSize="@dimen/text_h5"
             app:layout_constraintEnd_toStartOf="@+id/lyWeatherActions"
@@ -69,7 +71,6 @@
                 android:id="@+id/lyWeatherWidget"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/shape_tag_background"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="@dimen/spacing_s"
@@ -79,6 +80,7 @@
                     android:id="@+id/iconWeather"
                     android:layout_width="@dimen/icon_small"
                     android:layout_height="@dimen/icon_small"
+                    app:tint="@color/md_theme_onSurface"
                     android:contentDescription="@string/cd_weather_icon"
                     android:src="@drawable/ic_sol" />
 

@@ -5,8 +5,15 @@
         <item name="android:statusBarColor">@color/white</item>
         <item name="android:windowLightStatusBar">true</item>
 
+        <item name="popupMenuStyle">@style/MyPopupMenuStyle</item>
+        <item name="android:popupMenuStyle">@style/MyPopupMenuStyle</item>
 
 
 
+    </style>
+
+    <style name="MyPopupMenuStyle" parent="Widget.MaterialComponents.PopupMenu">
+        <item name="android:popupBackground">@drawable/bg_popup_menu</item>
+        <item name="android:textColor">@color/md_theme_onSurface</item>
     </style>
 </resources>
