@@ -98,5 +98,22 @@
     <string name="cd_settings">Ajustes</string>
     <string name="cd_no_tasks">Imagen sin tareas pendientes</string>
 
+    //Task
+    <string name="task_placeholder_title">Reunión de equipo</string>
+    <string name="task_placeholder_desc">Revisión de objetivos semanales</string>
+    <string name="task_placeholder_time">09:00</string>
+    <string name="task_placeholder_duration">1h 30m</string>
+    <string name="task_placeholder_alert_count">1</string>
+    <string name="task_placeholder_frequency">Semanal</string>
+    <string name="task_placeholder_subtasks">Subtareas (1/3)</string>
+    <string name="task_placeholder_tag_category">General</string>
+    <string name="task_placeholder_tag_priority">Alta</string>
+
+    <string name="cd_task_options">Opciones de tarea</string>
+    <string name="cd_repeat_icon">Icono de repetición</string>
+    <string name="cd_alert_icon">Icono de alerta</string>
+    <string name="cd_time_icon">Icono de hora</string>
+    <string name="cd_subtasks_chevron">Desplegar subtareas</string>
+
 
 </resources>
