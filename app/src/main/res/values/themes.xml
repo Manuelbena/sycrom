@@ -26,6 +26,11 @@
 
     <style name="Theme.Sycrom" parent="Base.Theme.Sycrom" />
 
+    <style name="MyPopupMenuStyle" parent="Widget.MaterialComponents.PopupMenu">
+        <item name="android:popupBackground">@drawable/bg_popup_menu</item>
+        <item name="android:textColor">@color/md_theme_onSurface</item>
+    </style>
+
 
     <style name="CalendarWeekDayLegend">
         <item name="android:layout_width">0dp</item>

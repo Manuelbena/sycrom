@@ -14,7 +14,7 @@
 
     <color name="cat_work">#2196F3</color>
     <color name="cat_personal">#4CAF50</color>
-    <color name="cat_health">#E91E63</color>
+    <color name="cat_health">@color/red_500</color>
     <color name="cat_studies">#FF9800</color>
     <color name="cat_finance">#9C27B0</color>
     <color name="cat_default">#607D8B</color>
@@ -33,7 +33,6 @@
     <color name="slate_800">#1E293B</color>
     <color name="slate_900">#0F172A</color>
 
-    <color name="green_500">#22C55E</color>
     <color name="amber_500">#F59E0B</color>
     <color name="blue_500">#3B82F6</color>
     <color name="red_500">#EF4444</color>
@@ -48,7 +47,7 @@
     <color name="bg_home">@color/slate_50</color>
 
     <color name="secondary_text">@color/slate_600</color>
-    <color name="priority_low">@color/slate_500</color>
+    <color name="priority_low">@color/cat_personal</color>
     <color name="priority_high">@color/red_500</color>
 
     <color name="white_alpha_90">#E6FFFFFF</color>
@@ -80,7 +79,7 @@
     <color name="md_theme_outline">#E7E5E4</color>
 
 
-    <color name="priority_medium">#FFC107</color>
+    <color name="priority_medium">@color/cat_studies</color>
 
     <color name="priority_default">#E0E0E0</color>
 
