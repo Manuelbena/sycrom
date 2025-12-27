@@ -34,8 +34,8 @@ import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
 import com.manuelbena.synkron.presentation.taskIA.TaskIaBottomSheet
 import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
 import com.manuelbena.synkron.presentation.util.CarouselScrollListener
-import com.manuelbena.synkron.presentation.util.ADD_TASK // Asegúrate de que existen en Util o Constants
-import com.manuelbena.synkron.presentation.util.TASK_TO_EDIT_KEY // Asegúrate de que existen en Util o Constants
+import com.manuelbena.synkron.presentation.util.ADD_TASK
+import com.manuelbena.synkron.presentation.util.TASK_TO_EDIT_KEY
 import com.manuelbena.synkron.presentation.util.WeekCalendarManager
 import com.manuelbena.synkron.presentation.util.extensions.toDurationString
 import com.manuelbena.synkron.presentation.util.getDurationInMinutes
@@ -54,6 +54,12 @@ import java.util.TimeZone
 class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override val viewModel: HomeViewModel by activityViewModels()
+
+    // --- NUEVO: Variables para guardar la vista ("Cache") ---
+    private var savedBinding: FragmentHomeBinding? = null
+    private var isInitialized = false
+    // --------------------------------------------------------
+
     private var isFabMenuOpen = false
     private lateinit var weekManager: WeekCalendarManager
     private var displayedDate: LocalDate = LocalDate.now()
@@ -69,40 +75,58 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private val taskAdapter = TaskAdapter(
-        onItemClick = { task ->
-            showTaskDetail(task)
-        },
-        onMenuAction = { action ->
-            viewModel.onTaskMenuAction(action)
-        },
-        onTaskCheckedChange = { task, isDone ->
-            viewModel.onTaskCheckedChanged(task, isDone)
-        },
-        onSubTaskChange = { taskId, subTask ->
-            viewModel.onSubTaskChanged(taskId, subTask)
-        }
-    )
+        onItemClick = { task -> showTaskDetail(task) },
+        onMenuAction = { action -> viewModel.onTaskMenuAction(action) },
+        onTaskCheckedChange = { task, isDone -> viewModel.onTaskCheckedChanged(task, isDone) },
+        onSubTaskChange = { taskId, subTask -> viewModel.onSubTaskChanged(taskId, subTask) }
+    ).apply{
+        stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
+    }
 
-
+    // --- MODIFICADO: Lógica de reutilización de vista ---
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentHomeBinding {
-        return FragmentHomeBinding.inflate(inflater, container, false)
+        if (savedBinding == null) {
+            savedBinding = FragmentHomeBinding.inflate(inflater, container, false)
+        } else {
+            // Si ya existe, la desconectamos de su padre anterior para evitar crashes
+            (savedBinding?.root?.parent as? ViewGroup)?.removeView(savedBinding?.root)
+        }
+        return savedBinding!!
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // --- MODIFICADO: Si ya está inicializado, no hacemos nada más ---
+        if (isInitialized) {
+            // Solo nos aseguramos de que el adapter tenga los datos actualizados
+            val currentTasks = viewModel.uiState.value.tasks
+            if (currentTasks.isNotEmpty()) {
+                taskAdapter.submitList(currentTasks)
+            }
+            // Retornamos aquí para evitar re-ejecutar setupRecyclerView, setupCalendar, etc.
+            // Esto es lo que evita el parpadeo: usamos lo que ya estaba en memoria.
+            return
+        }
+
+        // --- Configuración Inicial (Solo se ejecuta la primera vez) ---
         setupButtomFloating()
         setupHeader()
-        // Inicializamos el calendario AQUÍ, antes de llamar a métodos sobre él
         setupCalendar()
         setupRecyclerView()
         setupFabAnimation()
         setupDotIndicatorListener()
+
+        // Marcamos como inicializado
+        isInitialized = true
     }
 
     override fun onResume() {
         super.onResume()
 
-        // 1. Registrar el receiver para cambios de hora/fecha (mantiene la app viva si la dejas abierta)
+        // Como usamos la vista cacheada, los logs deberían mostrar que NO recarga innecesariamente
+        android.util.Log.d("DEBUG_BUG", "onResume Disparado")
+
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_TIME_TICK)
             addAction(Intent.ACTION_DATE_CHANGED)
@@ -110,24 +134,24 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
         requireActivity().registerReceiver(timeUpdateReceiver, filter)
 
-        // 2. 🔥 LÓGICA DE "SIEMPRE HOY" AL ENTRAR 🔥
-        // Esto asegura que si sales y vuelves, o si la app estaba en segundo plano,
-        // siempre aterrices en el día actual, reseteando cualquier navegación previa.
+        val isViewModelDateToday = viewModel.uiState.value.selectedDate == LocalDate.now()
+        val isDisplayDateToday = displayedDate == LocalDate.now()
+        val hasData = viewModel.uiState.value.tasks.isNotEmpty()
 
-        // Forzamos al ViewModel a seleccionar la fecha de hoy
-        viewModel.refreshToToday()
-
-        // 3. Forzamos visualmente al calendario a hacer scroll a hoy
-        // (Esto es útil si estabas viendo otra semana)
-        try {
-            weekManager.scrollToToday()
-        } catch (e: Exception) {
-            // Protección por si el calendario aún no se ha inicializado
+        if (!isViewModelDateToday || !hasData) {
+            android.util.Log.d("DEBUG_BUG", "onResume -> Llamando a refreshToToday()")
+            viewModel.refreshToToday()
+        } else {
+            android.util.Log.d("DEBUG_BUG", "onResume -> NO se llama a refreshToToday()")
         }
 
-        // Actualizamos la variable interna de control
-        displayedDate = java.time.LocalDate.now()
-        setupHeader() // Refresca el texto "Hola Manuel, hoy es..."
+        if (!isDisplayDateToday) {
+            try {
+                weekManager.scrollToToday()
+            } catch (e: Exception) {}
+            displayedDate = LocalDate.now()
+            setupHeader()
+        }
     }
 
     override fun observe() {
@@ -136,11 +160,18 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
-                    if (!isCalendarInitialized) {
-                        // Asegúrate de que 'setupCalendar' existe en WeekCalendarManager (ver mi respuesta anterior)
+
+                    android.util.Log.d("DEBUG_BUG", "Estado Recibido -> isLoading: ${state.isLoading}, Tasks: ${state.tasks.size}, Fecha: ${state.selectedDate}")
+
+                    if (!isCalendarInitialized && !isInitialized) {
+                        // Solo configuramos el calendario si no tenemos la vista cacheada lista
                         weekManager.setupCalendar(state.selectedDate)
                         isCalendarInitialized = true
+                    } else if (isInitialized && !isCalendarInitialized) {
+                        // Si reutilizamos vista, solo marcamos el flag
+                        isCalendarInitialized = true
                     }
+
                     updateUi(state)
                 }
             }
@@ -154,6 +185,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             }
         }
     }
+
+    // ... (Resto de métodos auxiliares igual que antes) ...
+
     private fun setupButtomFloating(){
         binding.fabMain.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_add_buttom)
         binding.fabMain.backgroundTintList = null
@@ -169,23 +203,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun checkDateChange() {
         val currentSystemDate = LocalDate.now()
-
-        // Si la fecha del sistema es diferente a la que estamos mostrando...
         if (currentSystemDate != displayedDate) {
             displayedDate = currentSystemDate
-
-            // 1. Actualizamos el Texto del Header ("Jueves, 5 de Diciembre")
             setupHeader()
-
-            // 2. Movemos el calendario visualmente a Hoy
-            // (Asegúrate de que tu WeekCalendarManager tenga un método para esto o reinícialo)
             try {
-                weekManager.scrollToToday() // O weekManager.selectDate(currentSystemDate)
-            } catch (e: Exception) {
-                // Fallback por si el manager no está listo
-            }
-
-            // 3. Pedimos al ViewModel que cargue las tareas del nuevo día
+                weekManager.scrollToToday()
+            } catch (e: Exception) {}
             viewModel.refreshToToday()
         }
     }
@@ -200,13 +223,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private fun setupCalendar() {
         weekManager = WeekCalendarManager(
             calendarView = binding.weekCalendarView,
-            onDaySelected = { date ->
-                viewModel.onDateSelected(date)
-            },
-            onMonthChanged = { title ->
-                // CORRECCIÓN 1: Actualizamos el TextView del mes/año aquí
-                binding.tvMonthYear.text = title
-            },
+            onDaySelected = { date -> viewModel.onDateSelected(date) },
+            onMonthChanged = { title -> binding.tvMonthYear.text = title },
             requireContext()
         )
         weekManager.generateWeekDays()
@@ -214,21 +232,20 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun updateUi(state: HomeState) {
         binding.progressIndicator.isVisible = state.isLoading
+        val hasTasks = state.tasks.isNotEmpty()
 
-        if (state.isLoading) {
+        if (state.isLoading && !hasTasks) {
             binding.recyclerViewTasks.isVisible = false
             binding.ivNoTasks.isVisible = false
             binding.tvNoTasks.isVisible = false
             binding.tabLayoutDots.isVisible = false
         } else {
-            val hasTasks = state.tasks.isNotEmpty()
-            binding.ivNoTasks.isVisible = !hasTasks
-            binding.tvNoTasks.isVisible = !hasTasks
             binding.recyclerViewTasks.isVisible = hasTasks
             binding.tabLayoutDots.isVisible = hasTasks
+            binding.ivNoTasks.isVisible = !hasTasks && !state.isLoading
+            binding.tvNoTasks.isVisible = !hasTasks && !state.isLoading
 
             taskAdapter.submitList(state.tasks)
-
 
             if (binding.tabLayoutDots.tabCount != state.tasks.size) {
                 binding.tabLayoutDots.removeAllTabs()
@@ -237,6 +254,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                     newTab.setCustomView(R.layout.dot_indicator_layout)
                     binding.tabLayoutDots.addTab(newTab)
                 }
+                val layoutManager = binding.recyclerViewTasks.layoutManager as? LinearLayoutManager
+                val currentPos = layoutManager?.findFirstCompletelyVisibleItemPosition()
+                if (currentPos != null && currentPos != RecyclerView.NO_POSITION && currentPos < binding.tabLayoutDots.tabCount) {
+                    binding.tabLayoutDots.getTabAt(currentPos)?.select()
+                }
             }
 
             if (shouldScrollToStart && hasTasks) {
@@ -244,7 +266,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 shouldScrollToStart = false
             }
         }
-        // Sincronizar visualmente la fecha
         weekManager.selectDate(state.selectedDate)
     }
 
@@ -267,11 +288,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 closeFabMenu()
                 showAiButton()
             }
-
-            btnToday.setOnClickListener {
-                // Navegar a la fecha actual
-                weekManager.scrollToToday()
-            }
+            btnToday.setOnClickListener { weekManager.scrollToToday() }
         }
     }
 
@@ -399,31 +416,20 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         val builder = StringBuilder()
         val startDateCalendar = task.start.toCalendar()
         val durationInMinutes = getDurationInMinutes(task.start, task.end)
-
         val statusEmoji = if (task.isDone) "✅" else "🎯"
         builder.append("$statusEmoji *¡Ojo a esta tarea!* $statusEmoji\n\n")
         builder.append("*${task.summary.uppercase()}*\n\n")
-
         val dateText = SimpleDateFormat("EEEE, dd 'de' MMMM", Locale("es", "ES")).format(startDateCalendar.time)
         builder.append("🗓️ *Cuándo:* ${dateText.replaceFirstChar { it.titlecase(Locale.getDefault()) }}\n")
         builder.append("⏰ *Hora:* ${task.start.toHourString()}\n")
-
-        if (durationInMinutes > 0) {
-            builder.append("⏳ *Duración:* ${durationInMinutes.toDurationString()}\n")
-        }
-        if (!task.location.isNullOrEmpty()) {
-            builder.append("📍 *Lugar:* ${task.location}\n")
-        }
-        if (task.typeTask.isNotEmpty()) {
-            builder.append("🏷️ *Categoría:* ${task.typeTask}\n")
-        }
+        if (durationInMinutes > 0) builder.append("⏳ *Duración:* ${durationInMinutes.toDurationString()}\n")
+        if (!task.location.isNullOrEmpty()) builder.append("📍 *Lugar:* ${task.location}\n")
+        if (task.typeTask.isNotEmpty()) builder.append("🏷️ *Categoría:* ${task.typeTask}\n")
         builder.append("\n")
-
         if (!task.description.isNullOrEmpty()) {
             builder.append("🧐 *El plan:*\n")
             builder.append("${task.description}\n\n")
         }
-
         if (task.subTasks.isNotEmpty()) {
             builder.append("📋 *Los pasos a seguir:*\n")
             task.subTasks.forEach { subtask ->
@@ -437,10 +443,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             builder.append("➕ *¡Añádelo a tu calendario!:*\n")
             builder.append("$calendarLink\n\n")
         } catch (e: Exception) {}
-
         builder.append("--------------------------------\n")
         builder.append("¡Gestionando mi caos con *Synkrón*! 🚀")
-
         return builder.toString()
     }
 
@@ -491,6 +495,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     override fun onDestroyView() {
+        // NO HACEMOS savedBinding = null AQUÍ PARA MANTENER LA VISTA VIVA
         taskDetailBottomSheet = null
         super.onDestroyView()
     }

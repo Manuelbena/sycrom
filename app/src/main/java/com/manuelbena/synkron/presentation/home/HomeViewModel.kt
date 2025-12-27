@@ -52,7 +52,9 @@ class HomeViewModel @Inject constructor(
                 .flatMapLatest { date ->
                     _uiState.update { it.copy(isLoading = true) }
                     flow {
-                        delay(300L)
+                        // ELIMINAR O COMENTAR ESTA LÍNEA:
+                        // delay(300L) <--- ¡Esto es el culpable del parpadeo lento!
+
                         getTaskTodayUseCase(date).collect { tasks ->
                             emit(tasks)
                         }

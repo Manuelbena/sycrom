@@ -358,8 +358,9 @@
                     android:layoutAnimation="@anim/layout_animation_fall_down"
                     android:orientation="horizontal"
                     android:paddingStart="40dp"
+                    android:visibility="invisible"
+                    tools:visibility="visible"
                     android:paddingEnd="40dp"
-                    android:visibility="gone"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_task_today" />
 
