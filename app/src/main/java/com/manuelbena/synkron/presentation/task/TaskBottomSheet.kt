@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.app.TimePickerDialog
 import android.graphics.Color
 import android.os.Bundle
+import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,6 +25,7 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
+import com.google.android.material.timepicker.MaterialTimePicker
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.databinding.FragmentTaskBottomSheetBinding
 import com.manuelbena.synkron.databinding.ItemCategoryRowSelectorBinding
@@ -200,26 +202,20 @@ class TaskBottomSheet : BottomSheetDialogFragment() {
         binding.apply {
             // Resetear estilos (por defecto deseleccionado: borde gris claro, fondo blanco)
             val defaultStroke = Color.parseColor("#EEEEEE")
-            val defaultBg = Color.WHITE
 
-            // Colores de selección (Fondo suave + Borde fuerte)
-            val highBg = Color.parseColor("#FFEBEE") // Rojo muy claro
             val highStroke = Color.parseColor("#D32F2F")
 
-            val mediumBg = Color.parseColor("#FFF8E1") // Ambar muy claro
             val mediumStroke = Color.parseColor("#FBC02D")
 
-            val lowBg = Color.parseColor("#ECEFF1") // Gris azulado claro
-            val lowStroke = Color.parseColor("#607D8B")
+
+            val lowStroke = Color.parseColor("#4CAF50")
 
             // Aplicar estilos según selección
-            cardPriorityHigh.setCardBackgroundColor(if (priority == "Alta") highBg else defaultBg)
+
             cardPriorityHigh.strokeColor = if (priority == "Alta") highStroke else defaultStroke
 
-            cardPriorityMedium.setCardBackgroundColor(if (priority == "Media") mediumBg else defaultBg)
             cardPriorityMedium.strokeColor = if (priority == "Media") mediumStroke else defaultStroke
 
-            cardPriorityLow.setCardBackgroundColor(if (priority == "Baja") lowBg else defaultBg)
             cardPriorityLow.strokeColor = if (priority == "Baja") lowStroke else defaultStroke
         }
     }
@@ -263,8 +259,18 @@ class TaskBottomSheet : BottomSheetDialogFragment() {
             reminderAdapter.submitList(uiReminders)
             binding.rvReminders.isVisible = uiReminders.isNotEmpty()
 
+            val recurrenceText = when (state.recurrenceType) {
+                RecurrenceType.NONE -> "Sin repetir"
+                RecurrenceType.DAILY -> "Todos los días"
+                RecurrenceType.WEEKLY -> "Semanalmente"
+                RecurrenceType.CUSTOM -> "Personalizado"
+                // Añade otros casos si tienes MONTHLY o YEARLY
+                else -> "Sin repetir"
+            }
+            tvRecurrenceStatus.text = recurrenceText
+
             chipGroupDays.isVisible = state.recurrenceType == RecurrenceType.CUSTOM
-            tvRecurrenceStatus.text = state.recurrenceType.name
+
 
             // --- LLAMADA A LA LÓGICA DE PRIORIDAD VISUAL ---
             updatePriorityUI(state.priority)
@@ -301,20 +307,53 @@ class TaskBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun setupDateTimePickers() {
+        // --- FECHA (DatePicker) ---
         binding.btnFecha.setOnClickListener {
             val currentState = viewModel.state.value ?: return@setOnClickListener
-            val picker = MaterialDatePicker.Builder.datePicker().setSelection(currentState.selectedDate.timeInMillis).setTitleText("Fecha").build()
+
+            val picker = MaterialDatePicker.Builder.datePicker()
+                .setSelection(currentState.selectedDate.timeInMillis)
+                .setTitleText("Seleccionar fecha")
+                .setTheme(R.style.ThemeOverlay_App_DatePicker) // <--- APLICAMOS EL TEMA AQUÍ
+                .build()
+
             picker.addOnPositiveButtonClickListener { viewModel.onEvent(TaskEvent.OnDateSelected(it)) }
             picker.show(childFragmentManager, "DATE")
         }
+
+        // --- HORA INICIO (TimePicker) ---
         binding.btnHoraStart.setOnClickListener {
             val currentState = viewModel.state.value ?: return@setOnClickListener
-            showTimePicker(currentState.startTime) { h, m -> viewModel.onEvent(TaskEvent.OnStartTimeSelected(h, m)) }
+            showMaterialTimePicker(currentState.startTime) { h, m ->
+                viewModel.onEvent(TaskEvent.OnStartTimeSelected(h, m))
+            }
         }
+
+        // --- HORA FIN (TimePicker) ---
         binding.btnHoraEnd.setOnClickListener {
             val currentState = viewModel.state.value ?: return@setOnClickListener
-            showTimePicker(currentState.endTime) { h, m -> viewModel.onEvent(TaskEvent.OnEndTimeSelected(h, m)) }
+            showMaterialTimePicker(currentState.endTime) { h, m ->
+                viewModel.onEvent(TaskEvent.OnEndTimeSelected(h, m))
+            }
         }
+    }
+
+    // Nueva función auxiliar que usa MaterialTimePicker en lugar del antiguo TimePickerDialog
+    private fun showMaterialTimePicker(cal: Calendar, onTimeSelected: (Int, Int) -> Unit) {
+        val picker = MaterialTimePicker.Builder()
+            .setTimeFormat(com.google.android.material.timepicker.TimeFormat.CLOCK_24H)
+            .setHour(cal.get(Calendar.HOUR_OF_DAY))
+            .setMinute(cal.get(Calendar.MINUTE))
+            .setTitleText("Seleccionar hora")
+            .setTheme(R.style.ThemeOverlay_App_TimePicker) // <--- APLICAMOS EL TEMA AQUÍ
+            .setInputMode(com.google.android.material.timepicker.MaterialTimePicker.INPUT_MODE_CLOCK)
+            .build()
+
+        picker.addOnPositiveButtonClickListener {
+            onTimeSelected(picker.hour, picker.minute)
+        }
+
+        picker.show(childFragmentManager, "TIME")
     }
 
     private fun showTimePicker(cal: Calendar, onTimeSelected: (Int, Int) -> Unit) {
@@ -355,9 +394,23 @@ class TaskBottomSheet : BottomSheetDialogFragment() {
 
     private fun showRecurrenceOptionsDialog() {
         val ops = arrayOf("No se repite", "Todos los días", "Semanalmente", "Personalizado")
-        MaterialAlertDialogBuilder(requireContext()).setTitle("Repetir").setItems(ops) { _, w ->
-            viewModel.onEvent(TaskEvent.OnRecurrenceTypeSelected(when(w){1->RecurrenceType.DAILY;2->RecurrenceType.WEEKLY;3->RecurrenceType.CUSTOM;else->RecurrenceType.NONE}))
-        }.show()
+
+        // AÑADIDO: Pasamos el tema personalizado en el constructor
+        MaterialAlertDialogBuilder(requireContext(), R.style.ThemeOverlay_App_MaterialAlertDialog)
+            .setTitle("Repetir")
+            .setItems(ops) { _, w ->
+                viewModel.onEvent(
+                    TaskEvent.OnRecurrenceTypeSelected(
+                        when (w) {
+                            1 -> RecurrenceType.DAILY
+                            2 -> RecurrenceType.WEEKLY
+                            3 -> RecurrenceType.CUSTOM
+                            else -> RecurrenceType.NONE
+                        }
+                    )
+                )
+            }
+            .show()
     }
 
     private fun hideKeyboard() {

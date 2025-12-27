@@ -21,6 +21,7 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
+import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentNewTaskBinding
 import com.manuelbena.synkron.databinding.ItemCategoryRowSelectorBinding
@@ -336,8 +337,18 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
             reminderAdapter.submitList(uiReminders)
             binding.rvReminders.isVisible = uiReminders.isNotEmpty()
 
+
+            val recurrenceText = when (state.recurrenceType) {
+                RecurrenceType.NONE -> "Sin repetir"
+                RecurrenceType.DAILY -> "Todos los días"
+                RecurrenceType.WEEKLY -> "Semanalmente"
+                RecurrenceType.CUSTOM -> "Personalizado"
+                // Añade otros casos si tienes MONTHLY o YEARLY
+                else -> "Sin repetir"
+            }
+            tvRecurrenceStatus.text = recurrenceText
             chipGroupDays.isVisible = state.recurrenceType == RecurrenceType.CUSTOM
-            tvRecurrenceStatus.text = state.recurrenceType.name
+
 
             val pId = when(state.priority) { "Alta" -> com.manuelbena.synkron.R.id.chip_hight; "Baja" -> com.manuelbena.synkron.R.id.chip_small; else -> com.manuelbena.synkron.R.id.chip_medium }
             if (chipGroupPriorityTask.checkedChipId != pId) chipGroupPriorityTask.check(pId)
@@ -346,8 +357,22 @@ class TaskFragment : BaseFragment<FragmentNewTaskBinding, TaskViewModel>() {
 
     private fun showRecurrenceOptionsDialog() {
         val ops = arrayOf("No se repite", "Todos los días", "Semanalmente", "Personalizado")
-        MaterialAlertDialogBuilder(requireContext()).setTitle("Repetir").setItems(ops) { _, w ->
-            viewModel.onEvent(TaskEvent.OnRecurrenceTypeSelected(when(w){1->RecurrenceType.DAILY;2->RecurrenceType.WEEKLY;3->RecurrenceType.CUSTOM;else->RecurrenceType.NONE}))
-        }.show()
+
+        // AÑADIDO: Pasamos el tema personalizado en el constructor
+        MaterialAlertDialogBuilder(requireContext(), R.style.ThemeOverlay_App_MaterialAlertDialog)
+            .setTitle("Repetir")
+            .setItems(ops) { _, w ->
+                viewModel.onEvent(
+                    TaskEvent.OnRecurrenceTypeSelected(
+                        when (w) {
+                            1 -> RecurrenceType.DAILY
+                            2 -> RecurrenceType.WEEKLY
+                            3 -> RecurrenceType.CUSTOM
+                            else -> RecurrenceType.NONE
+                        }
+                    )
+                )
+            }
+            .show()
     }
 }
