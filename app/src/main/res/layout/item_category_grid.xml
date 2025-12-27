@@ -45,10 +45,10 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:ellipsize="end"
-        android:fontFamily="@font/nunito"
+        android:fontFamily="@font/nunitobold"
         android:gravity="center"
         android:maxLines="1"
-        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textColor="@color/md_theme_onSurface"
         android:textSize="12sp"
         tools:text="Trabajo" />
 

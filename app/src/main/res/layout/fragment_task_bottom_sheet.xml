@@ -38,7 +38,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/secondary_text" />
+            app:tint="@color/md_theme_onSurface" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
@@ -59,7 +59,7 @@
             android:layout_height="4dp"
             android:layout_marginEnd="@dimen/spacing_small"
             android:layout_weight="1"
-            android:background="@color/purple_600" />
+            android:background="@color/color_primary" />
 
         <View
             android:id="@+id/indicator_step_2"
@@ -80,7 +80,7 @@
     <com.google.android.material.divider.MaterialDivider
         android:id="@+id/divider_header"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/divider_height"
+        android:layout_height="1dp"
         app:dividerColor="@color/border"
         app:layout_constraintTop_toBottomOf="@id/progress_indicator_container" />
 
@@ -117,8 +117,10 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:boxStrokeColor="@color/purple_600"
                     app:boxBackgroundColor="@color/color_card"
+                    app:boxStrokeColor="@color/color_primary"
+                    app:boxStrokeWidth="1dp"
+                    app:boxStrokeWidthFocused="2dp"
                     app:hintEnabled="false">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -147,8 +149,10 @@
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:boxStrokeColor="@color/purple_600"
                     app:boxBackgroundColor="@color/color_card"
+                    app:boxStrokeColor="@color/color_primary"
+                    app:boxStrokeWidth="1dp"
+                    app:boxStrokeWidthFocused="2dp"
                     app:hintEnabled="false">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -204,7 +208,7 @@
                         app:cardBackgroundColor="@color/color_card"
                         app:cardCornerRadius="@dimen/card_corner_radius"
                         app:cardElevation="0dp"
-                        app:strokeColor="#FFCDD2"
+                        app:strokeColor="@color/border"
                         app:strokeWidth="1dp">
 
                         <LinearLayout
@@ -244,7 +248,7 @@
                         app:cardBackgroundColor="@color/color_card"
                         app:cardCornerRadius="@dimen/card_corner_radius"
                         app:cardElevation="0dp"
-                        app:strokeColor="#FFE082"
+                        app:strokeColor="@color/border"
                         app:strokeWidth="1dp">
 
                         <LinearLayout
@@ -284,7 +288,7 @@
                         app:cardBackgroundColor="@color/color_card"
                         app:cardCornerRadius="@dimen/card_corner_radius"
                         app:cardElevation="0dp"
-                        app:strokeColor="#CFD8DC"
+                        app:strokeColor="@color/border"
                         app:strokeWidth="1dp">
 
                         <LinearLayout
@@ -328,8 +332,8 @@
                     android:layout_marginBottom="@dimen/spacing_medium"
                     android:background="@android:color/transparent"
                     app:tabIconTint="@color/secondary_text"
-                    app:tabIndicatorColor="@color/purple_600"
-                    app:tabSelectedTextColor="@color/purple_600"
+                    app:tabIndicatorColor="@color/color_primary"
+                    app:tabSelectedTextColor="@color/color_primary"
                     app:tabTextColor="@color/secondary_text">
 
                     <com.google.android.material.tabs.TabItem
@@ -378,7 +382,8 @@
                         android:textColor="@color/secondary_text"
                         app:icon="@drawable/ic_calendar_today"
                         app:iconTint="@color/secondary_text"
-                        app:strokeColor="@color/border" />
+                        app:strokeColor="@color/border"
+                        app:strokeWidth="1dp" />
 
                     <LinearLayout
                         android:id="@+id/container_datetime"
@@ -400,7 +405,8 @@
                             android:textColor="@color/secondary_text"
                             app:icon="@drawable/ic_access_time"
                             app:iconTint="@color/secondary_text"
-                            app:strokeColor="@color/border" />
+                            app:strokeColor="@color/border"
+                            app:strokeWidth="1dp" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnHoraEnd"
@@ -408,14 +414,15 @@
                             android:layout_width="0dp"
                             android:layout_height="@dimen/button_height"
                             android:layout_marginStart="@dimen/spacing_tiny"
-                            android:backgroundTint="@color/color_card"
                             android:layout_weight="1"
+                            android:backgroundTint="@color/color_card"
                             android:fontFamily="@font/nunitregular"
                             android:text="--:--"
                             android:textColor="@color/secondary_text"
                             app:icon="@drawable/ic_access_time"
                             app:iconTint="@color/secondary_text"
-                            app:strokeColor="@color/border" />
+                            app:strokeColor="@color/border"
+                            app:strokeWidth="1dp" />
                     </LinearLayout>
                 </LinearLayout>
 
@@ -435,7 +442,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:boxBackgroundColor="@color/color_card"
-                    app:boxStrokeColor="@color/purple_600"
+                    app:boxStrokeColor="@color/color_primary"
+                    app:boxStrokeWidth="1dp"
+                    app:boxStrokeWidthFocused="2dp"
                     app:startIconTint="@color/md_theme_onSurface"
                     app:hintEnabled="false"
                     app:startIconDrawable="@drawable/ic_location">
@@ -473,7 +482,9 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         app:boxBackgroundColor="@color/color_card"
-                        app:boxStrokeColor="@color/purple_600"
+                        app:boxStrokeColor="@color/color_primary"
+                        app:boxStrokeWidth="1dp"
+                        app:boxStrokeWidthFocused="2dp"
                         app:hintEnabled="false">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -496,7 +507,7 @@
                         android:insetTop="0dp"
                         android:insetRight="0dp"
                         android:insetBottom="0dp"
-                        app:iconTint="@color/secondary_text"
+                        app:iconTint="@color/white"
                         app:icon="@drawable/ic_add"
                         app:iconGravity="textStart"
                         app:iconPadding="0dp"
@@ -594,79 +605,6 @@
                             android:tag="1"
                             android:text="Lun"
                             app:chipCornerRadius="20dp" />
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip_mar"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:backgroundTint="@color/color_card"
-                            android:textColor="@color/chip_text_selector"
-                            app:chipStrokeColor="@color/chip_border_selector"
-                            app:chipStrokeWidth="1dp"
-                            android:tag="2"
-                            android:text="Mar"
-                            app:chipCornerRadius="20dp" />
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip_mie"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:backgroundTint="@color/color_card"
-                            android:textColor="@color/chip_text_selector"
-                            app:chipStrokeColor="@color/chip_border_selector"
-                            app:chipStrokeWidth="1dp"
-                            android:tag="3"
-                            android:text="Mie"
-                            app:chipCornerRadius="20dp" />
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip_jue"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:backgroundTint="@color/color_card"
-                            android:textColor="@color/chip_text_selector"
-                            app:chipStrokeColor="@color/chip_border_selector"
-                            app:chipStrokeWidth="1dp"
-                            android:tag="4"
-                            android:text="Jue"
-                            app:chipCornerRadius="20dp" />
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip_vie"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:backgroundTint="@color/color_card"
-                            android:textColor="@color/chip_text_selector"
-                            app:chipStrokeColor="@color/chip_border_selector"
-                            app:chipStrokeWidth="1dp"
-                            android:tag="5"
-                            android:text="Vie"
-                            app:chipCornerRadius="20dp" />
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip_sab"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:backgroundTint="@color/color_card"
-                            android:textColor="@color/chip_text_selector"
-                            app:chipStrokeColor="@color/chip_border_selector"
-                            app:chipStrokeWidth="1dp"
-                            android:tag="6"
-                            android:text="Sab"
-                            app:chipCornerRadius="20dp" />
-                        <com.google.android.material.chip.Chip
-                            android:id="@+id/chip_dom"
-                            style="@style/Widget.MaterialComponents.Chip.Choice"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:backgroundTint="@color/color_card"
-                            android:textColor="@color/chip_text_selector"
-                            app:chipStrokeColor="@color/chip_border_selector"
-                            app:chipStrokeWidth="1dp"
-                            android:tag="7"
-                            android:text="Dom"
-                            app:chipCornerRadius="20dp" />
-
                     </com.google.android.material.chip.ChipGroup>
                 </LinearLayout>
 

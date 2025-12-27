@@ -4,16 +4,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/colorSurfaceVariant"
-    app:cardBackgroundColor="?attr/colorSurfaceVariant"
-    android:layout_marginVertical="4dp">
+    android:layout_marginTop="@dimen/spacing_medium"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="@color/color_card"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/border"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
-        android:padding="8dp">
+        android:padding="16dp">
 
         <!-- Icono para arrastrar (Drag Handle) -->
         <ImageView
@@ -23,6 +28,7 @@
             android:layout_marginEnd="8dp"
             android:contentDescription="Arrastrar para reordenar"
             android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/md_theme_onSurface"
             app:srcCompat="@drawable/ic_drag_handle" /> <!-- Necesitarás este icono -->
 
         <TextView
@@ -32,7 +38,7 @@
             android:layout_weight="1"
             android:textSize="@dimen/text_body_large"
             android:text="Texto de la subtarea"
-            android:textAppearance="?attr/textAppearanceBodyLarge" />
+            android:textAppearance="@color/md_theme_onSurface" />
 
         <!-- Botón para eliminar -->
         <ImageButton
@@ -40,6 +46,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            app:tint="@color/md_theme_onSurface"
             android:contentDescription="Eliminar subtarea"
             android:background="?attr/selectableItemBackgroundBorderless"
             app:srcCompat="@drawable/ic_close" /> <!-- Necesitarás este icono -->

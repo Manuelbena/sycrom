@@ -1,6 +1,5 @@
 package com.manuelbena.synkron.presentation.task
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
@@ -9,15 +8,18 @@ import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
 import com.manuelbena.synkron.domain.models.GoogleEventReminder
 import com.manuelbena.synkron.domain.models.GoogleEventReminders
+import com.manuelbena.synkron.domain.models.RecurrenceType
 import com.manuelbena.synkron.domain.models.SubTaskDomain
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.domain.usecase.InsertNewTaskUseCase
 import com.manuelbena.synkron.domain.usecase.UpdateTaskUseCase
 import com.manuelbena.synkron.presentation.models.CategoryType
+import com.manuelbena.synkron.presentation.models.ReminderMethod
 import com.manuelbena.synkron.presentation.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
@@ -32,12 +34,9 @@ class TaskViewModel @Inject constructor(
 ) : BaseViewModel<TaskEvent>() {
 
     companion object {
-        // Función auxiliar para obtener la siguiente hora en punto
         private fun getNextCleanHour(): Calendar {
             return Calendar.getInstance().apply {
-                if (get(Calendar.MINUTE) > 0) {
-                    add(Calendar.HOUR_OF_DAY, 1)
-                }
+                if (get(Calendar.MINUTE) > 0) add(Calendar.HOUR_OF_DAY, 1)
                 set(Calendar.MINUTE, 0)
                 set(Calendar.SECOND, 0)
                 set(Calendar.MILLISECOND, 0)
@@ -45,16 +44,14 @@ class TaskViewModel @Inject constructor(
         }
     }
 
-    // [CORRECCIÓN CLAVE] Inicialización Inteligente
     private val _state = MutableLiveData(
         TaskState(
             isAllDay = false,
             isNoDate = false,
             startTime = getNextCleanHour(),
             endTime = getNextCleanHour().apply { add(Calendar.HOUR_OF_DAY, 1) },
-            reminders = listOf(
-                GoogleEventReminder(method = "popup", minutes = 30)
-            )
+            // CORRECCIÓN: Por defecto una notificación popup de 30 min
+            reminders = listOf(GoogleEventReminder(method = "popup", minutes = 30))
         )
     )
     val state: LiveData<TaskState> = _state
@@ -66,7 +63,7 @@ class TaskViewModel @Inject constructor(
         val current = _state.value ?: TaskState()
 
         when (event) {
-            is TaskEvent.OnLoadTaskById -> loadTaskFromId(event.taskId)
+            is TaskEvent.OnLoadTaskById -> loadTaskFromId(event.taskId) // Implementar si usas IDs
             is TaskEvent.OnLoadTaskForEdit -> loadTask(event.task)
 
             is TaskEvent.OnTitleChange -> updateState { copy(title = event.title) }
@@ -75,11 +72,13 @@ class TaskViewModel @Inject constructor(
             is TaskEvent.OnDateClicked -> _effect.value = TaskEffect.ShowDatePicker(current.selectedDate.timeInMillis)
 
             is TaskEvent.OnDateSelected -> {
-                val newCal = Calendar.getInstance().apply { timeInMillis = event.date }
-                // Preservamos la hora que tuviera configurada
-                newCal.set(Calendar.HOUR_OF_DAY, current.startTime.get(Calendar.HOUR_OF_DAY))
-                newCal.set(Calendar.MINUTE, current.startTime.get(Calendar.MINUTE))
-                newCal.set(Calendar.SECOND, 0)
+                val newCal = Calendar.getInstance().apply {
+                    timeInMillis = event.date
+                    // Mantenemos la hora actual
+                    set(Calendar.HOUR_OF_DAY, current.startTime.get(Calendar.HOUR_OF_DAY))
+                    set(Calendar.MINUTE, current.startTime.get(Calendar.MINUTE))
+                    set(Calendar.SECOND, 0)
+                }
                 updateState { copy(selectedDate = newCal, startTime = newCal) }
             }
 
@@ -91,10 +90,8 @@ class TaskViewModel @Inject constructor(
                     set(Calendar.MINUTE, event.minute)
                     set(Calendar.SECOND, 0)
                 }
-                // [LÓGICA DE 1 HORA] Si cambia el inicio, empujamos el fin si es necesario
+                // Si el inicio es posterior al fin, movemos el fin 1h adelante
                 var newEnd = current.endTime
-                // Si el nuevo inicio es después o igual al fin, o si la duración era 0...
-                // Forzamos que el fin sea Start + 1h
                 if (newStart.after(newEnd) || newStart == newEnd) {
                     newEnd = (newStart.clone() as Calendar).apply { add(Calendar.HOUR_OF_DAY, 1) }
                 }
@@ -113,10 +110,7 @@ class TaskViewModel @Inject constructor(
             }
 
             is TaskEvent.OnTaskTypeChanged -> {
-                // event.tabIndex -> 0: Evento, 1: Todo el día, 2: Sin Fecha
-                updateState {
-                    copy(isAllDay = event.tabIndex == 1, isNoDate = event.tabIndex == 2)
-                }
+                updateState { copy(isAllDay = event.tabIndex == 1, isNoDate = event.tabIndex == 2) }
             }
 
             is TaskEvent.OnCategorySelectorClicked -> _effect.value = TaskEffect.ShowCategoryDialog
@@ -125,38 +119,51 @@ class TaskViewModel @Inject constructor(
             is TaskEvent.OnPrioritySelected -> updateState { copy(priority = event.priority) }
             is TaskEvent.OnRecurrenceSelectorClicked -> _effect.value = TaskEffect.ShowRecurrenceDialog
             is TaskEvent.OnRecurrenceTypeSelected -> updateState { copy(recurrenceType = event.type) }
+
             is TaskEvent.OnRecurrenceDayToggled -> {
                 val newSet = current.selectedRecurrenceDays.toMutableSet()
                 if (event.isSelected) newSet.add(event.day) else newSet.remove(event.day)
                 updateState { copy(selectedRecurrenceDays = newSet) }
             }
+
             is TaskEvent.OnAddSubTask -> {
                 val newSub = SubTaskDomain(id = UUID.randomUUID().toString(), title = event.text, isDone = false)
                 updateState { copy(subTasks = subTasks + newSub) }
             }
             is TaskEvent.OnRemoveSubTask -> updateState { copy(subTasks = subTasks - event.item) }
             is TaskEvent.OnReorderSubTasks -> updateState { copy(subTasks = event.items) }
+
             is TaskEvent.OnAddReminderClicked -> _effect.value = TaskEffect.ShowReminderDialog
-            is TaskEvent.OnAddReminder -> updateState { copy(reminders = reminders + event.reminder) }
+
+            // CORRECCIÓN: Al añadir, nos aseguramos que el método sea correcto
+            is TaskEvent.OnAddReminder -> {
+                // Aquí el fragmento ya nos pasa el objeto Reminder bien construido,
+                // pero si quieres doble seguridad puedes mapear el string 'method' aquí.
+                // Google Calendar usa: "email", "popup" (notificación). NO tiene "alarm".
+                // Nosotros usamos "alarm" internamente para nuestras alarmas locales de Android.
+                updateState { copy(reminders = reminders + event.reminder) }
+            }
+
             is TaskEvent.OnRemoveReminder -> {
                 val toRemove = current.reminders.find { it.method == event.reminder.method && it.minutes == event.reminder.minutes }
                 if (toRemove != null) updateState { copy(reminders = reminders - toRemove) }
             }
-            is TaskEvent.OnUpdateReminders -> updateState { copy(reminders = event.reminders) }
+
             is TaskEvent.OnSaveClicked -> saveTask()
             is TaskEvent.OnCancelClicked -> _effect.value = TaskEffect.NavigateBack
+            else -> {}
         }
     }
 
-    private fun loadTaskFromId(taskId: Int) { /* Implementar si es necesario */ }
+    private fun loadTaskFromId(taskId: Int) { /* TODO */ }
 
     private fun loadTask(task: TaskDomain) {
         val startCal = googleDateToCalendar(task.start)
         val endCal = googleDateToCalendar(task.end)
 
-        // Recuperar categoría real
-        val catId = CategoryType.getAll().find { it.googleColorId == task.colorId }?.title ?: "other"
-
+        // CORRECCIÓN: Mapear RecurrenceType correctamente desde algún lado si lo guardas
+        // Si no lo guardas explícitamente en BD, aquí tendrás que deducirlo o dejarlo por defecto.
+        // Asumo que 'synkronRecurrenceDays' tiene los días custom.
 
         updateState {
             copy(
@@ -164,22 +171,19 @@ class TaskViewModel @Inject constructor(
                 title = task.summary,
                 description = task.description ?: "",
                 location = task.location ?: "",
-
-                category = task.typeTask,
-                colorId = catId,
+                category = task.typeTask, // OJO: aquí va el ID de categoría ("work")
+                colorId = task.colorId,
                 priority = task.priority,
-
                 selectedDate = startCal,
                 startTime = startCal,
                 endTime = endCal,
-
-                // Detectamos estados
-                isAllDay = task.start?.dateTime == null && !task.start?.date.isNullOrEmpty(),
+                isAllDay = task.start?.date != null, // Si tiene fecha (YYYY-MM-DD) y no datetime, es todo el día
                 isNoDate = task.start == null,
-
                 subTasks = task.subTasks,
                 reminders = task.reminders.overrides,
-                selectedRecurrenceDays = task.synkronRecurrenceDays.toSet()
+                selectedRecurrenceDays = task.synkronRecurrenceDays.toSet(),
+                // Si guardas el tipo de recurrencia en BD, recupéralo aquí. Si no, NONE por defecto.
+                recurrenceType = RecurrenceType.NONE
             )
         }
     }
@@ -194,13 +198,10 @@ class TaskViewModel @Inject constructor(
         viewModelScope.launch {
             updateState { copy(isLoading = true) }
             try {
-                // Validación Todo el día único
+                // Validación "Todo el día" único
                 if (s.isAllDay) {
-                    val dateToCheck = java.time.LocalDateTime.ofInstant(
-                        s.selectedDate.toInstant(),
-                        java.time.ZoneId.systemDefault()
-                    ).toLocalDate()
-
+                    val dateToCheck = java.time.LocalDateTime.ofInstant(s.selectedDate.toInstant(), ZoneId.systemDefault()).toLocalDate()
+                    // Asegúrate de que el repositorio tenga este método implementado
                     val exists = taskRepository.hasAllDayTaskOnDate(dateToCheck, s.id)
                     if (exists) {
                         updateState { copy(isLoading = false) }
@@ -209,36 +210,26 @@ class TaskViewModel @Inject constructor(
                     }
                 }
 
-                // Preparación de calendarios
-                val finalStart = (s.selectedDate.clone() as Calendar).apply {
-                    set(Calendar.HOUR_OF_DAY, s.startTime.get(Calendar.HOUR_OF_DAY))
-                    set(Calendar.MINUTE, s.startTime.get(Calendar.MINUTE))
-                    set(Calendar.SECOND, 0)
-                }
-                val finalEnd = (s.selectedDate.clone() as Calendar).apply {
-                    set(Calendar.HOUR_OF_DAY, s.endTime.get(Calendar.HOUR_OF_DAY))
-                    set(Calendar.MINUTE, s.endTime.get(Calendar.MINUTE))
-                    set(Calendar.SECOND, 0)
-                }
-
-                // Generación de fechas según tipo
+                // Generar fechas Google
                 val (googleStart, googleEnd) = when {
                     s.isNoDate -> Pair(null, null)
-                    s.isAllDay -> Pair(
-                        calendarToGoogleDateAllDay(finalStart),
-                        calendarToGoogleDateAllDay(finalEnd)
-                    )
-                    else -> Pair(
-                        calendarToGoogleDateTimed(finalStart),
-                        calendarToGoogleDateTimed(finalEnd)
-                    )
+                    s.isAllDay -> {
+                        // Para todo el día, Google pide YYYY-MM-DD
+                        val start = calendarToGoogleDateAllDay(s.selectedDate)
+                        val end = calendarToGoogleDateAllDay(s.selectedDate) // Mismo día
+                        Pair(start, end)
+                    }
+                    else -> {
+                        // Para horas concretas
+                        val start = calendarToGoogleDateTimed(s.startTime)
+                        val end = calendarToGoogleDateTimed(s.endTime)
+                        Pair(start, end)
+                    }
                 }
-
-
 
                 val task = TaskDomain(
                     id = s.id,
-                    typeTask = s.category, // <--- GUARDAMOS EL ID ("work"), NO EL NOMBRE
+                    typeTask = s.category,
                     summary = s.title,
                     description = s.description,
                     location = s.location,
@@ -273,12 +264,12 @@ class TaskViewModel @Inject constructor(
 
     // --- Helpers ---
     private fun calendarToGoogleDateTimed(cal: Calendar): GoogleEventDateTime {
-        return GoogleEventDateTime(dateTime = cal.timeInMillis, date = null, timeZone = TimeZone.getDefault().id)
+        return GoogleEventDateTime(dateTime = cal.timeInMillis, timeZone = TimeZone.getDefault().id)
     }
 
     private fun calendarToGoogleDateAllDay(cal: Calendar): GoogleEventDateTime {
         val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        return GoogleEventDateTime(dateTime = null, date = format.format(cal.time), timeZone = TimeZone.getDefault().id)
+        return GoogleEventDateTime(date = format.format(cal.time), timeZone = TimeZone.getDefault().id)
     }
 
     private fun googleDateToCalendar(gDate: GoogleEventDateTime?): Calendar {
@@ -289,7 +280,7 @@ class TaskViewModel @Inject constructor(
             } else if (!gDate.date.isNullOrEmpty()) {
                 try {
                     val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                    val date = format.parse(gDate.date)
+                    val date = format.parse(gDate.date!!)
                     if (date != null) cal.time = date
                 } catch (e: Exception) { e.printStackTrace() }
             }

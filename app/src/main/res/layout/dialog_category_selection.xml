@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:layout_margin="24dp"
     app:cardCornerRadius="24dp"
-    app:cardBackgroundColor="@android:color/white"
+    app:cardBackgroundColor="@color/md_theme_surface"
     app:cardElevation="8dp">
 
     <LinearLayout
@@ -23,8 +23,8 @@
             android:gravity="center"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="@color/background_primary"
-            android:fontFamily="@font/nunito"
+            android:textColor="@color/color_primary"
+            android:fontFamily="@font/nunitobold"
             android:layout_marginBottom="24dp"/>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -56,7 +56,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="CERRAR"
-            android:textColor="#FF9800"
+            android:fontFamily="@font/nunitobold"
+            android:textColor="@color/md_theme_onSurface"
             android:textStyle="bold"/>
 
     </LinearLayout>

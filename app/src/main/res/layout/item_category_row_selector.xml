@@ -1,73 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/containerCategorySelector"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="?attr/selectableItemBackground"
-    android:paddingVertical="16dp"
-    android:paddingHorizontal="4dp">
+    android:layout_marginTop="@dimen/spacing_medium"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="@color/color_card"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="0dp"
+    app:strokeColor="@color/border"
+    app:strokeWidth="1dp">
 
-    <ImageView
-        android:id="@+id/ivCategoryLabelIcon"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:contentDescription="@null"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:tint="?attr/colorOnSurfaceVariant"
-        android:src="@drawable/ic_dashboard_black_24dp" />
-
-    <TextView
-        android:id="@+id/tvCategoryLabel"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:text="Categoría"
-        android:textSize="@dimen/text_body_large"
-        android:textColor="?attr/colorOnSurfaceVariant"
-        android:fontFamily="@font/nunito"
-        app:layout_constraintStart_toEndOf="@+id/ivCategoryLabelIcon"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        tools:ignore="HardcodedText,SpUsage" />
-
-    <FrameLayout
-        android:id="@+id/flSelectedCategoryIcon"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
-
-        <View
-            android:id="@+id/viewSelectedCategoryBackground"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@drawable/shape_circle_category" />
+        android:paddingHorizontal="@dimen/spacing_large"
+        android:paddingVertical="16dp">
 
         <ImageView
-            android:id="@+id/ivSelectedCategoryIcon"
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:layout_gravity="center"
-            app:tint="@android:color/white"
-            tools:src="@drawable/ic_clock" />
-    </FrameLayout>
+            android:id="@+id/ivCategoryLabelIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:contentDescription="@null"
+            app:tint="@color/md_theme_onSurface"
+            android:src="@drawable/ic_dashboard_black_24dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/tvSelectedCategoryName"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
-        tools:text="Tarea"
-        android:textSize="@dimen/text_body_large"
-        android:textStyle="bold"
-        android:fontFamily="@font/nunito"
-        app:layout_constraintEnd_toStartOf="@+id/flSelectedCategoryIcon"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        <TextView
+            android:id="@+id/tvCategoryLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:fontFamily="@font/nunitobold"
+            android:text="Categoría"
+            android:textColor="@color/md_theme_onSurface"
+            android:textSize="@dimen/text_body"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/ivCategoryLabelIcon"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="HardcodedText" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <TextView
+            android:id="@+id/tvSelectedCategoryName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:fontFamily="@font/nunitosemibold"
+            android:textColor="@color/md_theme_onSurface"
+            android:textSize="@dimen/text_body"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/flSelectedCategoryIcon"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Tarea" />
+
+        <FrameLayout
+            android:id="@+id/flSelectedCategoryIcon"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <View
+                android:id="@+id/viewSelectedCategoryBackground"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/shape_circle_category" />
+
+            <ImageView
+                android:id="@+id/ivSelectedCategoryIcon"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                app:tint="@android:color/white"
+                tools:src="@drawable/ic_clock" />
+        </FrameLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

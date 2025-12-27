@@ -15,7 +15,7 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:layout_marginEnd="16dp"
-        app:tint="?attr/colorOnSurfaceVariant"
+        app:tint="@color/md_theme_onSurface"
         tools:src="@drawable/ic_notifications_black_24dp"/>
 
     <LinearLayout
@@ -29,7 +29,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="10 minutos antes"
-            android:textColor="?attr/colorOnSurface"
+            android:fontFamily="@font/nunitobold"
+            android:textColor="@color/md_theme_onSurface"
             android:textSize="@dimen/text_body_large"/>
 
         <TextView
@@ -37,8 +38,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="Notificación"
-            android:textColor="?attr/colorOnSurfaceVariant"
-            android:textSize="@dimen/spacing_s"/>
+            android:fontFamily="@font/nunitregular"
+            android:textColor="@color/md_theme_onSurface"
+            android:textSize="@dimen/spacing_m"/>
     </LinearLayout>
 
     <ImageView
@@ -46,7 +48,7 @@
         android:layout_width="24dp"
         android:layout_height="24dp"
         android:src="@drawable/ic_close"
-        app:tint="?attr/colorOnSurfaceVariant"
+        app:tint="@color/md_theme_onSurface"
         android:padding="4dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:clickable="true"

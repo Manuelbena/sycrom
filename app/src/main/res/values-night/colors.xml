@@ -19,7 +19,7 @@
 
     <color name="color_card">@color/slate_800</color>
     <color name="color_body">@color/slate_700</color>
-    <color name="border">@color/slate_700</color>
+    <color name="border">@color/slate_600</color>
 
     <color name="color_primary">@color/violet_500</color>
     <color name="md_theme_surface">@color/slate_900</color>

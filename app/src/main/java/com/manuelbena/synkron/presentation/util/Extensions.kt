@@ -124,11 +124,12 @@ fun String.getCategoryIcon(): Int {
 
 fun String.getCategoryGradientDrawable(): Int {
     return when (this.uppercase()) {
-        "WORK", "TRABAJO" -> R.drawable.bg_add_buttom // Asegúrate de crearlos
-        "PERSONAL" -> R.drawable.bg_add_buttom
-        "HEALTH", "SALUD" -> R.drawable.bg_add_buttom
-        "FINANCE", "DINERO" -> R.drawable.bg_add_buttom
-        else -> R.drawable.bg_add_buttom // Tu bg_add_button original
+        "WORK", "TRABAJO" -> R.drawable.bg_work_gradient // Asegúrate de crearlos
+        "PERSONAL" -> R.drawable.bg_personal_gradient
+        "HEALTH", "SALUD" -> R.drawable.bg_healt_gradient
+        "STUDY", "STUDIES", "ESTUDIOS" -> R.drawable.bg_studyl_gradient
+        "FINANCE", "DINERO" -> R.drawable.bg_money_gradient
+        else -> R.drawable.bg_header // Tu bg_add_button original
     }
 }
 

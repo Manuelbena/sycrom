@@ -31,7 +31,7 @@
                     android:id="@+id/dragHandle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:tint="@color/white"
+                    app:tint="@color/md_theme_onSurface"
                     app:layout_constraintTop_toTopOf="parent"/>
 
                 <ImageButton
@@ -41,7 +41,7 @@
                     android:layout_marginStart="@dimen/spacing_s"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_close"
-                    app:tint="@color/white"
+                    app:tint="@color/md_theme_onSurface"
                     android:contentDescription="@string/cd_task_options"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/dragHandle"/>
@@ -61,7 +61,7 @@
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="@string/cd_task_options"
                         android:src="@drawable/ic_edit"
-                        app:tint="@color/white" />
+                        app:tint="@color/md_theme_onSurface" />
 
                     <ImageButton
                         android:id="@+id/btnShare"
@@ -70,7 +70,7 @@
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="@string/cd_task_options"
                         android:src="@drawable/ic_share"
-                        app:tint="@color/white" />
+                        app:tint="@color/md_theme_onSurface" />
 
                     <ImageButton
                         android:id="@+id/btnDelete"
@@ -79,7 +79,7 @@
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:contentDescription="@string/cd_task_options"
                         android:src="@drawable/ic_delete"
-                        app:tint="@color/white" />
+                        app:tint="@color/md_theme_onSurface" />
 
                     <ImageButton
                         android:id="@+id/btnPin"
@@ -87,7 +87,7 @@
                         android:layout_height="48dp"
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:src="@drawable/ic_mark"
-                        app:tint="@color/white"
+                        app:tint="@color/md_theme_onSurface"
                         android:contentDescription="@string/cd_task_options"/>
                 </LinearLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
