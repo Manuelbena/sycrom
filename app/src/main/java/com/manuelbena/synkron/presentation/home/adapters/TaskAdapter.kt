@@ -265,6 +265,7 @@ class TaskAdapter(
         }
 
         private fun playConfettiAnimation(task: TaskDomain) {
+            onTaskCheckedChange(task, true)
             binding.lottieCelebration.apply {
                 visibility = View.VISIBLE
                 playAnimation()
@@ -272,7 +273,6 @@ class TaskAdapter(
                 addAnimatorListener(object : Animator.AnimatorListener {
                     override fun onAnimationEnd(animation: Animator) {
                         visibility = View.GONE
-                        onTaskCheckedChange(task, true)
                     }
                     override fun onAnimationStart(animation: Animator) {}
                     override fun onAnimationCancel(animation: Animator) { visibility = View.GONE }

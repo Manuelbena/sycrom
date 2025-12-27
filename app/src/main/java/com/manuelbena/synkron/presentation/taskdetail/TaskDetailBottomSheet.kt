@@ -2,16 +2,16 @@ package com.manuelbena.synkron.presentation.taskdetail
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
-import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -26,23 +26,17 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.databinding.BottomSheetTaskDetailBinding
 import com.manuelbena.synkron.domain.models.GoogleEventReminder
+import com.manuelbena.synkron.domain.models.SubTaskDomain
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
-import com.manuelbena.synkron.presentation.util.TASK_TO_EDIT_KEY
-import com.manuelbena.synkron.presentation.util.getCategoryColor
-import com.manuelbena.synkron.presentation.util.getCategoryIcon
-import com.manuelbena.synkron.presentation.util.getDurationInMinutes
-import com.manuelbena.synkron.presentation.util.getName
-import com.manuelbena.synkron.presentation.util.toCalendar
-import com.manuelbena.synkron.presentation.util.toDurationString
-import com.manuelbena.synkron.presentation.util.toHourString
+import com.manuelbena.synkron.presentation.dialogs.adapter.ReminderManagerAdapter
+import com.manuelbena.synkron.presentation.models.ReminderItem
+import com.manuelbena.synkron.presentation.models.ReminderMethod
+import com.manuelbena.synkron.presentation.util.*
+import com.manuelbena.synkron.presentation.util.extensions.toDurationString
 import dagger.hilt.android.AndroidEntryPoint
-import java.net.URLEncoder
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
-import java.util.TimeZone
-import kotlin.collections.isNotEmpty
 
 @AndroidEntryPoint
 class TaskDetailBottomSheet : BottomSheetDialogFragment() {
@@ -50,8 +44,9 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
     private var _binding: BottomSheetTaskDetailBinding? = null
     private val binding get() = _binding!!
 
-    // Usamos el ViewModel para gestionar los datos
     private val viewModel: TaskDetailViewModel by viewModels()
+
+    // --- CICLO DE VIDA ---
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
@@ -67,190 +62,267 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
         return dialog
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = BottomSheetTaskDetailBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // NOTA: No llamamos a viewModel.getTask() aquí.
-        // El ViewModel se auto-inicializa con el SavedStateHandle y el objeto que le pasamos.
-
         setupListeners()
         setupObservers()
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
+    // --- CONFIGURACIÓN Y OBSERVERS ---
 
     private fun setupObservers() {
         viewModel.task.observe(viewLifecycleOwner) { task ->
             if (task != null) updateUI(task)
         }
-
         viewModel.shouldDismiss.observe(viewLifecycleOwner) { shouldDismiss ->
             if (shouldDismiss) dismiss()
         }
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun updateUI(task: TaskDomain) {
+    private fun setupListeners() {
         binding.apply {
-            // 1. Título y Estado (Lottie)
-            tvTaskTitle.text = task.summary
-            updateTitleStyle(task.isDone)
+            btnClose.setOnClickListener { dismiss() }
 
-            // Lottie: Lógica bidireccional
-            lottieCompleteTask.setOnClickListener(null)
-            if (!lottieCompleteTask.isAnimating) {
-                lottieCompleteTask.progress = if (task.isDone) 1f else 0f
-            }
-
-            lottieCompleteTask.setOnClickListener {
-                val newState = !task.isDone
-                if (newState) {
-                    lottieCompleteTask.speed = 1.5f
-                    lottieCompleteTask.playAnimation()
-                } else {
-                    lottieCompleteTask.speed = -1.5f
-                    lottieCompleteTask.playAnimation()
-                }
-                viewModel.toggleTaskCompletion(newState)
-            }
-
-            // 2. PIN
-            val pinIcon = if (task.isPinned) R.drawable.ic_mark_check else R.drawable.ic_mark
-            btnPin.setImageResource(pinIcon)
-            if (task.isPinned) btnPin.setColorFilter(requireContext().getColor(R.color.md_theme_onPrimary))
-            else btnPin.clearColorFilter()
-
-            // 3. Chips de Metadatos
-            // Usamos ?. para proteger contra nulos de la IA
-            val startCal = task.start?.toCalendar()
-            if (startCal != null) {
-                chipDate.text = SimpleDateFormat("EEE, dd MMM", Locale.getDefault()).format(startCal.time)
-            } else {
-                chipDate.text = "Sin fecha"
-            }
-
-            // PRIORIDAD
-            chipPriority.text = task.priority
-            val priorityColor = getPriorityColor(task.priority)
-            chipPriority.chipIconTint = ColorStateList.valueOf(priorityColor)
-
-            // CATEGORIA
-            chipCategory.text = task.typeTask.getName()
-            chipCategory.setChipIconResource(task.typeTask.getCategoryIcon())
-            chipCategory.backgroundTintList = ContextCompat.getColorStateList(requireContext(), task.typeTask.getCategoryColor())
-
-            // 4. Ubicación
-            if (task.location.isNullOrEmpty()) {
-                tvLocation.text = "Sin ubicación"
-                // Opcional: layoutLocation.isVisible = false
-            } else {
-                tvLocation.text = task.location
-                layoutLocation.isVisible = true
-            }
-
-            // 5. Hora y Duración
-            // Protegemos contra nulos
-            val startTime = task.start?.toHourString() ?: "--:--"
-            val endTime = task.end?.toHourString() ?: "--:--"
-            tvTimeRange.text = "$startTime - $endTime"
-
-            var durationMin = 0L
-            if (task.start != null && task.end != null) {
-                durationMin = getDurationInMinutes(task.start, task.end)
-            }
-
-            if (durationMin > 0) {
-                tvDurationText.isVisible = true
-                tvDurationText.text = durationMin.toString()
-            } else {
-                tvDurationText.isVisible = false
-            }
-
-            // 6. Descripción
-            tvDescription.text = if (task.description.isNullOrBlank()) "Sin descripción" else task.description
-
-            // 7. Configuración / Avisos
-            val hasReminders = task.reminders.overrides.isNotEmpty()
-            setupRemindersRecycler(task.reminders.overrides)
-
-            // Lógica de visibilidad
-            layoutSettings.isVisible = hasReminders
-            try {
-                val parentLayout = layoutSettings.parent as? ViewGroup
-                if (parentLayout != null) {
-                    val index = parentLayout.indexOfChild(layoutSettings)
-                    if (index > 0) {
-                        val labelView = parentLayout.getChildAt(index - 1)
-                        if (labelView is TextView && labelView.text == "Avisos") {
-                            labelView.isVisible = hasReminders
-                        }
+            swTaskCompleted.setOnCheckedChangeListener { view, isChecked ->
+                if (view.isPressed) {
+                    viewModel.task.value?.let { currentTask ->
+                        viewModel.updateTask(currentTask.copy(isDone = isChecked))
                     }
                 }
-            } catch (e: Exception) { }
+            }
 
-            // 8. Subtareas
-            renderSubtasks(task)
+            btnPin.setOnClickListener { viewModel.togglePin() }
+
+            btnEdit.setOnClickListener {
+                viewModel.task.value?.let { task ->
+                    val intent = Intent(requireContext(), ContainerActivity::class.java).apply {
+                        putExtra(TASK_TO_EDIT_KEY, task)
+                    }
+                    startActivity(intent)
+                    dismiss()
+                }
+            }
+
+            btnDelete.setOnClickListener {
+                viewModel.task.value?.let { task -> viewModel.deleteTask(task) }
+            }
+
+            btnShare.setOnClickListener {
+                viewModel.task.value?.let { task -> shareTask(task) }
+            }
         }
     }
 
-    private fun renderSubtasks(task: TaskDomain) {
-        binding.containerSubtasks.removeAllViews()
-        binding.tvSubtasksHeader.isVisible = task.subTasks.isNotEmpty()
-        binding.dividerSubtask.isVisible = task.subTasks.isNotEmpty()
+    // --- LÓGICA DE UI PRINCIPAL ---
 
-        task.subTasks.forEach { subTask ->
-            val view = layoutInflater.inflate(R.layout.item_subtask, binding.containerSubtasks, false)
-            val check = view.findViewById<CheckBox>(R.id.cbSubtask)
-            val title = view.findViewById<TextView>(R.id.tvSubtaskTitle)
+    private fun updateUI(task: TaskDomain) {
+        val context = requireContext()
 
-            title.text = subTask.title
-            check.isChecked = subTask.isDone
+        setupHeader(task)
+        setupTaskTitleAndStatus(task)
+        setupTimeAndDate(task)
+        setupRecurrenceView(task, context)
+        setupTags(task, context)
+        setupDetailsCard(task)
+        setupSubtasks(task)
+        setupReminders(task)
+    }
 
-            if (subTask.isDone) {
-                title.paintFlags = title.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-                title.alpha = 0.6f
-            } else {
-                title.paintFlags = title.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                title.alpha = 1f
-            }
+    private fun setupHeader(task: TaskDomain) {
+        val gradientDrawable = task.typeTask.getCategoryGradientDrawable()
+        binding.headerContainer.setBackgroundResource(gradientDrawable)
 
-            check.setOnCheckedChangeListener { _, isChecked ->
-                viewModel.toggleSubtaskCompletion(subTask, isChecked)
-            }
-            binding.containerSubtasks.addView(view)
+        // Estado del Pin
+        val pinIcon = if (task.isPinned) R.drawable.ic_mark_check else R.drawable.ic_mark
+        binding.btnPin.setImageResource(pinIcon)
+        if (task.isPinned) binding.btnPin.setColorFilter(ContextCompat.getColor(requireContext(), R.color.md_theme_onPrimary))
+        else binding.btnPin.clearColorFilter()
+    }
+
+    private fun setupTaskTitleAndStatus(task: TaskDomain) {
+        binding.tvTaskTitle.text = task.summary
+        binding.swTaskCompleted.isChecked = task.isDone
+
+        if (task.isDone) {
+            binding.tvTaskTitle.paintFlags = binding.tvTaskTitle.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            binding.tvTaskTitle.alpha = 0.6f
+        } else {
+            binding.tvTaskTitle.paintFlags = binding.tvTaskTitle.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            binding.tvTaskTitle.alpha = 1f
         }
     }
 
-    private fun setupRemindersRecycler(reminders: List<GoogleEventReminder>) {
-        binding.dividerRecurrence.isVisible = reminders.isNotEmpty()
-        binding.tvRecurrence.isVisible = reminders.isNotEmpty()
+    @SuppressLint("SetTextI18n")
+    private fun setupTimeAndDate(task: TaskDomain) {
+        // Fecha
+        val dateText = if (task.start?.dateTime == null) {
+            "${task.start?.date} • Todo el día"
+        } else {
+            // Formateo de fecha amigable
+            val calendar = task.start.toCalendar()
+            val dateFormat = SimpleDateFormat("EEE, dd MMM", Locale.getDefault())
+            val dateStr = calendar?.let { dateFormat.format(it.time) } ?: ""
+            "$dateStr • ${task.start.toHourString()}"
+        }
+        binding.tvDateFull.text = dateText
 
-        if (reminders.isNotEmpty()) {
-            binding.rvReminders.layoutManager = LinearLayoutManager(context)
-            binding.rvReminders.adapter = ReminderSimpleAdapter(reminders) { reminder ->
-                viewModel.deleteReminder(reminder)
+        // Duración
+        val durationMin = getDurationInMinutes(task.start, task.end)
+        if (durationMin > 0) {
+            binding.tvDurationText.isVisible = true
+            binding.tvDurationText.text = durationMin.toDurationString()
+        } else {
+            binding.tvDurationText.isVisible = false
+        }
+    }
+
+    private fun setupTags(task: TaskDomain, context: Context) {
+        val iconSize = dpToPx(14)
+
+        // Categoría
+        val catName = task.typeTask.ifEmpty { "General" }
+        val catColor = ContextCompat.getColor(context, task.typeTask.getCategoryColor())
+        val catIcon = ContextCompat.getDrawable(context, task.typeTask.getCategoryIcon())
+
+        binding.chipCategory.apply {
+            text = catName.getName()
+            setTextColor(catColor)
+            background.setTint(catColor)
+            background.alpha = 30
+            catIcon?.apply {
+                setTint(catColor)
+                setBounds(0, 0, iconSize, iconSize)
+            }
+            setCompoundDrawables(catIcon, null, null, null)
+        }
+
+        // Prioridad
+        if (task.priority.isNotEmpty()) {
+            binding.chipPriority.isVisible = true
+            val prioColor = getPriorityColor(task.priority)
+            val prioIcon = ContextCompat.getDrawable(context, R.drawable.ic_mark) // O ic_flag
+
+            binding.chipPriority.apply {
+                text = task.priority
+                setTextColor(prioColor)
+                background.setTint(prioColor)
+                background.alpha = 30
+                prioIcon?.apply {
+                    setTint(prioColor)
+                    setBounds(0, 0, iconSize, iconSize)
+                }
+                setCompoundDrawables(prioIcon, null, null, null)
             }
         } else {
-            binding.rvReminders.isVisible = false
+            binding.chipPriority.isVisible = false
         }
     }
 
-    private fun updateTitleStyle(isDone: Boolean) {
-        binding.tvTaskTitle.apply {
-            if (isDone) {
-                paintFlags = paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-                alpha = 0.6f
+    private fun setupDetailsCard(task: TaskDomain) {
+        val hasDesc = !task.description.isNullOrBlank()
+        val hasLoc = !task.location.isNullOrBlank()
+        val hasLink = !task.conferenceLink.isNullOrBlank()
+
+        if (hasDesc || hasLoc || hasLink) {
+            binding.cardDetails.isVisible = true
+            binding.tvDescription.isVisible = hasDesc
+            binding.tvDescription.text = task.description ?: "Sin descripción"
+
+            binding.tvLocation.isVisible = hasLoc
+            binding.tvLocation.text = task.location
+
+            binding.tvLink.isVisible = hasLink
+            binding.tvLink.text = task.conferenceLink ?: "Enlace disponible"
+        } else {
+            binding.cardDetails.isVisible = false
+        }
+    }
+
+    // --- SECCIONES COMPLEJAS (Recurrencia, Subtareas, Avisos) ---
+
+    private fun setupRecurrenceView(task: TaskDomain, context: Context) {
+        val isRecurring = task.synkronRecurrenceDays.isNotEmpty()
+        if (!isRecurring) {
+            binding.layoutRecurrence.isVisible = false
+            return
+        }
+
+        binding.layoutRecurrence.isVisible = true
+        binding.tvRecurrenceTitle.text = "Repetir semanalmente"
+
+        // Colores
+        val activeColor = ContextCompat.getColor(context, task.typeTask.getCategoryColor())
+        val inactiveBgColor = ContextCompat.getColor(context, R.color.slate_200)
+        val activeTextColor = Color.WHITE
+        val inactiveTextColor = ContextCompat.getColor(context, R.color.secondary_text)
+
+        val dayViews = listOf(
+            binding.dayMon, binding.dayTue, binding.dayWed, binding.dayThu,
+            binding.dayFri, binding.daySat, binding.daySun
+        )
+
+        dayViews.forEachIndexed { index, textView ->
+            val dayNumber = index + 1 // Lunes=1 ... Domingo=7
+            val isActive = task.synkronRecurrenceDays.contains(dayNumber)
+
+            if (isActive) {
+                textView.background.setTint(activeColor)
+                textView.setTextColor(activeTextColor)
+                textView.setTypeface(null, Typeface.BOLD)
             } else {
-                paintFlags = paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                alpha = 1f
+                textView.background.setTint(inactiveBgColor)
+                textView.setTextColor(inactiveTextColor)
+                textView.setTypeface(null, Typeface.NORMAL)
             }
         }
     }
+
+    private fun setupSubtasks(task: TaskDomain) {
+        if (task.subTasks.isNotEmpty()) {
+            binding.cardSubtasks.isVisible = true
+            binding.rvSubtasks.layoutManager = LinearLayoutManager(requireContext())
+            binding.rvSubtasks.adapter = SubtaskDetailAdapter(task.subTasks) { subTask, isChecked ->
+                viewModel.toggleSubtaskCompletion(subTask, isChecked)
+            }
+        } else {
+            binding.cardSubtasks.isVisible = false
+        }
+    }
+
+    private fun setupReminders(task: TaskDomain) {
+        val reminders = task.reminders.overrides ?: emptyList()
+
+        if (reminders.isNotEmpty()) {
+            binding.cardSettings.isVisible = true
+
+            val adapter = ReminderManagerAdapter { reminderItem ->
+                val originalReminder = reminders.find { it.minutes == reminderItem.offsetMinutes }
+                if (originalReminder != null) {
+                    viewModel.deleteReminder(originalReminder)
+                }
+            }
+
+            binding.rvReminders.layoutManager = LinearLayoutManager(requireContext())
+            binding.rvReminders.adapter = adapter
+            adapter.submitList(mapToReminderItems(reminders, task.start))
+        } else {
+            binding.cardSettings.isVisible = false
+        }
+    }
+
+    // --- HELPERS Y UTILS ---
+
+    private fun dpToPx(dp: Int): Int = (dp * resources.displayMetrics.density).toInt()
 
     private fun getPriorityColor(priority: String): Int {
         return when (priority.lowercase(Locale.ROOT)) {
@@ -261,32 +333,44 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    // --- CORRECCIÓN DE LISTENERS ---
-    private fun setupListeners() {
-        binding.btnPin.setOnClickListener { viewModel.togglePin() }
+    private fun mapToReminderItems(
+        reminders: List<GoogleEventReminder>,
+        taskStartDate: com.manuelbena.synkron.domain.models.GoogleEventDateTime?
+    ): List<ReminderItem> {
+        val startTime = taskStartDate?.toCalendar()?.timeInMillis ?: System.currentTimeMillis()
 
-        binding.btnEdit.setOnClickListener {
-            viewModel.task.value?.let { task ->
-                // SIEMPRE abrimos el ContainerActivity para editar/confirmar.
-                // Esto permite revisar los datos de la IA antes de guardar.
-                val intent = Intent(requireContext(), ContainerActivity::class.java).apply {
-                    putExtra(TASK_TO_EDIT_KEY, task)
-                }
-                startActivity(intent)
-                dismiss() // Cerramos el bottom sheet
+        return reminders.mapIndexed { index, googleReminder ->
+            // ... (cálculo de hora igual que antes) ...
+            val reminderTimeMillis = startTime - (googleReminder.minutes * 60 * 1000)
+            val cal = java.util.Calendar.getInstance()
+            cal.timeInMillis = reminderTimeMillis
+            val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+            // --- AQUÍ ESTÁ LA CLAVE ---
+            // Asegúrate de que estos textos coinciden con lo que guardas en la BD
+            val (methodType, titleText) = when (googleReminder.method.lowercase()) {
+                "alarm", "alarma" -> Pair(ReminderMethod.ALARM, "Alarma")
+                "whatsapp", "share" -> Pair(ReminderMethod.WHATSAPP, "WhatsApp")
+                // "popup" es el estándar de Google Calendar para notificaciones móviles
+                "popup", "notification" -> Pair(ReminderMethod.NOTIFICATION, "Notificación")
+                // Caso por defecto
+                else -> Pair(ReminderMethod.NOTIFICATION, "Notificación")
             }
-        }
 
-        binding.btnDelete.setOnClickListener {
-            viewModel.task.value?.let { task -> viewModel.deleteTask(task) }
-        }
-
-        binding.btnShare.setOnClickListener {
-            viewModel.task.value?.let { task -> shareTask(task) }
+            ReminderItem(
+                id = index.toString(),
+                displayTime = timeFormat.format(cal.time),
+                message = titleText, // Esto pondrá "Alarma" o "WhatsApp" en el texto
+                method = methodType,
+                offsetMinutes = googleReminder.minutes,
+                hour = cal.get(java.util.Calendar.HOUR_OF_DAY),
+                minute = cal.get(java.util.Calendar.MINUTE)
+            )
         }
     }
 
-    // --- CORRECCIÓN DE COMPARTIR (Null Safety) ---
+    // --- LÓGICA DE COMPARTIR ---
+
     private fun shareTask(task: TaskDomain) {
         try {
             val shareText = generateShareText(task)
@@ -298,7 +382,7 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
             val shareIntent = Intent.createChooser(sendIntent, "Compartir tarea")
             startActivity(shareIntent)
         } catch (e: Exception) {
-            Toast.makeText(context, "Error al compartir: datos incompletos", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Error al compartir", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -308,7 +392,6 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
         builder.append("$statusEmoji *¡Ojo a esta tarea!* $statusEmoji\n\n")
         builder.append("*${task.summary.uppercase()}*\n\n")
 
-        // Protección fecha
         val startCal = task.start?.toCalendar()
         if (startCal != null) {
             val dateText = SimpleDateFormat("EEEE, dd 'de' MMMM", Locale("es", "ES")).format(startCal.time)
@@ -318,83 +401,67 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
             }
         }
 
-        // Protección duración
-        if (task.start != null && task.end != null) {
-            val durationInMinutes = getDurationInMinutes(task.start, task.end)
-            if (durationInMinutes > 0) {
-                builder.append("⏳ *Duración:* ${durationInMinutes}\n")
-            }
-        }
-
         if (!task.location.isNullOrEmpty()) {
             builder.append("📍 *Lugar:* ${task.location}\n")
         }
 
-        builder.append("\n") // Espacio
-
         if (!task.description.isNullOrEmpty()) {
-            builder.append("🧐 *El plan:*\n")
-            builder.append("${task.description}\n\n")
+            builder.append("\n🧐 *El plan:*\n${task.description}\n")
         }
 
         if (task.subTasks.isNotEmpty()) {
-            builder.append("📋 *Los pasos a seguir:*\n")
-            task.subTasks.forEach { subtask ->
-                val subtaskStatus = if (subtask.isDone) "✔️" else "◻️"
-                builder.append("   $subtaskStatus ${subtask.title}\n")
+            builder.append("\n📋 *Pasos:*\n")
+            task.subTasks.forEach {
+                builder.append("   ${if (it.isDone) "✔️" else "◻️"} ${it.title}\n")
             }
-            builder.append("\n")
         }
 
-        builder.append("--------------------------------\n")
-        builder.append("¡Gestionando mi caos con *Synkrón*! 🚀")
-
+        builder.append("\n--------------------------------\n¡Gestionando mi caos con *Synkrón*! 🚀")
         return builder.toString()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+    // --- COMPANION & ADAPTERS INTERNOS ---
 
     companion object {
-        const val TAG = "TaskDetailBottomSheet"
-        // CAMBIO CLAVE: Constante para pasar el objeto entero
         const val ARG_TASK_OBJ = "arg_task_obj"
-
-        // newInstance ahora guarda todo el objeto TaskDomain
         fun newInstance(task: TaskDomain) = TaskDetailBottomSheet().apply {
             arguments = bundleOf(ARG_TASK_OBJ to task)
         }
     }
 
-    inner class ReminderSimpleAdapter(
-        private val items: List<GoogleEventReminder>,
-        private val onDeleteClick: (GoogleEventReminder) -> Unit
-    ) : RecyclerView.Adapter<ReminderSimpleAdapter.ViewHolder>() {
+    inner class SubtaskDetailAdapter(
+        private val items: List<SubTaskDomain>,
+        private val onCheckChange: (SubTaskDomain, Boolean) -> Unit
+    ) : RecyclerView.Adapter<SubtaskDetailAdapter.ViewHolder>() {
 
         inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val tvTime: TextView = view.findViewById(R.id.tvTime)
-            val tvType: TextView = view.findViewById(R.id.tvTypeLabel)
-            val btnDelete: ImageView = view.findViewById(R.id.btnDelete)
+            val checkBox: CheckBox = view.findViewById(R.id.cbSubtask)
+            val title: TextView = view.findViewById(R.id.tvSubtaskTitle)
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_reminder_row, parent, false)
+            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_subtask, parent, false)
             return ViewHolder(view)
         }
 
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = items[position]
-            val timeText = when {
-                item.minutes < 60 -> "${item.minutes} min antes"
-                item.minutes == 60 -> "1 hora antes"
-                item.minutes < 1440 -> "${item.minutes / 60} horas antes"
-                else -> "${item.minutes / 1440} días antes"
+            holder.title.text = item.title
+
+            holder.checkBox.setOnCheckedChangeListener(null)
+            holder.checkBox.isChecked = item.isDone
+
+            if (item.isDone) {
+                holder.title.paintFlags = holder.title.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                holder.title.alpha = 0.6f
+            } else {
+                holder.title.paintFlags = holder.title.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                holder.title.alpha = 1f
             }
-            holder.tvTime.text = timeText
-            holder.tvType.text = "Notificación (${item.method})"
-            holder.btnDelete.setOnClickListener { onDeleteClick(item) }
+
+            holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
+                onCheckChange(item, isChecked)
+            }
         }
 
         override fun getItemCount() = items.size

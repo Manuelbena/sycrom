@@ -122,6 +122,16 @@ fun String.getCategoryIcon(): Int {
     }
 }
 
+fun String.getCategoryGradientDrawable(): Int {
+    return when (this.uppercase()) {
+        "WORK", "TRABAJO" -> R.drawable.bg_add_buttom // Asegúrate de crearlos
+        "PERSONAL" -> R.drawable.bg_add_buttom
+        "HEALTH", "SALUD" -> R.drawable.bg_add_buttom
+        "FINANCE", "DINERO" -> R.drawable.bg_add_buttom
+        else -> R.drawable.bg_add_buttom // Tu bg_add_button original
+    }
+}
+
 fun String.getName(): String {
     // Normalizamos el string para evitar errores de mayúsculas/minúsculas
     return when (this.uppercase()) {

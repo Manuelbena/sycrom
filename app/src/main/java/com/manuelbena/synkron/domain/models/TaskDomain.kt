@@ -10,10 +10,7 @@ data class TaskDomain(
     val subTasks: List<SubTaskDomain> = emptyList(),
     val typeTask : String, // Nombre de la categoría (ej: "Trabajo")
 
-    // --- ¡RECUPERADOS! ---
-    val categoryIcon: String = "", // ej: "ic_work"
-    val categoryColor: String = "", // ej: "#FF5722"
-    // ---------------------
+
 
     val priority: String = "Media",
     val isActive: Boolean = true,

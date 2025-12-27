@@ -61,8 +61,7 @@ fun TaskEntity.toDomain(): TaskDomain {
         reminders = reminders,
         transparency = this.transparency,
         conferenceLink = this.conferenceLink,
-        categoryIcon = this.categoryIcon,
-        categoryColor = this.categoryColor,
+
         subTasks = this.subTasks,
         typeTask = this.typeTask,
         priority = this.priority,
@@ -158,8 +157,6 @@ fun N8nChatResponse.toTaskDomain(): TaskDomain {
         summary = this.title ?: "Nueva Tarea IA",
         subTasks = parsedSubTasks,
         typeTask = this.typeTask ?: "PERSONAL",
-        categoryIcon = this.categoryIcon ?: "ic_work",
-        categoryColor = this.categoryColor ?: "#FF5722",
         priority = this.priority ?: "Media",
         isActive = this.isActive.toBoolean(), // "true" -> true
         isDone = this.isDone.toBoolean(),

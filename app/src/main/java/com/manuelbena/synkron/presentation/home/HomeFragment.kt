@@ -64,6 +64,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private var shouldScrollToStart: Boolean = false
     private var taskDetailBottomSheet: TaskDetailBottomSheet? = null
 
+    companion object {
+        private const val TAG = "HomeFragment"
+    }
+
     private val taskAdapter = TaskAdapter(
         onItemClick = { task ->
             showTaskDetail(task)
@@ -372,7 +376,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private fun showTaskDetail(task: TaskDomain) {
         taskDetailBottomSheet?.dismiss()
         taskDetailBottomSheet = TaskDetailBottomSheet.newInstance(task)
-        taskDetailBottomSheet?.show(childFragmentManager, TaskDetailBottomSheet.TAG)
+        taskDetailBottomSheet?.show(childFragmentManager, TAG)
     }
 
     private fun showAiButton() {

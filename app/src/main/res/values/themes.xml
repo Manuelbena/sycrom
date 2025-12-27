@@ -26,6 +26,16 @@
 
     <style name="Theme.Sycrom" parent="Base.Theme.Sycrom" />
 
+    <style name="DayCircleStyle">
+        <item name="android:layout_width">32dp</item>
+        <item name="android:layout_height">32dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_marginEnd">4dp</item>
+        <item name="android:background">@drawable/shape_circle_category</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:fontFamily">@font/nunitobold</item>
+        <item name="android:textColor">@color/secondary_text</item> </style>
+
     <style name="MyPopupMenuStyle" parent="Widget.MaterialComponents.PopupMenu">
         <item name="android:popupBackground">@drawable/bg_popup_menu</item>
         <item name="android:textColor">@color/md_theme_onSurface</item>

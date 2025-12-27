@@ -144,7 +144,7 @@ class TaskDetailViewModel @Inject constructor(
         }
     }
 
-    private fun updateTask(task: TaskDomain) {
+    fun updateTask(task: TaskDomain) {
         if (task.id == 0) {
             // Solo actualizamos memoria si aún no está guardada
             _task.value = task

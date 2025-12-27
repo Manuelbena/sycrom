@@ -47,8 +47,7 @@ fun TaskDomain.toEntity(): TaskEntity {
         conferenceLink = this.conferenceLink,
         subTasks = this.subTasks,
         isActive = this.isActive,
-        categoryIcon = this.categoryIcon,
-        categoryColor = this.categoryColor,
+
         isDone = this.isDone,
         isDeleted = this.isDeleted,
         isArchived = this.isArchived,
