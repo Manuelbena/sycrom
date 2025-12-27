@@ -31,6 +31,7 @@ import com.manuelbena.synkron.databinding.FragmentHomeBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
+import com.manuelbena.synkron.presentation.task.TaskBottomSheet
 import com.manuelbena.synkron.presentation.taskIA.TaskIaBottomSheet
 import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
 import com.manuelbena.synkron.presentation.util.CarouselScrollListener
@@ -180,7 +181,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         viewModel.action.observe(viewLifecycleOwner) { action ->
             when (action) {
                 is HomeAction.ShowErrorSnackbar -> Snackbar.make(binding.root, action.message, Snackbar.LENGTH_SHORT).show()
-                is HomeAction.NavigateToEditTask -> navigateToContainerActivity(action.task)
+                is HomeAction.NavigateToEditTask -> showTaskBottomSheet(action.task)
                 is HomeAction.ShareTask -> shareTask(action.task)
             }
         }
@@ -199,8 +200,17 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         binding.tvFabAddIng.backgroundTintList = null
         binding.tvFabAddGasto.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_add_buttom)
         binding.tvFabAddGasto.backgroundTintList = null
+        binding.tvFabAddTask.setOnClickListener {
+            closeFabMenu()
+            // CAMBIO: Invocación directa
+            showTaskBottomSheet(null)
+        }
     }
 
+    private fun showTaskBottomSheet(task: TaskDomain?) {
+        val bottomSheet = TaskBottomSheet.newInstance(task)
+        bottomSheet.show(childFragmentManager, "TaskBottomSheet")
+    }
     private fun checkDateChange() {
         val currentSystemDate = LocalDate.now()
         if (currentSystemDate != displayedDate) {
@@ -277,7 +287,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             }
             tvFabAddTask.setOnClickListener {
                 closeFabMenu()
-                navigateToContainerActivity(null)
+                showTaskBottomSheet(null)
             }
             tvFabAddSuggestion.setOnClickListener {
                 closeFabMenu()
@@ -466,16 +476,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 "&text=$title" + "&dates=$dates" + "&details=$details" + "&location=$location"
     }
 
-    private fun navigateToContainerActivity(task: TaskDomain?) {
-        val intent = Intent(requireContext(), ContainerActivity::class.java).apply {
-            if (task != null) {
-                putExtra(TASK_TO_EDIT_KEY, task)
-            } else {
-                putExtra(ADD_TASK, "true")
-            }
-        }
-        startActivity(intent)
-    }
+
 
     private val timeUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
