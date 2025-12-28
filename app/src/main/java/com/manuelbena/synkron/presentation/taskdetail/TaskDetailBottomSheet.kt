@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -69,6 +70,28 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        Log.d("SYNKRON_DEBUG", "🟢 1. onViewCreated iniciado")
+
+        // 1. Recuperar la tarea de los argumentos
+        val taskArg: TaskDomain? = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            arguments?.getParcelable(ARG_TASK_OBJ, TaskDomain::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            arguments?.getParcelable(ARG_TASK_OBJ)
+        }
+
+        // 2. Diagnóstico del argumento
+        if (taskArg != null) {
+            Log.d("SYNKRON_DEBUG", "🟢 2. Tarea recibida en argumentos: ${taskArg.summary} (ID: ${taskArg.id})")
+
+            // --- PASO CRÍTICO QUE FALTABA ---
+            // Forzamos la actualización del ViewModel aquí mismo
+            Log.d("SYNKRON_DEBUG", "🟢 3. Enviando tarea al ViewModel...")
+            viewModel.updateTask(taskArg)
+        } else {
+            Log.e("SYNKRON_DEBUG", "🔴 2. ERROR: Los argumentos llegaron NULL o vacíos.")
+        }
+        setupRecurrenceListeners()
         setupListeners()
         setupObservers()
     }
@@ -82,8 +105,20 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
 
     private fun setupObservers() {
         viewModel.task.observe(viewLifecycleOwner) { task ->
-            if (task != null) updateUI(task)
+            Log.d("SYNKRON_DEBUG", "🟡 4. Observer disparado. ¿Task es null?: ${task == null}")
+
+            if (task != null) {
+                try {
+                    Log.d("SYNKRON_DEBUG", "🟡 5. Llamando a updateUI con: ${task.summary}")
+                    updateUI(task)
+                    Log.d("SYNKRON_DEBUG", "✅ 6. UI actualizada correctamente (supuestamente)")
+                } catch (e: Exception) {
+                    Log.e("SYNKRON_DEBUG", "🔴 ERROR FATAL en updateUI: ${e.message}")
+                    e.printStackTrace()
+                }
+            }
         }
+
         viewModel.shouldDismiss.observe(viewLifecycleOwner) { shouldDismiss ->
             if (shouldDismiss) dismiss()
         }
@@ -114,7 +149,9 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
             }
 
             btnDelete.setOnClickListener {
-                viewModel.task.value?.let { task -> viewModel.deleteTask(task) }
+                viewModel.task.value?.let { task ->
+                    confirmDeletion(task)
+                }
             }
 
             btnShare.setOnClickListener {
@@ -126,16 +163,26 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
     // --- LÓGICA DE UI PRINCIPAL ---
 
     private fun updateUI(task: TaskDomain) {
-        val context = requireContext()
+        try {
+            val context = requireContext()
 
-        setupHeader(task)
-        setupTaskTitleAndStatus(task)
-        setupTimeAndDate(task)
-        setupRecurrenceView(task, context)
-        setupTags(task, context)
-        setupDetailsCard(task)
-        setupSubtasks(task)
-        setupReminders(task)
+            setupHeader(task)
+            setupTaskTitleAndStatus(task)
+
+            // --- LOGICA SEGURA PARA FECHAS ---
+            Log.d("SYNKRON_DEBUG", "🔍 Procesando fecha. Start: ${task.start}")
+            setupTimeAndDate(task)
+
+            setupRecurrenceView(task, context)
+            setupTags(task, context)
+            setupDetailsCard(task)
+            setupSubtasks(task)
+            setupReminders(task)
+
+        } catch (e: Exception) {
+            Log.e("SYNKRON_DEBUG", "🔴 Excepción pintando la UI: ${e.message}")
+            e.printStackTrace()
+        }
     }
 
     private fun setupHeader(task: TaskDomain) {
@@ -164,24 +211,32 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
 
     @SuppressLint("SetTextI18n")
     private fun setupTimeAndDate(task: TaskDomain) {
+        val startDate = task.start
+
         // Fecha
-        val dateText = if (task.start?.dateTime == null) {
-            "${task.start?.date} • Todo el día"
+        val dateText = if (startDate?.dateTime == null) {
+            // Tarea de todo el día: Usar startDate.date o fallback
+            "${startDate?.date ?: ""} • Todo el día"
         } else {
-            // Formateo de fecha amigable
-            val calendar = task.start.toCalendar()
+            // Tarea con hora
+            val calendar = startDate.toCalendar()
             val dateFormat = SimpleDateFormat("EEE, dd MMM", Locale.getDefault())
             val dateStr = calendar?.let { dateFormat.format(it.time) } ?: ""
-            "$dateStr • ${task.start.toHourString()}"
+            "$dateStr • ${startDate.toHourString()}"
         }
         binding.tvDateFull.text = dateText
 
-        // Duración
-        val durationMin = getDurationInMinutes(task.start, task.end)
-        if (durationMin > 0) {
-            binding.tvDurationText.isVisible = true
-            binding.tvDurationText.text = durationMin.toDurationString()
+        // Duración (Solo calcular si NO es todo el día para evitar líos o 0 min)
+        if (startDate?.dateTime != null) {
+            val durationMin = getDurationInMinutes(startDate, task.end)
+            if (durationMin > 0) {
+                binding.tvDurationText.isVisible = true
+                binding.tvDurationText.text = durationMin.toDurationString()
+            } else {
+                binding.tvDurationText.isVisible = false
+            }
         } else {
+            // Ocultar duración en tareas de todo el día
             binding.tvDurationText.isVisible = false
         }
     }
@@ -249,18 +304,20 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
     }
 
     // --- SECCIONES COMPLEJAS (Recurrencia, Subtareas, Avisos) ---
-
     private fun setupRecurrenceView(task: TaskDomain, context: Context) {
-        val isRecurring = task.synkronRecurrenceDays.isNotEmpty()
+        // 1. Verificar si hay días configurados
+        val recurrenceDays = task.synkronRecurrenceDays
+        val isRecurring = recurrenceDays.isNotEmpty()
+
         if (!isRecurring) {
             binding.layoutRecurrence.isVisible = false
             return
         }
 
         binding.layoutRecurrence.isVisible = true
-        binding.tvRecurrenceTitle.text = "Repetir semanalmente"
 
-        // Colores
+
+        // 3. Configuración de colores (Igual que antes)
         val activeColor = ContextCompat.getColor(context, task.typeTask.getCategoryColor())
         val inactiveBgColor = ContextCompat.getColor(context, R.color.slate_200)
         val activeTextColor = Color.WHITE
@@ -272,8 +329,12 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
         )
 
         dayViews.forEachIndexed { index, textView ->
+            // Bloqueamos clicks (Modo solo lectura)
+            textView.isClickable = false
+            textView.isFocusable = false
+
             val dayNumber = index + 1 // Lunes=1 ... Domingo=7
-            val isActive = task.synkronRecurrenceDays.contains(dayNumber)
+            val isActive = recurrenceDays.contains(dayNumber)
 
             if (isActive) {
                 textView.background.setTint(activeColor)
@@ -286,7 +347,6 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
             }
         }
     }
-
     private fun setupSubtasks(task: TaskDomain) {
         if (task.subTasks.isNotEmpty()) {
             binding.cardSubtasks.isVisible = true
@@ -465,5 +525,88 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
         }
 
         override fun getItemCount() = items.size
+    }
+
+    private fun setupRecurrenceListeners() {
+        // Mapeamos cada TextView a su número de día (Lunes=1 ... Domingo=7)
+        val dayMap = mapOf(
+            binding.dayMon to 1,
+            binding.dayTue to 2,
+            binding.dayWed to 3,
+            binding.dayThu to 4,
+            binding.dayFri to 5,
+            binding.daySat to 6,
+            binding.daySun to 7
+        )
+
+        dayMap.forEach { (textView, dayIndex) ->
+            textView.setOnClickListener {
+                // 1. Obtenemos la tarea actual
+                val currentTask = viewModel.task.value ?: return@setOnClickListener
+
+                // 2. Creamos una lista mutable nueva basada en la actual
+                val currentDays = currentTask.synkronRecurrenceDays.toMutableList()
+
+                // 3. Lógica de "Toggle" (Si está, lo quito. Si no está, lo pongo)
+                if (currentDays.contains(dayIndex)) {
+                    currentDays.remove(dayIndex)
+                } else {
+                    currentDays.add(dayIndex)
+                }
+
+                // 4. Actualizamos el ViewModel inmediatamente
+                // Esto dispara el observer -> llama a updateUI -> repinta los colores
+                viewModel.updateTask(currentTask.copy(synkronRecurrenceDays = currentDays))
+            }
+        }
+    }
+
+    // --- LÓGICA DE DIÁLOGOS ---
+
+    private fun confirmDeletion(task: TaskDomain) {
+        // Detectamos si es parte de una serie mirando el parentId
+        val isRecurringSeries = !task.parentId.isNullOrEmpty()
+
+        if (isRecurringSeries) {
+            showRecurringDeleteDialog(task)
+        } else {
+            showSimpleDeleteDialog(task)
+        }
+    }
+
+    private fun showSimpleDeleteDialog(task: TaskDomain) {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("¿Borrar tarea?")
+            .setMessage("Esta acción no se puede deshacer.")
+            .setPositiveButton("Borrar") { _, _ ->
+                // Usamos deleteInstance por defecto para tareas simples
+                viewModel.deleteTaskInstance(task)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun showRecurringDeleteDialog(task: TaskDomain) {
+        val options = arrayOf("Solo este evento", "Este y los futuros (Serie)")
+
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Evento recurrente")
+            .setSingleChoiceItems(options, -1) { dialog, which ->
+                when (which) {
+                    0 -> { // Solo este
+                        viewModel.deleteTaskInstance(task)
+                        dialog.dismiss()
+                    }
+                    1 -> { // Serie completa
+                        viewModel.deleteTaskSeries(task)
+                        dialog.dismiss()
+                    }
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+
+
+
     }
 }

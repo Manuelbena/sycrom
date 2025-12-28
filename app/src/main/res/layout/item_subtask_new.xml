@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="@dimen/spacing_medium"
+    android:layout_marginTop="@dimen/spacing_s"
     android:clickable="true"
     android:focusable="true"
     app:cardBackgroundColor="@color/color_card"
@@ -38,7 +38,7 @@
             android:layout_weight="1"
             android:textSize="@dimen/text_body_large"
             android:text="Texto de la subtarea"
-            android:textAppearance="@color/md_theme_onSurface" />
+            android:textColor="@color/md_theme_onSurface" />
 
         <!-- Botón para eliminar -->
         <ImageButton

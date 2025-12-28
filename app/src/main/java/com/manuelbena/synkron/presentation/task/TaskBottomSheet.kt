@@ -176,11 +176,24 @@ class TaskBottomSheet : BottomSheetDialogFragment() {
             tietSubTask.doAfterTextChanged { if (!it.isNullOrBlank()) tilSubTask.error = null }
             btnAddSubTask.setOnClickListener {
                 val text = tietSubTask.text.toString()
+
                 if (text.isNotBlank()) {
+                    // 1. Añadimos la tarea
                     viewModel.onEvent(TaskEvent.OnAddSubTask(text))
+
+                    // 2. Limpiamos el campo
                     tietSubTask.text?.clear()
                     tilSubTask.error = null
-                } else { tilSubTask.error = "Escribe algo primero" }
+
+                    // 3. CERRAR EL TECLADO AQUÍ
+                    hideKeyboard()
+
+                    // Opcional: Quitar el foco del campo de texto para que no parpadee el cursor
+                    tietSubTask.clearFocus()
+
+                } else {
+                    tilSubTask.error = "Escribe algo primero"
+                }
             }
 
             btnGuardar.setOnClickListener { navigateWizard(true) }

@@ -160,6 +160,28 @@ class TaskViewModel @Inject constructor(
     private fun loadTask(task: TaskDomain) {
         val startCal = googleDateToCalendar(task.start)
         val endCal = googleDateToCalendar(task.end)
+        val rruleString = task.recurrence.firstOrNull() ?: ""
+        val daysCount = task.synkronRecurrenceDays.size
+
+        // LÓGICA PARA RECUPERAR EL TIPO CORRECTO
+        val inferredRecurrenceType = when {
+            rruleString.contains("FREQ=DAILY") -> RecurrenceType.DAILY
+
+            // Si es semanal, miramos cuántos días tiene
+            rruleString.contains("FREQ=WEEKLY") -> {
+                if (daysCount > 1) {
+                    // Si hay más de un día (ej: Lunes y Jueves), fijo es Personalizado
+                    RecurrenceType.CUSTOM
+                } else {
+                    // Si es solo 1 día, asumimos Semanalmente (o Personalizado, da igual visualmente)
+                    RecurrenceType.WEEKLY
+                }
+            }
+            // Fallback para datos antiguos
+            daysCount == 7 -> RecurrenceType.DAILY
+            daysCount > 0 -> RecurrenceType.CUSTOM
+            else -> RecurrenceType.NONE
+        }
 
         // CORRECCIÓN: Mapear RecurrenceType correctamente desde algún lado si lo guardas
         // Si no lo guardas explícitamente en BD, aquí tendrás que deducirlo o dejarlo por defecto.
@@ -182,8 +204,7 @@ class TaskViewModel @Inject constructor(
                 subTasks = task.subTasks,
                 reminders = task.reminders.overrides,
                 selectedRecurrenceDays = task.synkronRecurrenceDays.toSet(),
-                // Si guardas el tipo de recurrencia en BD, recupéralo aquí. Si no, NONE por defecto.
-                recurrenceType = RecurrenceType.NONE
+                recurrenceType = inferredRecurrenceType
             )
         }
     }
@@ -227,6 +248,51 @@ class TaskViewModel @Inject constructor(
                     }
                 }
 
+                val (finalDays, finalRrule) = when (s.recurrenceType) {
+
+                    // CASO 1: "Todos los días"
+                    RecurrenceType.DAILY -> {
+                        Pair(
+                            listOf(1, 2, 3, 4, 5, 6, 7), // Pintamos todo
+                            listOf("RRULE:FREQ=DAILY")   // Regla diaria
+                        )
+                    }
+
+                    // CASO 2: "Semanalmente" (Opción simple del menú)
+                    // Significa: "Repetir cada semana el mismo día que hoy"
+                    RecurrenceType.WEEKLY -> {
+                        val currentDay = getSynkronDayFromCalendar(s.selectedDate)
+                        val rrule = "RRULE:FREQ=WEEKLY;BYDAY=${dayIntToRRule(currentDay)}"
+
+                        Pair(
+                            listOf(currentDay), // Guardamos solo este día
+                            listOf(rrule)
+                        )
+                    }
+
+                    // CASO 3: "Personalizado" (Tus botones L, M, X...)
+                    // Aquí SÍ hacemos caso a lo que el usuario marcó en los circulitos
+                    RecurrenceType.CUSTOM -> {
+                        // Si el usuario eligió "Personalizado" pero no marcó nada,
+                        // por seguridad usamos el día actual (fallback).
+                        var daysToSave = s.selectedRecurrenceDays.toList().sorted()
+                        if (daysToSave.isEmpty()) {
+                            daysToSave = listOf(getSynkronDayFromCalendar(s.selectedDate))
+                        }
+
+                        val byDay = daysToSave.joinToString(",") { dayIntToRRule(it) }
+                        val rrule = "RRULE:FREQ=WEEKLY;BYDAY=$byDay" // Google lo ve como semanal con días específicos
+
+                        Pair(
+                            daysToSave,
+                            listOf(rrule)
+                        )
+                    }
+
+                    // CASO 4: "No se repite" (NONE) o cualquier otro
+                    else -> Pair(emptyList(), emptyList())
+                }
+
                 val task = TaskDomain(
                     id = s.id,
                     typeTask = s.category,
@@ -239,7 +305,8 @@ class TaskViewModel @Inject constructor(
                     priority = s.priority,
                     subTasks = s.subTasks,
                     reminders = GoogleEventReminders(overrides = s.reminders),
-                    synkronRecurrenceDays = s.selectedRecurrenceDays.toList(),
+                    synkronRecurrenceDays = finalDays,
+                    recurrence = finalRrule,
                     isArchived = s.isNoDate,
                     isActive = true, isDone = false, isDeleted = false, isPinned = false,
                     transparency = "opaque", conferenceLink = ""
@@ -259,6 +326,20 @@ class TaskViewModel @Inject constructor(
                 _effect.value = TaskEffect.ShowMessage("Error: ${e.message}")
                 e.printStackTrace()
             }
+        }
+    }
+
+    // Convierte 1->MO, 2->TU, ..., 7->SU
+    private fun dayIntToRRule(day: Int): String {
+        return when (day) {
+            1 -> "MO" // Lunes
+            2 -> "TU"
+            3 -> "WE"
+            4 -> "TH"
+            5 -> "FR"
+            6 -> "SA"
+            7 -> "SU" // Domingo
+            else -> ""
         }
     }
 
@@ -286,6 +367,21 @@ class TaskViewModel @Inject constructor(
             }
         }
         return cal
+    }
+    // Convierte el día de la semana de Android (donde Domingo=1)
+    // al formato de Synkrón (donde Lunes=1, Martes=2, ..., Domingo=7)
+    private fun getSynkronDayFromCalendar(cal: Calendar): Int {
+        val day = cal.get(Calendar.DAY_OF_WEEK)
+        return when (day) {
+            Calendar.MONDAY -> 1
+            Calendar.TUESDAY -> 2
+            Calendar.WEDNESDAY -> 3
+            Calendar.THURSDAY -> 4
+            Calendar.FRIDAY -> 5
+            Calendar.SATURDAY -> 6
+            Calendar.SUNDAY -> 7
+            else -> 1 // Fallback por defecto (Lunes) si pasa algo raro
+        }
     }
 
     private fun updateState(update: TaskState.() -> TaskState) {

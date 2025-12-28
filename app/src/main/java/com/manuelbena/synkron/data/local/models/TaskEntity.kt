@@ -1,5 +1,6 @@
 package com.manuelbena.synkron.data.local.models
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.manuelbena.synkron.domain.models.NotificationType
@@ -15,6 +16,7 @@ data class TaskEntity(
     val hour: Int,
     val timeZone: String,
     val duration: Int,
+    @ColumnInfo(name = "parent_id") val parentId: String? = null,
 
     // Campos de Texto
     val summary: String,

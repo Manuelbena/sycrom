@@ -13,5 +13,15 @@ class DeleteTaskUseCase @Inject constructor(
     suspend operator fun invoke(task: TaskDomain) {
         repository.deleteTask(task)
     }
+
+    // 👇 NUEVO: Borrar solo esta instancia
+    suspend fun deleteInstance(task: TaskDomain) {
+        repository.deleteTaskInstance(task)
+    }
+
+    // 👇 NUEVO: Borrar toda la serie futura
+    suspend fun deleteSeries(task: TaskDomain) {
+        repository.deleteTaskSeries(task)
+    }
 }
 

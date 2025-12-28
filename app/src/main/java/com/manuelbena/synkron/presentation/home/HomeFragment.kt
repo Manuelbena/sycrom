@@ -29,14 +29,11 @@ import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentHomeBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
-import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
 import com.manuelbena.synkron.presentation.task.TaskBottomSheet
 import com.manuelbena.synkron.presentation.taskIA.TaskIaBottomSheet
 import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
 import com.manuelbena.synkron.presentation.util.CarouselScrollListener
-import com.manuelbena.synkron.presentation.util.ADD_TASK
-import com.manuelbena.synkron.presentation.util.TASK_TO_EDIT_KEY
 import com.manuelbena.synkron.presentation.util.WeekCalendarManager
 import com.manuelbena.synkron.presentation.util.extensions.toDurationString
 import com.manuelbena.synkron.presentation.util.getDurationInMinutes
@@ -56,10 +53,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override val viewModel: HomeViewModel by activityViewModels()
 
-    // --- NUEVO: Variables para guardar la vista ("Cache") ---
     private var savedBinding: FragmentHomeBinding? = null
     private var isInitialized = false
-    // --------------------------------------------------------
 
     private var isFabMenuOpen = false
     private lateinit var weekManager: WeekCalendarManager
@@ -84,12 +79,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
     }
 
-    // --- MODIFICADO: Lógica de reutilización de vista ---
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentHomeBinding {
         if (savedBinding == null) {
             savedBinding = FragmentHomeBinding.inflate(inflater, container, false)
         } else {
-            // Si ya existe, la desconectamos de su padre anterior para evitar crashes
             (savedBinding?.root?.parent as? ViewGroup)?.removeView(savedBinding?.root)
         }
         return savedBinding!!
@@ -98,19 +91,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // --- MODIFICADO: Si ya está inicializado, no hacemos nada más ---
         if (isInitialized) {
-            // Solo nos aseguramos de que el adapter tenga los datos actualizados
             val currentTasks = viewModel.uiState.value.tasks
             if (currentTasks.isNotEmpty()) {
                 taskAdapter.submitList(currentTasks)
             }
-            // Retornamos aquí para evitar re-ejecutar setupRecyclerView, setupCalendar, etc.
-            // Esto es lo que evita el parpadeo: usamos lo que ya estaba en memoria.
             return
         }
 
-        // --- Configuración Inicial (Solo se ejecuta la primera vez) ---
         setupButtomFloating()
         setupHeader()
         setupCalendar()
@@ -118,16 +106,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         setupFabAnimation()
         setupDotIndicatorListener()
 
-        // Marcamos como inicializado
         isInitialized = true
     }
 
     override fun onResume() {
         super.onResume()
-
-        // Como usamos la vista cacheada, los logs deberían mostrar que NO recarga innecesariamente
-        android.util.Log.d("DEBUG_BUG", "onResume Disparado")
-
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_TIME_TICK)
             addAction(Intent.ACTION_DATE_CHANGED)
@@ -136,20 +119,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         requireActivity().registerReceiver(timeUpdateReceiver, filter)
 
         val isViewModelDateToday = viewModel.uiState.value.selectedDate == LocalDate.now()
-        val isDisplayDateToday = displayedDate == LocalDate.now()
         val hasData = viewModel.uiState.value.tasks.isNotEmpty()
 
         if (!isViewModelDateToday || !hasData) {
-            android.util.Log.d("DEBUG_BUG", "onResume -> Llamando a refreshToToday()")
             viewModel.refreshToToday()
-        } else {
-            android.util.Log.d("DEBUG_BUG", "onResume -> NO se llama a refreshToToday()")
         }
 
-        if (!isDisplayDateToday) {
-            try {
-                weekManager.scrollToToday()
-            } catch (e: Exception) {}
+        if (displayedDate != LocalDate.now()) {
+            try { weekManager.scrollToToday() } catch (e: Exception) {}
             displayedDate = LocalDate.now()
             setupHeader()
         }
@@ -161,18 +138,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.collect { state ->
-
-                    android.util.Log.d("DEBUG_BUG", "Estado Recibido -> isLoading: ${state.isLoading}, Tasks: ${state.tasks.size}, Fecha: ${state.selectedDate}")
-
                     if (!isCalendarInitialized && !isInitialized) {
-                        // Solo configuramos el calendario si no tenemos la vista cacheada lista
                         weekManager.setupCalendar(state.selectedDate)
                         isCalendarInitialized = true
                     } else if (isInitialized && !isCalendarInitialized) {
-                        // Si reutilizamos vista, solo marcamos el flag
                         isCalendarInitialized = true
                     }
-
                     updateUi(state)
                 }
             }
@@ -187,22 +158,17 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
     }
 
-    // ... (Resto de métodos auxiliares igual que antes) ...
-
     private fun setupButtomFloating(){
-        binding.fabMain.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_add_buttom)
-        binding.fabMain.backgroundTintList = null
-        binding.tvFabAddTask.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_add_buttom)
-        binding.tvFabAddTask.backgroundTintList = null
-        binding.tvFabAddSuggestion.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_add_buttom)
-        binding.tvFabAddSuggestion.backgroundTintList = null
-        binding.tvFabAddIng.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_add_buttom)
-        binding.tvFabAddIng.backgroundTintList = null
-        binding.tvFabAddGasto.background = ContextCompat.getDrawable(requireContext(), R.drawable.bg_add_buttom)
-        binding.tvFabAddGasto.backgroundTintList = null
+        // Configuración visual de FABs (manteniendo tu código)
+        val bgDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.bg_add_buttom)
+        listOf(binding.fabMain, binding.tvFabAddTask, binding.tvFabAddSuggestion,
+            binding.tvFabAddIng, binding.tvFabAddGasto).forEach {
+            it.background = bgDrawable
+            it.backgroundTintList = null
+        }
+
         binding.tvFabAddTask.setOnClickListener {
             closeFabMenu()
-            // CAMBIO: Invocación directa
             showTaskBottomSheet(null)
         }
     }
@@ -211,14 +177,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         val bottomSheet = TaskBottomSheet.newInstance(task)
         bottomSheet.show(childFragmentManager, "TaskBottomSheet")
     }
+
     private fun checkDateChange() {
         val currentSystemDate = LocalDate.now()
         if (currentSystemDate != displayedDate) {
             displayedDate = currentSystemDate
             setupHeader()
-            try {
-                weekManager.scrollToToday()
-            } catch (e: Exception) {}
+            try { weekManager.scrollToToday() } catch (e: Exception) {}
             viewModel.refreshToToday()
         }
     }
@@ -257,6 +222,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
             taskAdapter.submitList(state.tasks)
 
+            // Actualizar tarjeta de progreso
+            if (!state.isLoading) {
+                updateProgressCard(state.tasks)
+            }
+
+            // Dots indicator logic
             if (binding.tabLayoutDots.tabCount != state.tasks.size) {
                 binding.tabLayoutDots.removeAllTabs()
                 state.tasks.forEach { _ ->
@@ -277,6 +248,39 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             }
         }
         weekManager.selectDate(state.selectedDate)
+    }
+
+    // --- NUEVO: Lógica de la Tarjeta de Progreso ---
+    private fun updateProgressCard(tasks: List<TaskDomain>) {
+        binding.apply {
+            val totalTasks = tasks.size
+            val completedTasks = tasks.count { it.isDone }
+
+            // Cálculo seguro del porcentaje
+            val percentage = if (totalTasks > 0) {
+                ((completedTasks.toFloat() / totalTasks.toFloat()) * 100).toInt()
+            } else {
+                0
+            }
+
+            // Actualizar textos
+            // Si el XML espera %d (enteros), asegúrate de que sean Int:
+            tvSubtitle.text = getString(R.string.home_progress_subtitle_format, completedTasks, totalTasks)
+            tvPercentage.text = "$percentage%"
+
+            // Actualizar Barra (Nota: Si usas ProgressBar estándar para el degradado, usa 'progress = percentage')
+            // linearProgressIndicator.progress = percentage // <- Descomenta esto si usas ProgressBar con degradado
+            linearProgressIndicator.setProgressCompat(percentage, true) // <- Esto es para Material LinearProgressIndicator
+
+            // Cambio de color al completar (Opcional)
+            if (percentage == 100) {
+                tvProgressLabel.text = "¡Todo listo!"
+                ivProgressIcon.imageTintList = ContextCompat.getColorStateList(requireContext(), R.color.cat_personal)
+            } else {
+                tvProgressLabel.text = getString(R.string.home_tasks_progress_label)
+                ivProgressIcon.imageTintList = ContextCompat.getColorStateList(requireContext(), R.color.purple_600)
+            }
+        }
     }
 
     override fun setListener() {
@@ -312,6 +316,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         )
     }
 
+    // ... (Métodos openFabMenu, closeFabMenu, showFab, hideFab sin cambios) ...
     private fun openFabMenu() {
         isFabMenuOpen = true
         binding.fabMain.animate().setInterpolator(fabInterpolator).setDuration(300).start()
@@ -400,6 +405,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
     }
 
+    // ... (Métodos showTaskDetail, showAiButton, shareTask, generateShareText, createGoogleCalendarLink, timeUpdateReceiver, applyCarouselPadding, onDestroyView sin cambios) ...
     private fun showTaskDetail(task: TaskDomain) {
         taskDetailBottomSheet?.dismiss()
         taskDetailBottomSheet = TaskDetailBottomSheet.newInstance(task)
@@ -476,8 +482,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 "&text=$title" + "&dates=$dates" + "&details=$details" + "&location=$location"
     }
 
-
-
     private val timeUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             val action = intent?.action
@@ -486,6 +490,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             }
         }
     }
+
     private fun RecyclerView.applyCarouselPadding() {
         val itemWidthDp = 300
         val itemWidthPx = resources.displayMetrics.density * itemWidthDp
@@ -496,7 +501,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     override fun onDestroyView() {
-        // NO HACEMOS savedBinding = null AQUÍ PARA MANTENER LA VISTA VIVA
         taskDetailBottomSheet = null
         super.onDestroyView()
     }

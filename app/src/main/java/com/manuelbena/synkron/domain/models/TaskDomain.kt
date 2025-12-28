@@ -9,6 +9,7 @@ data class TaskDomain(
     val id: Int = 0,
     val subTasks: List<SubTaskDomain> = emptyList(),
     val typeTask : String, // Nombre de la categoría (ej: "Trabajo")
+    val parentId: String? = null,
 
 
 

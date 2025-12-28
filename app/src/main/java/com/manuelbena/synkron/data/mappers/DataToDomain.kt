@@ -61,7 +61,7 @@ fun TaskEntity.toDomain(): TaskDomain {
         reminders = reminders,
         transparency = this.transparency,
         conferenceLink = this.conferenceLink,
-
+        parentId = parentId,
         subTasks = this.subTasks,
         typeTask = this.typeTask,
         priority = this.priority,

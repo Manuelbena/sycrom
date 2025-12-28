@@ -4,43 +4,21 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.manuelbena.synkron.databinding.ItemSubtaskNewBinding
 import com.manuelbena.synkron.domain.models.SubTaskDomain
 import java.util.Collections
 
 class TaskCreationSubtaskAdapter(
-    private val items: MutableList<SubTaskDomain> = mutableListOf(),
     private val onStartDrag: (RecyclerView.ViewHolder) -> Unit,
     private val onRemove: (SubTaskDomain) -> Unit,
     private val onReorder: (List<SubTaskDomain>) -> Unit
-) : RecyclerView.Adapter<TaskCreationSubtaskAdapter.SubtaskViewHolder>() {
+) : ListAdapter<SubTaskDomain, TaskCreationSubtaskAdapter.SubtaskViewHolder>(SubtaskDiffCallback()) {
 
     fun updateItems(newItems: List<SubTaskDomain>) {
-        items.clear()
-        items.addAll(newItems)
-        notifyDataSetChanged()
-    }
-
-    // Este método se llama EN CADA PASO del arrastre.
-    // Solo actualizamos la lista visualmente, NO avisamos al ViewModel todavía.
-    fun onItemMove(fromPosition: Int, toPosition: Int) {
-        if (fromPosition < toPosition) {
-            for (i in fromPosition until toPosition) {
-                Collections.swap(items, i, i + 1)
-            }
-        } else {
-            for (i in fromPosition downTo toPosition + 1) {
-                Collections.swap(items, i, i - 1)
-            }
-        }
-        notifyItemMoved(fromPosition, toPosition)
-    }
-
-    // NUEVO: Este método se llamará cuando el usuario SUELTE el ítem.
-    // Aquí es seguro actualizar el ViewModel sin romper la animación.
-    fun onDragFinished() {
-        onReorder(items.toList())
+        submitList(newItems)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SubtaskViewHolder {
@@ -49,10 +27,36 @@ class TaskCreationSubtaskAdapter(
     }
 
     override fun onBindViewHolder(holder: SubtaskViewHolder, position: Int) {
-        holder.bind(items[position])
+        holder.bind(getItem(position))
     }
 
-    override fun getItemCount(): Int = items.size
+    // --- MÉTODOS QUE FALTABAN PARA EL DRAG & DROP ---
+
+    fun onItemMove(fromPosition: Int, toPosition: Int) {
+        // 1. Creamos una copia mutable de la lista actual (porque currentList es solo lectura)
+        val updatedList = currentList.toMutableList()
+
+        // 2. Intercambiamos los elementos
+        if (fromPosition < toPosition) {
+            for (i in fromPosition until toPosition) {
+                Collections.swap(updatedList, i, i + 1)
+            }
+        } else {
+            for (i in fromPosition downTo toPosition + 1) {
+                Collections.swap(updatedList, i, i - 1)
+            }
+        }
+
+        // 3. Actualizamos la lista oficial (esto dispara la animación)
+        submitList(updatedList)
+    }
+
+    fun onDragFinished() {
+        // 4. Notificamos al ViewModel del nuevo orden final
+        onReorder(currentList)
+    }
+
+    // ------------------------------------------------
 
     inner class SubtaskViewHolder(private val binding: ItemSubtaskNewBinding) : RecyclerView.ViewHolder(binding.root) {
         @SuppressLint("ClickableViewAccessibility")
@@ -63,12 +67,25 @@ class TaskCreationSubtaskAdapter(
                 onRemove(item)
             }
 
+            // Si tienes un icono de arrastre (ej: ivDragHandle), descomenta esto:
+
             binding.ivDragHandle.setOnTouchListener { _, event ->
-                if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+                if (event.action == MotionEvent.ACTION_DOWN) {
                     onStartDrag(this)
                 }
                 false
             }
+
+        }
+    }
+
+    class SubtaskDiffCallback : DiffUtil.ItemCallback<SubTaskDomain>() {
+        override fun areItemsTheSame(oldItem: SubTaskDomain, newItem: SubTaskDomain): Boolean {
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: SubTaskDomain, newItem: SubTaskDomain): Boolean {
+            return oldItem == newItem
         }
     }
 }

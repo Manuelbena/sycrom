@@ -44,5 +44,19 @@ interface ITaskRepository {
 
      suspend fun hasAllDayTaskOnDate(date: LocalDate, excludedId: Int): Boolean
 
+    /**
+     * Borra SOLO esta tarea específica (ej: "Solo este evento").
+     */
+    suspend fun deleteTaskInstance(task: TaskDomain)
+
+    /**
+     * Borra TODAS las tareas asociadas a la misma serie (ej: "Todos los eventos futuros").
+     * Requiere que la tarea tenga un parentId.
+     */
+    suspend fun deleteTaskSeries(task: TaskDomain)
+
+    // Mantenemos este por compatibilidad, que por defecto borrará solo la instancia
+
+
 
 }

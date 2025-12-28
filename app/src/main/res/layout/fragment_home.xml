@@ -232,7 +232,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacing_tiny"
                         android:fontFamily="@font/nunitosemibold"
-                        android:text="@string/home_tasks_subtitle_placeholder"
+                        android:text="@string/home_progress_subtitle_format"
                         android:textColor="@color/secondary_text"
                         android:textSize="@dimen/text_body"
                         app:layout_constraintTop_toBottomOf="@+id/tvTitle"
@@ -304,6 +304,7 @@
                                 app:layout_constraintTop_toTopOf="@+id/tvProgressLabel" />
 
                             <com.google.android.material.progressindicator.LinearProgressIndicator
+                                android:id="@+id/linearProgressIndicator"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="@dimen/spacing_medium"

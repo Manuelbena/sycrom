@@ -8,6 +8,7 @@ enum class RecurrenceType : Parcelable {
     DAILY,
     WEEKLY,
     CUSTOM,
+    MONTHLY,
     NONE
 }
 

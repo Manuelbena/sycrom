@@ -38,4 +38,14 @@ interface TaskDao {
 
     @Delete
     suspend fun deleteTask(task: TaskEntity)
+
+    @Query("SELECT * FROM task_table WHERE parent_id = :parentId")
+    suspend fun getTasksByParentId(parentId: String): List<TaskEntity>
+
+    // Opción rápida para borrar (pero ojo, no cancela alarmas una por una)
+    @Query("DELETE FROM task_table WHERE parent_id = :parentId")
+    suspend fun deleteSeriesRaw(parentId: String)
+
+    // En TaskDao.kt
+
 }

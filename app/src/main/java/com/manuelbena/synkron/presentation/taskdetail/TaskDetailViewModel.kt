@@ -35,9 +35,17 @@ class TaskDetailViewModel @Inject constructor(
     private val _shouldDismiss = MutableLiveData<Boolean>()
     val shouldDismiss: LiveData<Boolean> = _shouldDismiss
 
+
+    // 2. Añade o modifica esta función
+    fun loadTaskDetails(t: TaskDomain) {
+        // Esto fuerza que el observer de la UI salte INMEDIATAMENTE
+        _task.value = t
+    }
+
     init {
         // RECUPERAMOS EL OBJETO ENTERO
         val taskFromArgs = savedStateHandle.get<TaskDomain>("arg_task_obj")
+        taskFromArgs?.let { loadTaskDetails(it) }
 
         if (taskFromArgs != null) {
             if (taskFromArgs.id == 0) {
@@ -78,6 +86,26 @@ class TaskDetailViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun deleteTaskInstance(task: TaskDomain) {
+        viewModelScope.launch(Dispatchers.IO) {
+            deleteTaskUseCase.deleteInstance(task)
+            closeScreen()
+        }
+    }
+
+    fun deleteTaskSeries(task: TaskDomain) {
+        viewModelScope.launch(Dispatchers.IO) {
+            deleteTaskUseCase.deleteSeries(task)
+            closeScreen()
+        }
+    }
+
+    // Función auxiliar para cerrar y limpiar
+    private fun closeScreen() {
+        _task.postValue(null)
+        _shouldDismiss.postValue(true)
     }
 
     // NUEVO: Método para confirmar la tarea de la IA
