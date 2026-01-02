@@ -45,6 +45,19 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    packaging {
+        resources {
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/LICENSE"
+            excludes += "META-INF/LICENSE.txt"
+            excludes += "META-INF/license.txt"
+            excludes += "META-INF/NOTICE"
+            excludes += "META-INF/NOTICE.txt"
+            excludes += "META-INF/notice.txt"
+            excludes += "META-INF/ASL2.0"
+            excludes += "META-INF/*.kotlin_module"
+        }
+    }
 }
 
 dependencies {
@@ -73,10 +86,18 @@ dependencies {
     implementation("androidx.work:work-runtime-ktx:2.9.0") // O la versión que uses
     implementation("androidx.hilt:hilt-work:1.1.0")
     kapt("androidx.hilt:hilt-compiler:1.1.0")
+    implementation("com.facebook.shimmer:shimmer:0.5.0")
+
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     // --- DEPENDENCIAS DE HILT ---
     implementation("com.google.dagger:hilt-android:2.50")
     kapt("com.google.dagger:hilt-compiler:2.50")
+
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.google.api-client:google-api-client-android:2.2.0")
+    implementation("com.google.apis:google-api-services-calendar:v3-rev20220715-2.0.0")
+    implementation("com.google.guava:guava:31.1-android")
 
 
     // --- DEPENDENCIAS EXISTENTES ---

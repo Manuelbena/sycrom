@@ -46,6 +46,22 @@ interface TaskDao {
     @Query("DELETE FROM task_table WHERE parent_id = :parentId")
     suspend fun deleteSeriesRaw(parentId: String)
 
-    // En TaskDao.kt
+    // Buscar tarea por el ID de Google
+    @Query("SELECT * FROM task_table WHERE googleCalendarId = :googleId LIMIT 1")
+    suspend fun getTaskByGoogleId(googleId: String): TaskEntity?
+
+    @Query("SELECT COUNT(*) FROM task_table WHERE date BETWEEN :start AND :end")
+    suspend fun getCountTasksBetween(start: Long, end: Long): Int
+
+    // NUEVO: Buscar tarea local candidata para fusionar (Mismo título + Mismo día)
+    // Buscamos tareas que NO tengan ya un ID de Google asignado para evitar falsos positivos
+    @Query("""
+        SELECT * FROM task_table 
+        WHERE summary = :title 
+        AND date BETWEEN :startDay AND :endDay 
+        AND (googleCalendarId IS NULL OR googleCalendarId = '')
+        LIMIT 1
+    """)
+    suspend fun findLocalCandidate(title: String, startDay: Long, endDay: Long): TaskEntity?
 
 }

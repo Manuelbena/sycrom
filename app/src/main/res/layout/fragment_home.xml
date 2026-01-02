@@ -181,6 +181,15 @@
 
 </com.google.android.material.appbar.AppBarLayout>
 
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/lyHeader"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nested_scroll_view"
         android:layout_width="0dp"
@@ -194,6 +203,7 @@
 
         <LinearLayout
             android:id="@+id/ly_body_home"
+            android:animateLayoutChanges="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/color_body"
@@ -265,6 +275,7 @@
                         app:layout_constraintTop_toBottomOf="@+id/tvSubtitle">
 
                         <androidx.constraintlayout.widget.ConstraintLayout
+                            android:id="@+id/lyProgress"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:padding="@dimen/spacing_medium">
@@ -349,6 +360,25 @@
                         android:textColor="#6B7280"
                         android:textSize="@dimen/txt_xl" />
                 </LinearLayout>
+                <com.facebook.shimmer.ShimmerFrameLayout
+                    android:id="@+id/shimmerViewContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:shimmer_duration="800">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingStart="20dp"
+                        android:clipToPadding="false">
+
+                        <include layout="@layout/layout_skeleton_task" />
+                        <include layout="@layout/layout_skeleton_task" />
+                        <include layout="@layout/layout_skeleton_task" />
+                    </LinearLayout>
+                </com.facebook.shimmer.ShimmerFrameLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerViewTasks"
@@ -614,6 +644,7 @@
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/tvFabAddTask"

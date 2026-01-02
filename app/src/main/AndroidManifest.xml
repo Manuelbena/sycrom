@@ -61,14 +61,18 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".presentation.activitys.MainActivity"
+            android:exported="false"
+            android:label="@string/app_name" />
+        <activity
+            android:name=".presentation.login.LoginActivity"
             android:exported="true"
-            android:label="@string/app_name">
+            android:theme="@style/Base.Theme.Sycrom">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".presentation.activitys.ContainerActivity"
             android:exported="false">

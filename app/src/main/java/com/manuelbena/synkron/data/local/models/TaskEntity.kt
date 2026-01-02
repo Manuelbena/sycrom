@@ -10,6 +10,7 @@ import com.manuelbena.synkron.domain.models.SubTaskDomain
 data class TaskEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
+    val googleCalendarId: String? = null,
 
     // Campos de Fecha/Hora
     val date: Long,

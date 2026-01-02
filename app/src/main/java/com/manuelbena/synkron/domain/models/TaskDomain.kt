@@ -7,6 +7,8 @@ import kotlinx.parcelize.Parcelize
 data class TaskDomain(
     // --- Campos Internos de Synkrón ---
     val id: Int = 0,
+    val googleCalendarId: String? = null,
+
     val subTasks: List<SubTaskDomain> = emptyList(),
     val typeTask : String, // Nombre de la categoría (ej: "Trabajo")
     val parentId: String? = null,

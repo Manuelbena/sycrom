@@ -1,9 +1,11 @@
 package com.manuelbena.synkron.presentation.calendar
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.manuelbena.synkron.data.repository.GoogleCalendarRepository
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.models.CalendarDayPresentation
@@ -24,7 +26,8 @@ import javax.inject.Inject
 
 @HiltViewModel // [CRÍTICO] Necesario para que 'by viewModels()' funcione en el Fragment
 class CalendarViewModel @Inject constructor(
-    private val repository: ITaskRepository
+    private val repository: ITaskRepository,
+    private val googleCalendarRepository: GoogleCalendarRepository
 ) : ViewModel() {
 
     private val locale = Locale("es", "ES")

@@ -98,7 +98,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             }
             return
         }
-
+        setupSwipeRefresh()
         setupButtomFloating()
         setupHeader()
         setupCalendar()
@@ -206,47 +206,84 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun updateUi(state: HomeState) {
-        binding.progressIndicator.isVisible = state.isLoading
-        val hasTasks = state.tasks.isNotEmpty()
+        binding.apply {
+            // Variables de estado
+            val hasTasks = state.tasks.isNotEmpty()
+            // ¿Es la primera carga? (Está cargando Y aún no hay tareas en la lista)
+            val isFirstLoad = state.isLoading && !hasTasks
 
-        if (state.isLoading && !hasTasks) {
-            binding.recyclerViewTasks.isVisible = false
-            binding.ivNoTasks.isVisible = false
-            binding.tvNoTasks.isVisible = false
-            binding.tabLayoutDots.isVisible = false
-        } else {
-            binding.recyclerViewTasks.isVisible = hasTasks
-            binding.tabLayoutDots.isVisible = hasTasks
-            binding.ivNoTasks.isVisible = !hasTasks && !state.isLoading
-            binding.tvNoTasks.isVisible = !hasTasks && !state.isLoading
+            // 1. CONTROL DEL SPINNER (SwipeRefresh)
+            // Solo mostramos el spinner girando si NO es la primera carga (es decir, si es un refresco manual).
+            // Si es primera carga, el protagonista es el Skeleton.
+            swipeRefresh.isRefreshing = state.isLoading && hasTasks
 
-            taskAdapter.submitList(state.tasks)
+            // Ocultamos indicadores antiguos para siempre
+            progressIndicator.isVisible = false
 
-            // Actualizar tarjeta de progreso
-            if (!state.isLoading) {
-                updateProgressCard(state.tasks)
-            }
-
-            // Dots indicator logic
-            if (binding.tabLayoutDots.tabCount != state.tasks.size) {
-                binding.tabLayoutDots.removeAllTabs()
-                state.tasks.forEach { _ ->
-                    val newTab = binding.tabLayoutDots.newTab()
-                    newTab.setCustomView(R.layout.dot_indicator_layout)
-                    binding.tabLayoutDots.addTab(newTab)
+            // 2. GESTIÓN DE VISIBILIDAD (Skeleton vs Contenido)
+            if (isFirstLoad) {
+                // --- MODO: PRIMERA CARGA (SKELETON) ---
+                if (!shimmerViewContainer.isShimmerStarted) {
+                    shimmerViewContainer.startShimmer()
                 }
-                val layoutManager = binding.recyclerViewTasks.layoutManager as? LinearLayoutManager
-                val currentPos = layoutManager?.findFirstCompletelyVisibleItemPosition()
-                if (currentPos != null && currentPos != RecyclerView.NO_POSITION && currentPos < binding.tabLayoutDots.tabCount) {
-                    binding.tabLayoutDots.getTabAt(currentPos)?.select()
-                }
-            }
+                shimmerViewContainer.isVisible = true
 
-            if (shouldScrollToStart && hasTasks) {
-                binding.recyclerViewTasks.scrollToPosition(0)
-                shouldScrollToStart = false
+                // Ocultamos todo lo demás para dejar solo los "huesos" grises
+                recyclerViewTasks.isVisible = false
+                lyProgress.isVisible = false // Asegúrate que este ID coincide con tu XML (el contenedor del progreso)
+                ivNoTasks.isVisible = false
+                tvNoTasks.isVisible = false
+                tabLayoutDots.isVisible = false
+
+            } else {
+                // --- MODO: DATOS LISTOS O REFRESCO MANUAL ---
+                if (shimmerViewContainer.isShimmerStarted) {
+                    shimmerViewContainer.stopShimmer()
+                }
+                shimmerViewContainer.isVisible = false
+
+                if (hasTasks) {
+                    // A) HAY TAREAS (Mostramos todo)
+                    recyclerViewTasks.isVisible = true
+                    lyProgress.isVisible = true
+                    tabLayoutDots.isVisible = true
+
+                    // Ocultamos el Empty State
+                    ivNoTasks.isVisible = false
+                    tvNoTasks.isVisible = false
+
+                    // Actualizamos la lista y la tarjeta
+                    taskAdapter.submitList(state.tasks)
+                    updateProgressCard(state.tasks)
+
+                    // Lógica de los puntitos (Dots Indicator)
+                    if (tabLayoutDots.tabCount != state.tasks.size) {
+                        tabLayoutDots.removeAllTabs()
+                        state.tasks.forEach { _ ->
+                            val newTab = tabLayoutDots.newTab()
+                            newTab.setCustomView(R.layout.dot_indicator_layout)
+                            tabLayoutDots.addTab(newTab)
+                        }
+                        // Mantener el punto seleccionado sincronizado con el scroll
+                        val layoutManager = recyclerViewTasks.layoutManager as? LinearLayoutManager
+                        val currentPos = layoutManager?.findFirstCompletelyVisibleItemPosition()
+                        if (currentPos != null && currentPos != RecyclerView.NO_POSITION && currentPos < tabLayoutDots.tabCount) {
+                            tabLayoutDots.getTabAt(currentPos)?.select()
+                        }
+                    }
+                } else {
+                    // B) LISTA VACÍA (Terminó de cargar y no hay nada)
+                    // Gracias al animateLayoutChanges="true" en el XML, esto aparecerá suave (fade-in)
+                    recyclerViewTasks.isVisible = false
+                    lyProgress.isVisible = false
+                    tabLayoutDots.isVisible = false
+
+                    ivNoTasks.isVisible = true
+                    tvNoTasks.isVisible = true
+                }
             }
         }
+        // Actualizamos el calendario de la semana
         weekManager.selectDate(state.selectedDate)
     }
 
@@ -303,6 +340,36 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 showAiButton()
             }
             btnToday.setOnClickListener { weekManager.scrollToToday() }
+        }
+    }
+
+    // --- AÑADE ESTA FUNCIÓN AL FINAL DEL FRAGMENTO ---
+    private fun setupSwipeRefresh() {
+        binding.swipeRefresh.apply {
+            // COLOR DE FONDO (El círculo): Usamos un tono "Surface Container" (gris muy suave/azulado)
+            // Esto le da profundidad M3 en lugar del blanco plano antiguo.
+            val surfaceColor = com.google.android.material.color.MaterialColors.getColor(
+                this, com.google.android.material.R.attr.colorSurfaceContainerHigh
+            )
+            setProgressBackgroundColorSchemeColor(surfaceColor)
+
+            // COLORES DEL INDICADOR (La flecha giratoria):
+            // Alternamos entre Primary (tu color principal) y Tertiary (tu color de acento)
+            // para darle ese toque "juguetón" de Google.
+            val primaryColor = com.google.android.material.color.MaterialColors.getColor(
+                this, com.google.android.material.R.attr.colorOnPrimary
+            )
+            val tertiaryColor = com.google.android.material.color.MaterialColors.getColor(
+                this, com.google.android.material.R.attr.colorTertiary
+            )
+            setColorSchemeColors(primaryColor, tertiaryColor)
+
+            // Ajuste de posición: Que baje un poco más para que se vea bien
+            setProgressViewOffset(true, 0, 150)
+
+            setOnRefreshListener {
+                viewModel.onRefreshRequested()
+            }
         }
     }
 

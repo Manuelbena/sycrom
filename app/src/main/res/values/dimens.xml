@@ -18,7 +18,7 @@
 
     <dimen name="card_margin_horizontal">16dp</dimen>
     <dimen name="card_margin_vertical">8dp</dimen>
-    <dimen name="card_elevation">4dp</dimen>
+    <dimen name="card_elevation">0dp</dimen>
     <dimen name="card_padding_large">16dp</dimen>
 
 
@@ -72,7 +72,7 @@
     <dimen name="task_card_width">300dp</dimen>
     <dimen name="card_corner_radius_lg">20dp</dimen>
     <dimen name="card_corner_radius_xl">24dp</dimen>
-    <dimen name="card_elevation_default">2dp</dimen>
+    <dimen name="card_elevation_default">1dp</dimen>
     <dimen name="card_stroke_width">1dp</dimen>
 
     <dimen name="drawable_padding_tag">6dp</dimen>

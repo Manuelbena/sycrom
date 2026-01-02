@@ -231,7 +231,8 @@
             app:layout_goneMarginTop="@dimen/spacing_m"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/tvEventTitle"
-            app:layout_constraintTop_toBottomOf="@+id/llSubtasksContainer">
+            app:layout_constraintTop_toBottomOf="@+id/llSubtasksContainer"
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <TextView
                 android:id="@+id/tvCategoryTag"

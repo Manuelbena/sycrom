@@ -2,7 +2,8 @@ package com.manuelbena.synkron.presentation.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.manuelbena.synkron.domain.models.SubTaskDomain // <--- IMPORTANTE
+import com.manuelbena.synkron.domain.interfaces.ITaskRepository
+import com.manuelbena.synkron.domain.models.SubTaskDomain
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.domain.usecase.DeleteTaskUseCase
 import com.manuelbena.synkron.domain.usecase.GetTaskTodayUseCase
@@ -23,7 +24,8 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val getTaskTodayUseCase: GetTaskTodayUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
-    private val deleteTaskUseCase: DeleteTaskUseCase
+    private val deleteTaskUseCase: DeleteTaskUseCase,
+    private val taskRepository: ITaskRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeState())
@@ -33,8 +35,7 @@ class HomeViewModel @Inject constructor(
     val action: SingleLiveEvent<HomeAction> = _action
 
     private val _refreshTrigger = MutableSharedFlow<Unit>(
-        replay = 0,
-        extraBufferCapacity = 1,
+        replay = 1, // Cambiado a 1 para asegurar que se emita si se pierde el evento inicial
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
 
@@ -42,34 +43,40 @@ class HomeViewModel @Inject constructor(
         .ofPattern("EEEE, dd 'de' MMMM", Locale("es", "ES"))
 
     init {
+        // Inicializamos la fecha
         _uiState.update { it.copy(selectedDate = LocalDate.now()) }
 
         viewModelScope.launch {
+            // Combinamos los cambios de fecha con el trigger de refresco
             merge(
                 _uiState.map { it.selectedDate }.distinctUntilChanged(),
                 _refreshTrigger.map { _uiState.value.selectedDate }
             )
                 .flatMapLatest { date ->
-                    _uiState.update { it.copy(isLoading = true) }
-                    flow {
-                        // ELIMINAR O COMENTAR ESTA LÍNEA:
-                        // delay(300L) <--- ¡Esto es el culpable del parpadeo lento!
-
-                        getTaskTodayUseCase(date).collect { tasks ->
-                            emit(tasks)
+                    // Llamamos al UseCase directamente
+                    getTaskTodayUseCase(date)
+                        .onStart {
+                            // Activamos carga AL INICIO del flujo
+                            _uiState.update { it.copy(isLoading = true) }
+                            delay(1000)
                         }
-                    }
-                }
-                .catch { e ->
-                    _action.postValue(HomeAction.ShowErrorSnackbar(e.message ?: "Error al cargar tareas"))
-                    _uiState.update { it.copy(isLoading = false) }
+                        .catch { e ->
+                            // Manejo de errores
+                            _uiState.update { it.copy(isLoading = false) }
+                            _action.postValue(HomeAction.ShowErrorSnackbar(e.message ?: "Error al cargar"))
+                        }
+                        .onEach {
+                            // Desactivamos carga en cuanto llega cualquier dato
+                            _uiState.update { it.copy(isLoading = false) }
+                        }
                 }
                 .collect { tasks ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
+                    // Actualizamos la lista y el texto de la cabecera
+                    _uiState.update { currentState ->
+                        currentState.copy(
                             tasks = tasks,
-                            headerText = it.selectedDate.format(headerDateFormatter).replaceFirstChar { char ->
+                            isLoading = false, // Aseguramos false al recibir datos
+                            headerText = currentState.selectedDate.format(headerDateFormatter).replaceFirstChar { char ->
                                 if (char.isLowerCase()) char.titlecase(Locale.getDefault()) else char.toString()
                             }
                         )
@@ -78,10 +85,28 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    // Evento del SwipeRefresh
+    fun onRefreshRequested() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                // Sincronización inteligente
+                (taskRepository as? com.manuelbena.synkron.data.repository.TaskRepository)?.synchronizeWithGoogle()
+                refreshData() // Esto recargará la lista local
+                _action.postValue(HomeAction.ShowErrorSnackbar("Sincronizado correctamente"))
+            } catch (e: Exception) {
+                _action.postValue(HomeAction.ShowErrorSnackbar("Error: ${e.message}"))
+            } finally {
+                // El isLoading se pondrá en false cuando refreshData() emita los nuevos datos en el init
+            }
+        }
+    }
+
     fun refreshData() {
         _refreshTrigger.tryEmit(Unit)
     }
 
+    // ... Resto de funciones (onDateSelected, onTaskCheckedChanged, etc.) igual que antes ...
     fun onDateSelected(date: LocalDate) {
         _uiState.update { it.copy(selectedDate = date) }
     }
@@ -105,23 +130,16 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // 🔥 NUEVA FUNCIÓN: Maneja el cambio de una subtarea individual 🔥
     fun onSubTaskChanged(taskId: Int, updatedSubTask: SubTaskDomain) {
         viewModelScope.launch {
-            // 1. Buscamos la tarea padre en la lista actual (para no tener que ir a BD a leerla)
             val currentTasks = _uiState.value.tasks
             val parentTask = currentTasks.find { it.id == taskId }
 
             if (parentTask != null) {
-                // 2. Creamos una nueva lista de subtareas reemplazando la modificada
                 val newSubTasks = parentTask.subTasks.map {
                     if (it.id == updatedSubTask.id) updatedSubTask else it
                 }
-
-                // 3. Copiamos la tarea con la nueva lista
                 val updatedTask = parentTask.copy(subTasks = newSubTasks)
-
-                // 4. Guardamos en BD
                 try {
                     updateTaskUseCase(updatedTask)
                 } catch (e: Exception) {
