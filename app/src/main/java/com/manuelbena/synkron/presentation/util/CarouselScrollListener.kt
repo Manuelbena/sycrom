@@ -11,7 +11,7 @@ import kotlin.math.abs
 import kotlin.math.max
 
 class CarouselScrollListener(
-    private val minScale: Float = 0.8f,
+    private val minScale: Float = 0.9f,
     private val minAlpha: Float = 0.5f,
     private val maxBlur: Float = 10f
 ) : RecyclerView.OnScrollListener() {

@@ -33,6 +33,7 @@ import com.manuelbena.synkron.presentation.activitys.ContainerActivity
 import com.manuelbena.synkron.presentation.dialogs.adapter.ReminderManagerAdapter
 import com.manuelbena.synkron.presentation.models.ReminderItem
 import com.manuelbena.synkron.presentation.models.ReminderMethod
+import com.manuelbena.synkron.presentation.task.TaskBottomSheet
 import com.manuelbena.synkron.presentation.util.*
 import com.manuelbena.synkron.presentation.util.extensions.toDurationString
 import dagger.hilt.android.AndroidEntryPoint
@@ -140,11 +141,7 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
 
             btnEdit.setOnClickListener {
                 viewModel.task.value?.let { task ->
-                    val intent = Intent(requireContext(), ContainerActivity::class.java).apply {
-                        putExtra(TASK_TO_EDIT_KEY, task)
-                    }
-                    startActivity(intent)
-                    dismiss()
+                    showTaskBottomSheet(task)
                 }
             }
 
@@ -183,6 +180,11 @@ class TaskDetailBottomSheet : BottomSheetDialogFragment() {
             Log.e("SYNKRON_DEBUG", "🔴 Excepción pintando la UI: ${e.message}")
             e.printStackTrace()
         }
+    }
+
+    private fun showTaskBottomSheet(task: TaskDomain?) {
+        val bottomSheet = TaskBottomSheet.newInstance(task)
+        bottomSheet.show(childFragmentManager, "TaskBottomSheet")
     }
 
     private fun setupHeader(task: TaskDomain) {

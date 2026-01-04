@@ -205,6 +205,53 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         weekManager.generateWeekDays()
     }
 
+    private fun confirmDeletion(task: TaskDomain) {
+        // Detectamos si es parte de una serie mirando el parentId
+        val isRecurringSeries = !task.parentId.isNullOrEmpty()
+
+        if (isRecurringSeries) {
+            showRecurringDeleteDialog(task)
+        } else {
+            showSimpleDeleteDialog(task)
+        }
+    }
+
+    private fun showSimpleDeleteDialog(task: TaskDomain) {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("¿Borrar tarea?")
+            .setMessage("Esta acción no se puede deshacer.")
+            .setPositiveButton("Borrar") { _, _ ->
+                // Usamos deleteInstance por defecto para tareas simples
+                viewModel.deleteTaskInstance(task)
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun showRecurringDeleteDialog(task: TaskDomain) {
+        val options = arrayOf("Solo este evento", "Este y los futuros (Serie)")
+
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Evento recurrente")
+            .setSingleChoiceItems(options, -1) { dialog, which ->
+                when (which) {
+                    0 -> { // Solo este
+                        viewModel.deleteTaskInstance(task)
+                        dialog.dismiss()
+                    }
+                    1 -> { // Serie completa
+                        viewModel.deleteTaskSeries(task)
+                        dialog.dismiss()
+                    }
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+
+
+
+    }
+
     private fun updateUi(state: HomeState) {
         binding.apply {
             // Variables de estado
@@ -309,14 +356,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             // linearProgressIndicator.progress = percentage // <- Descomenta esto si usas ProgressBar con degradado
             linearProgressIndicator.setProgressCompat(percentage, true) // <- Esto es para Material LinearProgressIndicator
 
-            // Cambio de color al completar (Opcional)
-            if (percentage == 100) {
-                tvProgressLabel.text = "¡Todo listo!"
-                ivProgressIcon.imageTintList = ContextCompat.getColorStateList(requireContext(), R.color.cat_personal)
-            } else {
-                tvProgressLabel.text = getString(R.string.home_tasks_progress_label)
-                ivProgressIcon.imageTintList = ContextCompat.getColorStateList(requireContext(), R.color.purple_600)
-            }
         }
     }
 
@@ -562,7 +601,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         val itemWidthDp = 300
         val itemWidthPx = resources.displayMetrics.density * itemWidthDp
         val screenWidthPx = resources.displayMetrics.widthPixels
-        val padding = (screenWidthPx / 2f - itemWidthPx / 2f).toInt().coerceAtLeast(0)
+        val padding = (screenWidthPx / 2.8f - itemWidthPx / 2.8f).toInt().coerceAtLeast(0)
         setPadding(padding, 0, padding, 0)
         clipToPadding = false
     }

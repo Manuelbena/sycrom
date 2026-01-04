@@ -27,6 +27,8 @@
     <dimen name="text_caption">12sp</dimen>
     <dimen name="text_body">14sp</dimen>
     <dimen name="text_body_large">14sp</dimen>
+    <dimen name="text_h2">18sp</dimen>
+
     <dimen name="text_h6">20sp</dimen>
     <dimen name="text_h5">24sp</dimen>
     <dimen name="icon_small">18dp</dimen>
@@ -70,8 +72,8 @@
     <dimen name="icon_size_lg">24dp</dimen>
     <dimen name="icon_size_xl">48dp</dimen>
     <dimen name="task_card_width">300dp</dimen>
-    <dimen name="card_corner_radius_lg">20dp</dimen>
-    <dimen name="card_corner_radius_xl">24dp</dimen>
+    <dimen name="card_corner_radius_lg">16dp</dimen>
+    <dimen name="card_corner_radius_xl">16dp</dimen>
     <dimen name="card_elevation_default">1dp</dimen>
     <dimen name="card_stroke_width">1dp</dimen>
 
