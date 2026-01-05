@@ -253,7 +253,7 @@
 
 
                     <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
+                        android:layout_width="@dimen/task_card_width"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="@dimen/spacing_small"
                         app:cardBackgroundColor="@color/color_card"
@@ -391,7 +391,6 @@
                     android:id="@+id/tabLayoutDots"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_small"
                     android:background="@android:color/transparent"
                     android:visibility="gone"
                     app:layout_constraintEnd_toEndOf="parent"

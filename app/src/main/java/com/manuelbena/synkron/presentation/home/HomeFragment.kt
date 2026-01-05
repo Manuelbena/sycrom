@@ -598,10 +598,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun RecyclerView.applyCarouselPadding() {
-        val itemWidthDp = 300
+        // Asegúrate de que este valor coincida con el de tu XML (300dp)
+        val itemWidthDp = 380
         val itemWidthPx = resources.displayMetrics.density * itemWidthDp
         val screenWidthPx = resources.displayMetrics.widthPixels
-        val padding = (screenWidthPx / 2.8f - itemWidthPx / 2.8f).toInt().coerceAtLeast(0)
+
+        // FÓRMULA DE CENTRADO PERFECTO: (AnchoPantalla - AnchoItem) / 2
+        val padding = ((screenWidthPx - itemWidthPx) / 2f).toInt().coerceAtLeast(0)
+
         setPadding(padding, 0, padding, 0)
         clipToPadding = false
     }

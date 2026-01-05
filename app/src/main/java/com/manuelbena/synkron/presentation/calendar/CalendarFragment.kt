@@ -1,7 +1,6 @@
 package com.manuelbena.synkron.presentation.calendar
 
 import android.graphics.Color
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,7 +19,9 @@ import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentCalendarBinding
 import com.manuelbena.synkron.databinding.ItemCalendarMonthDayBinding
+import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.calendar.adapter.CalendarTaskAdapter
+import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
 import com.manuelbena.synkron.presentation.util.getCategoryColor
 import dagger.hilt.android.AndroidEntryPoint
 import java.time.LocalDate
@@ -35,6 +36,7 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel
     override val viewModel: CalendarViewModel by viewModels()
     private val titleFormatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale("es", "ES"))
 
+    private var taskDetailBottomSheet: TaskDetailBottomSheet? = null
     private lateinit var tasksAdapter: CalendarTaskAdapter
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentCalendarBinding {
@@ -117,7 +119,7 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel
                             val colorInt = ContextCompat.getColor(context, colorResId)
 
                             // [TOQUE PREMIUM] Aplicar Alpha (25% opacidad)
-                            val pastelColor = adjustAlpha(colorInt, 0.25f)
+                            val pastelColor = adjustAlpha(colorInt, 0.30f)
                             container.view.setBackgroundColor(pastelColor)
 
                             // Texto en el color fuerte de la categoría para armonía
@@ -185,6 +187,7 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel
                 if (data.date == selectedDate) {
                     // Si es el día seleccionado, le ponemos un borde o fondo especial
                     // Ejemplo: Un borde azul fuerte
+                    tvNumber.setTextColor(Color.WHITE)
                     container.view.setBackgroundResource(R.drawable.day_selected_backgorund)
                 }
 
@@ -289,7 +292,8 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel
         tasksAdapter = CalendarTaskAdapter(
             onItemClick = { task ->
                 // Navegar a detalle
-                // ContainerActivity.navigate(...)
+                showTaskDetail(task)
+
             },
             onTaskCheckedChange = { task, isDone ->
                 // Actualizar estado en ViewModel (necesitarás crear este método en el VM)
@@ -302,6 +306,12 @@ class CalendarFragment : BaseFragment<FragmentCalendarBinding, CalendarViewModel
             adapter = tasksAdapter
             scheduleLayoutAnimation()
         }
+    }
+
+    private fun showTaskDetail(task: TaskDomain) {
+        taskDetailBottomSheet?.dismiss()
+        taskDetailBottomSheet = TaskDetailBottomSheet.newInstance(task)
+        taskDetailBottomSheet?.show(childFragmentManager, "TaskDetailBottomSheet")
     }
 }
 

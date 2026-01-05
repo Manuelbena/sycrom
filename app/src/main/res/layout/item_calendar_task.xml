@@ -105,6 +105,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
+            android:nestedScrollingEnabled="false"
             android:scaleX="0.8"
             android:scaleY="0.8"/>
 

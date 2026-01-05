@@ -66,6 +66,8 @@ class CalendarViewModel @Inject constructor(
     fun selectDate(date: LocalDate) {
         _selectedDate.value = date
     }
+    
+
 
 
     private var loadJob: Job? = null

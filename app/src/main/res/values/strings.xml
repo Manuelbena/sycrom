@@ -77,7 +77,7 @@
     <string name="day_short_sun">Dom</string>
 
     <string name="home_tasks_title">Tareas de hoy</string>
-    <string name="home_progress_subtitle_format">%1$d de %2$d tareas completadas</string>
+    <string name="home_progress_subtitle_format">%1$d de %2$d tareas</string>
     <string name="home_tasks_progress_label">Progreso</string>
     <string name="home_tasks_empty_title">¡Todo despejado! Disfruta tu día.</string>
 
