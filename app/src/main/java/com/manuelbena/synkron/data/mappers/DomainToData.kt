@@ -53,7 +53,8 @@ fun TaskDomain.toEntity(): TaskEntity {
         isArchived = this.isArchived,
         isPinned = this.isPinned,
         synkronRecurrence = this.synkronRecurrence,
-        synkronRecurrenceDays = this.synkronRecurrenceDays
+        synkronRecurrenceDays = this.synkronRecurrenceDays,
+        googleCalendarId = this.googleCalendarId,
     )
 }
 

@@ -34,8 +34,18 @@ class TaskAdapter(
     private val onSubTaskChange: (taskId: Int, subTask: SubTaskDomain) -> Unit
 ) : ListAdapter<TaskDomain, TaskAdapter.TaskViewHolder>(TaskDiffCallback()) {
 
+    init {
+        // Esto optimiza mucho si tus IDs son únicos (que lo son)
+        setHasStableIds(true)
+    }
+
     // Mantiene el estado de expansión de las tareas al hacer scroll
     private val expandedTaskIds = mutableSetOf<Int>()
+
+    override fun getItemId(position: Int): Long {
+        // Devuelve el ID real de la tarea, no la posición
+        return getItem(position).id.toLong()
+    }
 
     // "Memoria" para restaurar el estado de las subtareas si el usuario desmarca la tarea padre
     private val subtasksSnapshot = mutableMapOf<Int, List<SubTaskDomain>>()
@@ -339,17 +349,19 @@ class TaskAdapter(
             fun dpToPx(dp: Int) = (dp * context.resources.displayMetrics.density).toInt()
             val iconSize = dpToPx(12)
 
-            // 1. Categoría
+            // 1. Categoría (Tu código existente)
             val categoryName = item.typeTask.ifEmpty { "General" }
             val catColorRes = categoryName.getCategoryColor()
             val catIconRes = categoryName.getCategoryIcon()
             val catColor = ContextCompat.getColor(context, catColorRes)
 
+
             binding.tvCategoryTag.apply {
                 text = categoryName.getName()
                 setTextColor(catColor)
+                // Usamos backgroundTintList en lugar de setTint directo para evitar problemas de reciclado
                 background.setTint(catColor)
-                background.alpha = 50
+                background.alpha = 50 // Ojo: alpha va de 0-255 en background.alpha
 
                 val icon = ContextCompat.getDrawable(context, catIconRes)
                 icon?.setTint(catColor)
@@ -357,13 +369,12 @@ class TaskAdapter(
                 setCompoundDrawables(icon, null, null, null)
             }
 
-            // 2. Prioridad
+            // 2. Prioridad (Tu código existente)
             val priorityName = item.priority
             binding.tvPriorityTag.isVisible = priorityName.isNotEmpty()
 
             if (priorityName.isNotEmpty()) {
                 val prioColorRes = priorityName.getPriorityColor()
-                // Usamos ic_mark porque 'flag' no existe en tus drawables subidos
                 val prioIconRes = R.drawable.flag
                 val prioColor = ContextCompat.getColor(context, prioColorRes)
 
@@ -379,6 +390,28 @@ class TaskAdapter(
                     setCompoundDrawables(flagIcon, null, null, null)
                 }
             }
+
+            val now = System.currentTimeMillis()
+            val startMillis = item.start?.dateTime
+
+            // Si tiene inicio pero no fin, asumimos 1 hora de duración para la visualización
+            val endMillis = item.end?.dateTime ?: (startMillis?.plus(3600000)) // +1 hora
+
+            // Verificar si es una tarea con hora (no de todo el día)
+            val isTimedTask = startMillis != null
+
+            // Condición:
+            // 1. No está hecha
+            // 2. Es una tarea con hora
+            // 3. 'Ahora' es mayor o igual al inicio
+            // 4. 'Ahora' es menor que el fin
+            val isInProgress = !item.isDone &&
+                    isTimedTask &&
+                    endMillis != null &&
+                    now >= startMillis!! &&
+                    now < endMillis
+
+            binding.lyActiveStatus.isVisible = isInProgress
         }
 
         private fun showPopupMenu(anchorView: View, task: TaskDomain) {
@@ -405,9 +438,16 @@ class TaskAdapter(
         data class OnShare(val task: TaskDomain) : TaskMenuAction()
     }
 
-    private class TaskDiffCallback : DiffUtil.ItemCallback<TaskDomain>() {
-        override fun areItemsTheSame(oldItem: TaskDomain, newItem: TaskDomain) =
-            if (oldItem.id != 0 && newItem.id != 0) oldItem.id == newItem.id else oldItem.summary == newItem.summary
-        override fun areContentsTheSame(oldItem: TaskDomain, newItem: TaskDomain) = oldItem == newItem
+    class TaskDiffCallback : DiffUtil.ItemCallback<TaskDomain>() {
+        override fun areItemsTheSame(oldItem: TaskDomain, newItem: TaskDomain): Boolean {
+            // Comparamos por ID único. Si el ID es el mismo, es el mismo ítem.
+            return oldItem.id == newItem.id
+        }
+
+        override fun areContentsTheSame(oldItem: TaskDomain, newItem: TaskDomain): Boolean {
+            // Comparamos el contenido completo (Data Class equals)
+            // Si esto devuelve false, el RecyclerView sabe que tiene que repintar SOLO este ítem.
+            return oldItem == newItem
+        }
     }
 }

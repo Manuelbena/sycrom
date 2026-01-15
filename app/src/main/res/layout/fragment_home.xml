@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -8,633 +7,749 @@
     android:background="@color/bg_home">
 
     <com.google.android.material.appbar.AppBarLayout
-    android:id="@+id/lyHeader"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/md_theme_surface"
-    android:fitsSystemWindows="true"
-    app:elevation="0dp"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintBottom_toTopOf="@+id/nested_scroll_view">
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/clHeaderContent"
+        android:id="@+id/lyHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="@dimen/spacing_large"
-        android:paddingTop="@dimen/spacing_medium"
-        android:paddingBottom="@dimen/spacing_medium">
+        android:background="@color/md_theme_surface"
+        android:fitsSystemWindows="true"
+        app:elevation="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/nested_scroll_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/textGreeting"
-            android:layout_width="0dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/clHeaderContent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/spacing_medium"
-            android:fontFamily="@font/nunitoextrabold"
-            android:text="@string/home_greeting_placeholder"
-            android:maxLines="1"
+            android:paddingHorizontal="@dimen/spacing_large"
+            android:paddingTop="@dimen/spacing_medium"
+            android:paddingBottom="@dimen/spacing_medium">
 
-            android:textColor="@color/md_theme_onSurface"
-            android:textSize="@dimen/text_h5"
-            app:layout_constraintEnd_toStartOf="@+id/lyWeatherActions"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Hola, Manuel" />
+            <TextView
+                android:id="@+id/textGreeting"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/spacing_medium"
+                android:fontFamily="@font/nunitoextrabold"
+                android:maxLines="1"
+                android:text="@string/home_greeting_placeholder"
 
-        <TextView
-            android:id="@+id/textDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_tiny"
-            android:fontFamily="@font/nunitosemibold"
-            android:text="@string/home_date_placeholder"
-            android:textColor="@color/secondary_text"
-            android:textSize="@dimen/text_body"
-            app:layout_constraintStart_toStartOf="@id/textGreeting"
-            app:layout_constraintTop_toBottomOf="@id/textGreeting"
-            tools:text="12 de mayo de 2025" />
+                android:textColor="@color/md_theme_onSurface"
+                android:textSize="@dimen/text_h5"
+                app:layout_constraintEnd_toStartOf="@+id/lyWeatherActions"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Hola, Manuel" />
 
-        <LinearLayout
-            android:id="@+id/lyWeatherActions"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="@+id/textDate"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/textGreeting">
+            <TextView
+                android:id="@+id/textDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_tiny"
+                android:fontFamily="@font/nunitosemibold"
+                android:text="@string/home_date_placeholder"
+                android:textColor="@color/secondary_text"
+                android:textSize="@dimen/text_body"
+                app:layout_constraintStart_toStartOf="@id/textGreeting"
+                app:layout_constraintTop_toBottomOf="@id/textGreeting"
+                tools:text="12 de mayo de 2025" />
 
             <LinearLayout
-                android:id="@+id/lyWeatherWidget"
+                android:id="@+id/lyWeatherActions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingHorizontal="@dimen/spacing_s"
-                android:paddingVertical="@dimen/spacing_small">
+                app:layout_constraintBottom_toBottomOf="@+id/textDate"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/textGreeting">
 
-                <ImageView
-                    android:id="@+id/iconWeather"
-                    android:layout_width="@dimen/icon_small"
-                    android:layout_height="@dimen/icon_small"
-                    app:tint="@color/md_theme_onSurface"
-                    android:contentDescription="@string/cd_weather_icon"
-                    android:src="@drawable/ic_sol" />
-
-                <TextView
-                    android:id="@+id/textTemperature"
+                <LinearLayout
+                    android:id="@+id/lyWeatherWidget"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/spacing_small"
-                    android:fontFamily="@font/nunitobold"
-                    android:text="@string/home_temp_placeholder"
-                    android:textColor="@color/md_theme_onSurface"
-                    android:textSize="@dimen/text_body"
-                    tools:text="17°C" />
-            </LinearLayout>
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="@dimen/spacing_s"
+                    android:paddingVertical="@dimen/spacing_small">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSettings"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="@dimen/spacing_2xl"
-                android:layout_height="@dimen/spacing_2xl"
-                android:layout_marginStart="@dimen/spacing_tiny"
-                android:contentDescription="@string/cd_settings"
-                app:icon="@drawable/ic_settings"
-                app:iconTint="@color/md_theme_onSurface" />
-        </LinearLayout>
+                    <ImageView
+                        android:id="@+id/iconWeather"
+                        android:layout_width="@dimen/icon_small"
+                        android:layout_height="@dimen/icon_small"
+                        android:contentDescription="@string/cd_weather_icon"
+                        android:src="@drawable/ic_sol"
+                        app:tint="@color/md_theme_onSurface" />
 
-        <com.google.android.material.divider.MaterialDivider
-            android:id="@+id/dividerHeader"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/divider_height"
-            android:layout_marginTop="@dimen/spacing_large"
-            app:dividerColor="?attr/colorOutline"
-            app:layout_constraintTop_toBottomOf="@+id/textDate" />
-
-        <LinearLayout
-            android:id="@+id/lyCalendarContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_medium"
-            android:orientation="vertical"
-            app:layout_constraintTop_toBottomOf="@+id/dividerHeader">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/spacing_medium"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <TextView
-                    android:id="@+id/tvMonthYear"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:fontFamily="@font/nunitobold"
-                    android:text="@string/home_calendar_placeholder"
-                    android:textColor="@color/md_theme_onSurface"
-                    android:textSize="@dimen/text_h2"
-                    tools:text="Diciembre 2025" />
+                    <TextView
+                        android:id="@+id/textTemperature"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:fontFamily="@font/nunitobold"
+                        android:text="@string/home_temp_placeholder"
+                        android:textColor="@color/md_theme_onSurface"
+                        android:textSize="@dimen/text_body"
+                        tools:text="17°C" />
+                </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnToday"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="@font/nunitobold"
-                    android:minHeight="40dp"
-                    android:text="@string/home_btn_today"
-                    android:textColor="@color/md_theme_onSurface"
-                    android:textSize="@dimen/text_body"
-                    app:backgroundTint="@color/color_body" />
+                    android:id="@+id/btnSettings"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="@dimen/spacing_2xl"
+                    android:layout_height="@dimen/spacing_2xl"
+                    android:layout_marginStart="@dimen/spacing_tiny"
+                    android:contentDescription="@string/cd_settings"
+                    app:icon="@drawable/ic_settings"
+                    app:iconTint="@color/md_theme_onSurface" />
             </LinearLayout>
+
+            <com.google.android.material.divider.MaterialDivider
+                android:id="@+id/dividerHeader"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/divider_height"
+                android:layout_marginTop="@dimen/spacing_large"
+                app:dividerColor="?attr/colorOutline"
+                app:layout_constraintTop_toBottomOf="@+id/textDate" />
 
             <LinearLayout
+                android:id="@+id/lyCalendarContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/spacing_small"
-                android:orientation="horizontal">
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:orientation="vertical"
+                app:layout_constraintTop_toBottomOf="@+id/dividerHeader">
 
-                <TextView style="@style/CalendarDayLegend" android:textSize="@dimen/text_caption" android:text="@string/day_short_mon" />
-                <TextView style="@style/CalendarDayLegend" android:textSize="@dimen/text_caption" android:text="@string/day_short_tue" />
-                <TextView style="@style/CalendarDayLegend" android:textSize="@dimen/text_caption" android:text="@string/day_short_wed" />
-                <TextView style="@style/CalendarDayLegend" android:textSize="@dimen/text_caption" android:text="@string/day_short_thu" />
-                <TextView style="@style/CalendarDayLegend" android:textSize="@dimen/text_caption" android:text="@string/day_short_fri" />
-                <TextView style="@style/CalendarDayLegend" android:textSize="@dimen/text_caption" android:text="@string/day_short_sat" />
-                <TextView style="@style/CalendarDayLegend" android:textSize="@dimen/text_caption" android:text="@string/day_short_sun" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_medium"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvMonthYear"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/nunitobold"
+                        android:text="@string/home_calendar_placeholder"
+                        android:textColor="@color/md_theme_onSurface"
+                        android:textSize="@dimen/text_h2"
+                        tools:text="Diciembre 2025" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnToday"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/nunitobold"
+                        android:minHeight="40dp"
+                        android:text="@string/home_btn_today"
+                        android:textColor="@color/md_theme_onSurface"
+                        android:textSize="@dimen/text_body"
+                        app:backgroundTint="@color/color_body" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/spacing_small"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/CalendarDayLegend"
+                        android:text="@string/day_short_mon"
+                        android:textSize="@dimen/text_caption" />
+
+                    <TextView
+                        style="@style/CalendarDayLegend"
+                        android:text="@string/day_short_tue"
+                        android:textSize="@dimen/text_caption" />
+
+                    <TextView
+                        style="@style/CalendarDayLegend"
+                        android:text="@string/day_short_wed"
+                        android:textSize="@dimen/text_caption" />
+
+                    <TextView
+                        style="@style/CalendarDayLegend"
+                        android:text="@string/day_short_thu"
+                        android:textSize="@dimen/text_caption" />
+
+                    <TextView
+                        style="@style/CalendarDayLegend"
+                        android:text="@string/day_short_fri"
+                        android:textSize="@dimen/text_caption" />
+
+                    <TextView
+                        style="@style/CalendarDayLegend"
+                        android:text="@string/day_short_sat"
+                        android:textSize="@dimen/text_caption" />
+
+                    <TextView
+                        style="@style/CalendarDayLegend"
+                        android:text="@string/day_short_sun"
+                        android:textSize="@dimen/text_caption" />
+                </LinearLayout>
+
+                <com.kizitonwose.calendar.view.WeekCalendarView
+                    android:id="@+id/weekCalendarView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cv_dayViewResource="@layout/item_calendar_day_new" />
+
             </LinearLayout>
 
-            <com.kizitonwose.calendar.view.WeekCalendarView
-                android:id="@+id/weekCalendarView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cv_dayViewResource="@layout/item_calendar_day_new" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-        </LinearLayout>
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</com.google.android.material.appbar.AppBarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/lyHeader"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/nested_scroll_view"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:clipToPadding="false"
-        android:paddingBottom="100dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/lyHeader">
 
-        <LinearLayout
-            android:id="@+id/ly_body_home"
-            android:animateLayoutChanges="true"
-            android:paddingVertical="@dimen/spacing_xxl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/color_body"
-            android:orientation="vertical">
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/nested_scroll_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clipToPadding="false"
+            android:paddingBottom="100dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/lyHeader">
 
             <LinearLayout
+                android:id="@+id/ly_body_home"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical">
+                android:animateLayoutChanges="true"
+                android:background="@color/color_body"
+                android:orientation="vertical"
+                android:paddingVertical="@dimen/spacing_xxl">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:paddingHorizontal="@dimen/spacing_large"
+                        android:paddingBottom="@dimen/spacing_medium">
+
+                        <TextView
+                            android:id="@+id/tvTitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/nunitobold"
+                            android:text="@string/home_tasks_title"
+                            android:textColor="@color/secondary_text"
+                            android:textSize="@dimen/text_h2"
+
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintVertical_chainStyle="packed" />
+
+
+                        <com.google.android.material.loadingindicator.LoadingIndicator
+                            android:id="@+id/progress_indicator"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:indeterminate="true"
+                            android:visibility="gone"
+                            app:indicatorSize="40dp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
+
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="@dimen/task_card_width"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_small"
+                            app:cardBackgroundColor="@color/color_card"
+                            app:cardCornerRadius="@dimen/card_corner_radius_lg"
+                            app:cardElevation="@dimen/card_elevation_default"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@+id/tvTitle"
+                            app:strokeColor="@color/border"
+                            app:strokeWidth="@dimen/card_stroke_width">
+
+                            <androidx.constraintlayout.widget.ConstraintLayout
+                                android:id="@+id/lyProgress"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:padding="@dimen/spacing_medium">
+
+                                <ImageView
+                                    android:id="@+id/ivProgressIcon"
+                                    android:layout_width="@dimen/icon_medium"
+                                    android:layout_height="@dimen/icon_medium"
+                                    android:src="@drawable/ic_check_circle"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toTopOf="parent"
+                                    app:tint="@color/md_theme_primary" />
+
+                                <TextView
+                                    android:id="@+id/tvSubtitle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="@dimen/icon_small"
+                                    android:fontFamily="@font/nunitosemibold"
+                                    android:text="@string/home_progress_subtitle_format"
+                                    android:textColor="@color/md_theme_onSurface"
+                                    android:textSize="@dimen/text_body"
+                                    app:layout_constraintBottom_toBottomOf="@+id/ivProgressIcon"
+                                    app:layout_constraintStart_toEndOf="@+id/ivProgressIcon"
+                                    app:layout_constraintTop_toTopOf="@+id/ivProgressIcon" />
+
+
+                                <TextView
+                                    android:id="@+id/tvPercentage"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/nunitoextrabold"
+                                    android:text="0%"
+                                    android:textColor="@color/md_theme_onSurface"
+                                    android:textSize="@dimen/txt_xl"
+                                    app:layout_constraintBottom_toBottomOf="@+id/tvSubtitle"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintTop_toTopOf="@+id/tvSubtitle" />
+
+                                <com.google.android.material.progressindicator.LinearProgressIndicator
+                                    android:id="@+id/linearProgressIndicator"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="@dimen/spacing_medium"
+                                    android:progress="0"
+                                    app:indicatorColor="?attr/colorPrimary"
+                                    app:layout_constraintEnd_toEndOf="parent"
+                                    app:layout_constraintStart_toStartOf="parent"
+                                    app:layout_constraintTop_toBottomOf="@+id/ivProgressIcon"
+                                    app:trackColor="@color/secondary_text"
+                                    app:trackCornerRadius="@dimen/spacing_small"
+                                    app:trackThickness="@dimen/txt_dimen_m" />
+
+                            </androidx.constraintlayout.widget.ConstraintLayout>
+
+                        </com.google.android.material.card.MaterialCardView>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ivNoTasks"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_large"
+                        android:visibility="gone">
+
+                        <ImageView
+                            android:layout_width="160dp"
+                            android:layout_height="160dp"
+                            android:contentDescription="@string/cd_no_tasks"
+                            android:src="@drawable/synkrom_sintareas" />
+
+                        <TextView
+                            android:id="@+id/tvNoTasks"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_medium"
+                            android:fontFamily="@font/nunitosemibold"
+                            android:gravity="center"
+                            android:text="@string/home_tasks_empty_title"
+                            android:textColor="#6B7280"
+                            android:textSize="@dimen/txt_xl" />
+                    </LinearLayout>
+
+                    <com.facebook.shimmer.ShimmerFrameLayout
+                        android:id="@+id/shimmerViewContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"
+                        app:shimmer_duration="800">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:clipToPadding="false"
+                            android:orientation="horizontal"
+                            android:paddingStart="20dp">
+
+                            <include layout="@layout/layout_skeleton_task" />
+
+                            <include layout="@layout/layout_skeleton_task" />
+
+                            <include layout="@layout/layout_skeleton_task" />
+                        </LinearLayout>
+                    </com.facebook.shimmer.ShimmerFrameLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewTasks"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
+                        android:layoutAnimation="@anim/layout_animation_fall_down"
+                        android:orientation="horizontal"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:visibility="invisible"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:listitem="@layout/item_task_today"
+                        tools:visibility="visible" />
+
+                    <com.google.android.material.tabs.TabLayout
+                        android:id="@+id/tabLayoutDots"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@android:color/transparent"
+                        android:visibility="gone"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@id/recyclerViewTasks"
+                        app:tabBackground="@null"
+                        app:tabIndicatorHeight="0dp"
+                        app:tabPaddingBottom="0dp"
+                        app:tabPaddingEnd="0dp"
+                        app:tabPaddingStart="0dp"
+                        app:tabPaddingTop="0dp"
+                        tools:visibility="visible" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/clDayTimeline"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="4dp"
+                        android:paddingHorizontal="32dp"
+                        android:visibility="visible">
+
+                        <TextView
+                            android:id="@+id/tvTimelineStart"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/nunitosemibold"
+                            android:text="00:00"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="10sp"
+                            app:layout_constraintBottom_toBottomOf="@id/viewTimeTrack"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/viewTimeTrack" />
+
+                        <TextView
+                            android:id="@+id/tvTimelineEnd"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/nunitosemibold"
+                            android:text="23:59"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="10sp"
+                            app:layout_constraintBottom_toBottomOf="@id/viewTimeTrack"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/viewTimeTrack" />
+
+                        <View
+                            android:id="@+id/viewTimeTrack"
+                            android:layout_width="0dp"
+                            android:layout_height="4dp"
+                            android:layout_marginHorizontal="8dp"
+                            android:background="@drawable/shape_circle_category"
+                            android:backgroundTint="#F0F0F0"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/tvTimelineEnd"
+                            app:layout_constraintStart_toEndOf="@id/tvTimelineStart"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <View
+                            android:id="@+id/viewTimeProgress"
+                            android:layout_width="0dp"
+                            android:layout_height="4dp"
+                            android:background="@drawable/shape_circle_category"
+                            android:backgroundTint="@color/md_theme_primary"
+                            app:layout_constraintBottom_toBottomOf="@id/viewTimeTrack"
+                            app:layout_constraintEnd_toEndOf="@id/ivTimeCursor"
+                            app:layout_constraintStart_toStartOf="@id/viewTimeTrack"
+                            app:layout_constraintTop_toTopOf="@id/viewTimeTrack" />
+
+                        <ImageView
+                            android:id="@+id/ivTimeCursor"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:background="@drawable/shape_circle_background"
+                            android:backgroundTint="@color/color_card"
+                            android:elevation="4dp"
+                            android:padding="2dp"
+                            android:src="@drawable/ic_clock"
+                            app:layout_constraintBottom_toBottomOf="@id/viewTimeTrack"
+                            app:layout_constraintEnd_toEndOf="@id/viewTimeTrack"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="@id/viewTimeTrack"
+                            app:layout_constraintTop_toTopOf="@id/viewTimeTrack"
+                            app:tint="@color/md_theme_primary" />
+
+                        <TextView
+                            android:id="@+id/tvCurrentTimeBubble"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="2dp"
+                            android:fontFamily="@font/nunitobold"
+                            android:text="14:30"
+                            android:textColor="@color/md_theme_primary"
+                            android:textSize="10sp"
+                            app:layout_constraintBottom_toTopOf="@id/ivTimeCursor"
+                            app:layout_constraintEnd_toEndOf="@id/ivTimeCursor"
+                            app:layout_constraintStart_toStartOf="@id/ivTimeCursor" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </LinearLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:clipChildren="false"
                     android:clipToPadding="false"
-                    android:paddingHorizontal="@dimen/spacing_large"
-                    android:paddingBottom="@dimen/spacing_medium">
+                    android:padding="@dimen/spacing_large">
 
                     <TextView
-                        android:id="@+id/tvTitle"
+                        android:id="@+id/tvHeaderResumen"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_medium"
                         android:fontFamily="@font/nunitobold"
-                        android:text="@string/home_tasks_title"
+                        android:text="@string/home_summary_title"
                         android:textColor="@color/secondary_text"
                         android:textSize="@dimen/text_h2"
-
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintVertical_chainStyle="packed" />
-
-
-
-                    <com.google.android.material.loadingindicator.LoadingIndicator
-                        android:id="@+id/progress_indicator"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:indeterminate="true"
-                        android:visibility="gone"
-                        app:indicatorSize="40dp"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
-
+                        app:layout_constraintTop_toTopOf="parent" />
 
                     <com.google.android.material.card.MaterialCardView
-                        android:layout_width="@dimen/task_card_width"
+                        android:id="@+id/cardProd"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_small"
+                        android:layout_marginTop="@dimen/spacing_medium"
+                        android:layout_marginEnd="@dimen/spacing_small"
                         app:cardBackgroundColor="@color/color_card"
-                        app:strokeWidth="@dimen/card_stroke_width"
-                        app:strokeColor="@color/border"
                         app:cardCornerRadius="@dimen/card_corner_radius_lg"
                         app:cardElevation="@dimen/card_elevation_default"
-                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/cardHabits"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvTitle">
+                        app:layout_constraintTop_toBottomOf="@+id/tvHeaderResumen"
+                        app:strokeColor="@color/border"
+                        app:strokeWidth="@dimen/card_stroke_width">
 
                         <androidx.constraintlayout.widget.ConstraintLayout
-                            android:id="@+id/lyProgress"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:padding="@dimen/spacing_medium">
 
                             <ImageView
-                                android:id="@+id/ivProgressIcon"
-                                android:layout_width="@dimen/icon_medium"
-                                android:layout_height="@dimen/icon_medium"
-                                android:src="@drawable/ic_check_circle"
+                                android:id="@+id/ivProdIcon"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:background="@drawable/bg_cicle_purpple"
+                                android:padding="@dimen/spacing_small"
+                                android:src="@drawable/ic_finance"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toTopOf="parent"
-                                app:tint="@color/md_theme_primary" />
+                                app:tint="?attr/colorSurface" />
 
                             <TextView
-                                android:id="@+id/tvSubtitle"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                               android:layout_marginStart="@dimen/icon_small"
+                                android:layout_marginStart="@dimen/spacing_s"
                                 android:fontFamily="@font/nunitosemibold"
-                                android:text="@string/home_progress_subtitle_format"
+                                android:text="@string/home_card_prod_title"
                                 android:textColor="@color/secondary_text"
                                 android:textSize="@dimen/text_body"
-                                app:layout_constraintBottom_toBottomOf="@+id/ivProgressIcon"
-                                app:layout_constraintStart_toEndOf="@+id/ivProgressIcon"
-                                app:layout_constraintTop_toTopOf="@+id/ivProgressIcon" />
-
+                                app:layout_constraintBottom_toBottomOf="@+id/ivProdIcon"
+                                app:layout_constraintStart_toEndOf="@+id/ivProdIcon"
+                                app:layout_constraintTop_toTopOf="@+id/ivProdIcon" />
 
                             <TextView
-                                android:id="@+id/tvPercentage"
+                                android:id="@+id/tvProdValue"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/nunitoextrabold"
-                                android:text="0%"
-                                android:textColor="@color/secondary_text"
-                                android:textSize="@dimen/txt_xl"
-                                app:layout_constraintBottom_toBottomOf="@+id/tvSubtitle"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintTop_toTopOf="@+id/tvSubtitle" />
-
-                            <com.google.android.material.progressindicator.LinearProgressIndicator
-                                android:id="@+id/linearProgressIndicator"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
                                 android:layout_marginTop="@dimen/spacing_medium"
-                                android:progress="0"
-                                app:indicatorColor="?attr/colorPrimary"
-                                app:layout_constraintEnd_toEndOf="parent"
+                                android:fontFamily="@font/nunitoextrabold"
+                                android:text="85%"
+                                android:textColor="@color/secondary_text"
+                                android:textSize="@dimen/text_h5"
                                 app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toBottomOf="@+id/ivProgressIcon"
-                                app:trackColor="@color/secondary_text"
-                                app:trackCornerRadius="@dimen/spacing_small"
-                                app:trackThickness="@dimen/txt_dimen_m" />
+                                app:layout_constraintTop_toBottomOf="@+id/ivProdIcon" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunitregular"
+                                android:text="@string/home_card_prod_subtitle"
+                                android:textColor="@color/secondary_text"
+                                android:textSize="@dimen/text_caption"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/tvProdValue" />
 
                         </androidx.constraintlayout.widget.ConstraintLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardHabits"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:layout_marginTop="@dimen/spacing_medium"
+                        app:cardBackgroundColor="@color/color_card"
+                        app:cardCornerRadius="@dimen/card_corner_radius_lg"
+                        app:cardElevation="@dimen/card_elevation_default"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/cardProd"
+                        app:layout_constraintTop_toBottomOf="@+id/tvHeaderResumen"
+                        app:strokeColor="@color/border"
+                        app:strokeWidth="@dimen/card_stroke_width">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="@dimen/spacing_medium">
+
+                            <ImageView
+                                android:id="@+id/ivHabitIcon"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:background="@drawable/bg_cicle_green"
+                                android:padding="@dimen/spacing_small"
+                                android:src="@drawable/ic_habiut"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:tint="?attr/colorSurface" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/spacing_s"
+                                android:fontFamily="@font/nunitosemibold"
+                                android:text="@string/home_card_habits_title"
+                                android:textColor="@color/secondary_text"
+                                android:textSize="@dimen/text_body"
+                                app:layout_constraintBottom_toBottomOf="@+id/ivHabitIcon"
+                                app:layout_constraintStart_toEndOf="@+id/ivHabitIcon"
+                                app:layout_constraintTop_toTopOf="@+id/ivHabitIcon" />
+
+                            <TextView
+                                android:id="@+id/tvHabitValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_medium"
+                                android:fontFamily="@font/nunitoextrabold"
+                                android:text="5/7"
+                                android:textColor="@color/secondary_text"
+                                android:textSize="@dimen/text_h5"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/ivHabitIcon" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunitregular"
+                                android:text="@string/home_card_habits_subtitle"
+                                android:textColor="@color/secondary_text"
+                                android:textSize="@dimen/text_caption"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/tvHabitValue" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardBalance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/text_caption"
+                        app:cardBackgroundColor="@color/color_card"
+                        app:cardCornerRadius="@dimen/card_corner_radius_lg"
+                        app:cardElevation="@dimen/card_elevation_default"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/cardProd"
+                        app:strokeColor="@color/border"
+                        app:strokeWidth="@dimen/card_stroke_width">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="@dimen/spacing_large">
+
+                            <ImageView
+                                android:id="@+id/ivBalanceIcon"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:background="@drawable/bg_cicle_blue"
+                                android:padding="@dimen/spacing_small"
+                                android:src="@drawable/ic_banck"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+
+                                app:tint="?attr/colorSurface" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/spacing_s"
+                                android:fontFamily="@font/nunitosemibold"
+                                android:text="@string/home_card_balance_title"
+                                android:textColor="@color/secondary_text"
+                                android:textSize="@dimen/text_body"
+                                app:layout_constraintBottom_toBottomOf="@+id/ivBalanceIcon"
+                                app:layout_constraintStart_toEndOf="@+id/ivBalanceIcon"
+                                app:layout_constraintTop_toTopOf="@+id/ivBalanceIcon" />
+
+                            <TextView
+                                android:id="@+id/tvBalanceValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_medium"
+                                android:fontFamily="@font/nunitoextrabold"
+                                android:text="$2,450"
+                                android:textColor="@color/secondary_text"
+                                android:textSize="@dimen/text_h5"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/ivBalanceIcon" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/spacing_small"
+                                android:fontFamily="@font/nunitobold"
+                                android:text="+12.5% ↗"
+                                android:textColor="@color/priority_low"
+                                android:textSize="@dimen/text_caption"
+                                app:layout_constraintBaseline_toBaselineOf="@+id/tvBalanceValue"
+                                app:layout_constraintStart_toEndOf="@+id/tvBalanceValue" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
                     </com.google.android.material.card.MaterialCardView>
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <LinearLayout
-                    android:id="@+id/ivNoTasks"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:padding="@dimen/spacing_large"
-                    android:visibility="gone">
-
-                    <ImageView
-                        android:layout_width="160dp"
-                        android:layout_height="160dp"
-                        android:contentDescription="@string/cd_no_tasks"
-                        android:src="@drawable/synkrom_sintareas" />
-
-                    <TextView
-                        android:id="@+id/tvNoTasks"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_medium"
-                        android:fontFamily="@font/nunitosemibold"
-                        android:gravity="center"
-                        android:text="@string/home_tasks_empty_title"
-                        android:textColor="#6B7280"
-                        android:textSize="@dimen/txt_xl" />
-                </LinearLayout>
-                <com.facebook.shimmer.ShimmerFrameLayout
-                    android:id="@+id/shimmerViewContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="gone"
-                    app:shimmer_duration="800">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingStart="20dp"
-                        android:clipToPadding="false">
-
-                        <include layout="@layout/layout_skeleton_task" />
-                        <include layout="@layout/layout_skeleton_task" />
-                        <include layout="@layout/layout_skeleton_task" />
-                    </LinearLayout>
-                </com.facebook.shimmer.ShimmerFrameLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/recyclerViewTasks"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:clipChildren="false"
-                    android:clipToPadding="false"
-                    android:layoutAnimation="@anim/layout_animation_fall_down"
-                    android:orientation="horizontal"
-                    android:paddingStart="20dp"
-                    android:visibility="invisible"
-                    tools:visibility="visible"
-                    android:paddingEnd="20dp"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:listitem="@layout/item_task_today" />
-
-                <com.google.android.material.tabs.TabLayout
-                    android:id="@+id/tabLayoutDots"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@android:color/transparent"
-                    android:visibility="gone"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/recyclerViewTasks"
-                    app:tabBackground="@null"
-                    app:tabIndicatorHeight="0dp"
-                    app:tabPaddingBottom="0dp"
-                    app:tabPaddingEnd="0dp"
-                    app:tabPaddingStart="0dp"
-                    app:tabPaddingTop="0dp"
-                    tools:visibility="visible" />
-
             </LinearLayout>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clipChildren="false"
-                android:clipToPadding="false"
-                android:padding="@dimen/spacing_large">
-
-                <TextView
-                    android:id="@+id/tvHeaderResumen"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/spacing_medium"
-                    android:fontFamily="@font/nunitobold"
-                    android:text="@string/home_summary_title"
-                    android:textColor="@color/secondary_text"
-                    android:textSize="@dimen/text_h2"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardProd"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_medium"
-                    android:layout_marginEnd="@dimen/spacing_small"
-                    app:cardBackgroundColor="@color/color_card"
-                    app:strokeWidth="@dimen/card_stroke_width"
-                    app:strokeColor="@color/border"
-                    app:cardCornerRadius="@dimen/card_corner_radius_lg"
-                    app:cardElevation="@dimen/card_elevation_default"
-                    app:layout_constraintEnd_toStartOf="@+id/cardHabits"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tvHeaderResumen">
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="@dimen/spacing_medium">
-
-                        <ImageView
-                            android:id="@+id/ivProdIcon"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_cicle_purpple"
-                            android:padding="@dimen/spacing_small"
-                            android:src="@drawable/ic_finance"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:tint="?attr/colorSurface" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/spacing_s"
-                            android:fontFamily="@font/nunitosemibold"
-                            android:text="@string/home_card_prod_title"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_body"
-                            app:layout_constraintBottom_toBottomOf="@+id/ivProdIcon"
-                            app:layout_constraintStart_toEndOf="@+id/ivProdIcon"
-                            app:layout_constraintTop_toTopOf="@+id/ivProdIcon" />
-
-                        <TextView
-                            android:id="@+id/tvProdValue"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_medium"
-                            android:fontFamily="@font/nunitoextrabold"
-                            android:text="85%"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_h5"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/ivProdIcon" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/nunitregular"
-                            android:text="@string/home_card_prod_subtitle"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_caption"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/tvProdValue" />
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardHabits"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/spacing_small"
-                    android:layout_marginTop="@dimen/spacing_medium"
-                    app:cardBackgroundColor="@color/color_card"
-                    app:strokeWidth="@dimen/card_stroke_width"
-                    app:strokeColor="@color/border"
-                    app:cardCornerRadius="@dimen/card_corner_radius_lg"
-                    app:cardElevation="@dimen/card_elevation_default"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/cardProd"
-                    app:layout_constraintTop_toBottomOf="@+id/tvHeaderResumen">
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="@dimen/spacing_medium">
-
-                        <ImageView
-                            android:id="@+id/ivHabitIcon"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_cicle_green"
-                            android:padding="@dimen/spacing_small"
-                            android:src="@drawable/ic_habiut"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:tint="?attr/colorSurface" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/spacing_s"
-                            android:fontFamily="@font/nunitosemibold"
-                            android:text="@string/home_card_habits_title"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_body"
-                            app:layout_constraintBottom_toBottomOf="@+id/ivHabitIcon"
-                            app:layout_constraintStart_toEndOf="@+id/ivHabitIcon"
-                            app:layout_constraintTop_toTopOf="@+id/ivHabitIcon" />
-
-                        <TextView
-                            android:id="@+id/tvHabitValue"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_medium"
-                            android:fontFamily="@font/nunitoextrabold"
-                            android:text="5/7"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_h5"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/ivHabitIcon" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/nunitregular"
-                            android:text="@string/home_card_habits_subtitle"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_caption"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/tvHabitValue" />
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardBalance"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/text_caption"
-                    app:cardBackgroundColor="@color/color_card"
-                    app:strokeWidth="@dimen/card_stroke_width"
-                    app:strokeColor="@color/border"
-                    app:cardCornerRadius="@dimen/card_corner_radius_lg"
-                    app:cardElevation="@dimen/card_elevation_default"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/cardProd">
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="@dimen/spacing_large">
-
-                        <ImageView
-                            android:id="@+id/ivBalanceIcon"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_cicle_blue"
-                            android:padding="@dimen/spacing_small"
-                            android:src="@drawable/ic_banck"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-
-                            app:tint="?attr/colorSurface" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/spacing_s"
-                            android:fontFamily="@font/nunitosemibold"
-                            android:text="@string/home_card_balance_title"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_body"
-                            app:layout_constraintBottom_toBottomOf="@+id/ivBalanceIcon"
-                            app:layout_constraintStart_toEndOf="@+id/ivBalanceIcon"
-                            app:layout_constraintTop_toTopOf="@+id/ivBalanceIcon" />
-
-                        <TextView
-                            android:id="@+id/tvBalanceValue"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_medium"
-                            android:fontFamily="@font/nunitoextrabold"
-                            android:text="$2,450"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_h5"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/ivBalanceIcon" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/spacing_small"
-                            android:fontFamily="@font/nunitobold"
-                            android:text="+12.5% ↗"
-                            android:textColor="@color/priority_low"
-                            android:textSize="@dimen/text_caption"
-                            app:layout_constraintBaseline_toBaselineOf="@+id/tvBalanceValue"
-                            app:layout_constraintStart_toEndOf="@+id/tvBalanceValue" />
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-        </LinearLayout>
-
-    </androidx.core.widget.NestedScrollView>
+        </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton

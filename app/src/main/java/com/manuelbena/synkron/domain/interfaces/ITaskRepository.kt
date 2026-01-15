@@ -57,6 +57,15 @@ interface ITaskRepository {
 
     // Mantenemos este por compatibilidad, que por defecto borrará solo la instancia
 
+    fun getAllTasks(): Flow<List<TaskDomain>>
+
+    suspend fun syncCurrentMonth()
+    suspend fun syncSpecificMonth(date: LocalDate)
+
+    suspend fun syncYear(year: Int)
+
+    suspend fun refreshTasksForDate(date: LocalDate)
+
 
 
 }

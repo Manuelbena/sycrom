@@ -13,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.core.widget.NestedScrollView
@@ -44,6 +45,10 @@ import kotlinx.coroutines.launch
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
@@ -111,24 +116,28 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     override fun onResume() {
         super.onResume()
+        updateDayTimeline()
+
+        // REGISTRAR
         val filter = IntentFilter().apply {
             addAction(Intent.ACTION_TIME_TICK)
             addAction(Intent.ACTION_DATE_CHANGED)
             addAction(Intent.ACTION_TIME_CHANGED)
         }
-        requireActivity().registerReceiver(timeUpdateReceiver, filter)
+        // Usamos context?.registerReceiver para evitar crashes si activity es null
+        context?.registerReceiver(timeUpdateReceiver, filter)
 
-        val isViewModelDateToday = viewModel.uiState.value.selectedDate == LocalDate.now()
-        val hasData = viewModel.uiState.value.tasks.isNotEmpty()
+        // ... resto de tu código ...
+    }
 
-        if (!isViewModelDateToday || !hasData) {
-            viewModel.refreshToToday()
-        }
-
-        if (displayedDate != LocalDate.now()) {
-            try { weekManager.scrollToToday() } catch (e: Exception) {}
-            displayedDate = LocalDate.now()
-            setupHeader()
+    override fun onPause() {
+        super.onPause()
+        // DESREGISTRAR: ¡Crucial!
+        // Si no haces esto, el receiver sigue vivo cuando te vas y crashea al intentar pintar.
+        try {
+            context?.unregisterReceiver(timeUpdateReceiver)
+        } catch (e: IllegalArgumentException) {
+            // Ignorar si no estaba registrado
         }
     }
 
@@ -478,6 +487,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 }
             })
         }
+
         snapHelper.attachToRecyclerView(binding.recyclerViewTasks)
     }
 
@@ -588,11 +598,54 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 "&text=$title" + "&dates=$dates" + "&details=$details" + "&location=$location"
     }
 
+    // AÑADIR ESTE MÉTODO PRIVADO
+    private fun updateDayTimeline() {
+        val now = java.time.LocalTime.now()
+        val totalMinutesInDay = 24 * 60
+        val currentMinutes = now.hour * 60 + now.minute
+
+        // Calculamos el porcentaje del día (0.0 a 1.0)
+        val percentage = currentMinutes.toFloat() / totalMinutesInDay
+
+        // Actualizamos la posición del cursor (Bias)
+        val params = binding.ivTimeCursor.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+        params.horizontalBias = percentage.coerceIn(0f, 1f) // Aseguramos que no se salga
+        binding.ivTimeCursor.layoutParams = params
+
+        // Actualizamos el texto de la hora
+        val formatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm")
+        binding.tvCurrentTimeBubble.text = now.format(formatter)
+
+        // Opcional: Cambiar visibilidad si prefieres ocultarlo cuando no hay tareas
+        // binding.clDayTimeline.isVisible = viewModel.uiState.value.tasks.isNotEmpty()
+    }
+
+    // MODIFICAR TU RECEIVER EXISTENTE PARA QUE ACTUALICE CADA MINUTO
     private val timeUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
+            // GUARDAESPALDAS: 🛡️
+            // Si la vista es null o el fragmento no está añadido, NO HACER NADA.
+            if (view == null || !isAdded || context == null) return
+
             val action = intent?.action
-            if (action == Intent.ACTION_TIME_TICK || action == Intent.ACTION_DATE_CHANGED || action == Intent.ACTION_TIME_CHANGED) {
-                checkDateChange()
+            if (action == Intent.ACTION_TIME_TICK ||
+                action == Intent.ACTION_DATE_CHANGED ||
+                action == Intent.ACTION_TIME_CHANGED) {
+
+                try {
+                    checkDateChange()
+                    updateDayTimeline()
+
+                    // Solo intentamos acceder al binding si estamos seguros
+                    binding.recyclerViewTasks.adapter?.notifyItemRangeChanged(
+                        0,
+                        binding.recyclerViewTasks.adapter?.itemCount ?: 0,
+                        "PAYLOAD_TIME_UPDATE"
+                    )
+                } catch (e: Exception) {
+                    // Capturamos cualquier error de UI residual
+                    e.printStackTrace()
+                }
             }
         }
     }

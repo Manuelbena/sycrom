@@ -53,15 +53,45 @@ interface TaskDao {
     @Query("SELECT COUNT(*) FROM task_table WHERE date BETWEEN :start AND :end")
     suspend fun getCountTasksBetween(start: Long, end: Long): Int
 
-    // NUEVO: Buscar tarea local candidata para fusionar (Mismo título + Mismo día)
-    // Buscamos tareas que NO tengan ya un ID de Google asignado para evitar falsos positivos
+    // Buscamos tareas que coincidan en NOMBRE y FECHA (Rango del día completo)
+    // Y que NO tengan ya un ID real de Google (es decir, que sean NULL o FANTASMAS)
+// En TaskDao.kt
+
     @Query("""
         SELECT * FROM task_table 
-        WHERE summary = :title 
-        AND date BETWEEN :startDay AND :endDay 
-        AND (googleCalendarId IS NULL OR googleCalendarId = '')
+        WHERE summary = :summary 
+        AND date >= :startOfDay AND date <= :endOfDay
+        -- ELIMINAMOS la restricción de ID para permitir el re-enlace inteligente
+        -- Si coincide nombre y fecha, asumimos que es la misma tarea y la actualizamos
         LIMIT 1
     """)
-    suspend fun findLocalCandidate(title: String, startDay: Long, endDay: Long): TaskEntity?
+    suspend fun findLocalCandidate(summary: String, startOfDay: Long, endOfDay: Long): TaskEntity?
+
+    // --- [NUEVO] OBTENER TODAS LAS TAREAS (Para el Centro de Gestión) ---
+    @Query("SELECT * FROM task_table ORDER BY date DESC")
+    fun getAllTasks(): Flow<List<TaskEntity>>
+
+    // En TaskDao.kt
+    @Query("SELECT * FROM task_table WHERE googleCalendarId IS NULL OR googleCalendarId = ''")
+    suspend fun getTasksWithoutGoogleId(): List<TaskEntity>
+
+    // BORRADO DE HUÉRFANOS (Limpieza) 🧹
+    // Borra las tareas que:
+    // 1. Están en el rango de fechas que acabamos de sincronizar.
+    // 2. Tienen un ID de Google (es decir, ya estaban sincronizadas antes).
+    // 3. SU ID NO ESTÁ en la lista de IDs válidos que acabamos de recibir.
+    // 4. (Opcional) No borramos 'LOCAL_GHOST' ni NULL por seguridad, aunque NULL no entra por la condición 2.
+
+    // [NUEVO] Obtener lista para procesar en memoria (Más fiable que findLocalCandidate)
+    @Query("SELECT * FROM task_table WHERE date >= :start AND date <= :end")
+    suspend fun getTasksListForRange(start: Long, end: Long): List<TaskEntity>
+
+    // Borra tareas que tienen ID de Google pero NO están en la lista "validIds" (Huérfanas)
+    @Query("DELETE FROM task_table WHERE date >= :start AND date <= :end AND googleCalendarId IS NOT NULL AND googleCalendarId NOT IN (:validIds)")
+    suspend fun deleteOrphanedTasks(start: Long, end: Long, validIds: List<String>)
+
+    // Borra TODAS las tareas de Google en un rango (cuando Google devuelve lista vacía)
+    @Query("DELETE FROM task_table WHERE date >= :start AND date <= :end AND googleCalendarId IS NOT NULL")
+    suspend fun deleteAllSyncedTasksInRange(start: Long, end: Long)
 
 }

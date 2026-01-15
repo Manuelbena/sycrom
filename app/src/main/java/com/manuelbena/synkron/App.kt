@@ -10,36 +10,73 @@ import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.os.Build
 import android.util.Log
+import androidx.hilt.work.HiltWorkerFactory
+import androidx.work.Configuration
 import com.manuelbena.synkron.data.local.notification.QuickAccessService
 import com.manuelbena.synkron.data.scheduler.BriefingScheduler
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
 @HiltAndroidApp
-class App : Application() {
+class App : Application(), Configuration.Provider { // <--- 1. Implementa la interfaz
 
-    @Inject
-    lateinit var briefingScheduler: BriefingScheduler
+    // --- INYECCIONES ---
+    @Inject lateinit var workerFactory: HiltWorkerFactory // Para WorkManager
+    @Inject lateinit var briefingScheduler: BriefingScheduler // Para tus briefings
 
+    // --- CONFIGURACIÓN WORKMANAGER (Requerido por Hilt) ---
+    override val workManagerConfiguration: Configuration
+        get() = Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
+
+    // --- CONSTANTES ---
     companion object {
         const val ALARM_CHANNEL_ID = "ALARM_CHANNEL_V2"
         const val NOTIFICATION_CHANNEL_ID = "SYCROM_ALERTS_V12"
     }
 
+    // --- LIFECYCLE ---
     override fun onCreate() {
         super.onCreate()
+
+        // 1. Crear canales de notificación
         createNotificationChannels()
 
-        // Iniciamos los briefings diarios (8:00 y 20:00)
+        // 2. Programar Briefings diarios (8:00 y 20:00)
         briefingScheduler.scheduleMorningBriefing()
         briefingScheduler.scheduleEveningDebrief()
 
+        // 3. Iniciar servicio de acceso rápido (Foreground)
         val serviceIntent = Intent(this, QuickAccessService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(serviceIntent)
         } else {
             startService(serviceIntent)
         }
+        androidx.work.WorkManager.getInstance(this).cancelAllWork()
+
+        setupPeriodicSync() // Y luego reprogramamos lo nuevo limpio
+    }
+
+    private fun setupPeriodicSync() {
+        val constraints = androidx.work.Constraints.Builder()
+            .setRequiredNetworkType(androidx.work.NetworkType.CONNECTED)
+            .build()
+
+        // Sync cada 15 minutos (mínimo permitido por Android)
+        val periodicRequest = androidx.work.PeriodicWorkRequestBuilder<com.manuelbena.synkron.data.workers.SyncWorker>(
+            60, java.util.concurrent.TimeUnit.MINUTES
+        )
+            .setConstraints(constraints)
+            .build()
+
+        // KEEP: Si ya existe, no lo reemplaza (ahorra batería)
+        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "SynkronPeriodicSync",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            periodicRequest
+        )
     }
 
     private fun createNotificationChannels() {

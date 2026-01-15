@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -32,66 +33,67 @@ class HomeViewModel @Inject constructor(
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
     private val taskRepository: ITaskRepository
-) : BaseViewModel<HomeAction>() { // Heredamos de tu BaseViewModel
+) : BaseViewModel<HomeAction>() {
 
-    // --- ESTADO (StateFlow para la UI) ---
     private val _uiState = MutableStateFlow(HomeState())
     val uiState: StateFlow<HomeState> = _uiState.asStateFlow()
 
-    // --- ACCIONES (Eventos de un solo disparo: Navegación, Mensajes) ---
-    // Mantenemos SingleLiveEvent porque es más seguro para Snackbars que el LiveData normal
     private val _action = SingleLiveEvent<HomeAction>()
     val action: SingleLiveEvent<HomeAction> = _action
 
-    // Job para controlar la suscripción al calendario (evita fugas al cambiar de fecha)
     private var tasksJob: Job? = null
+    private val headerDateFormatter = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", Locale("es", "ES"))
 
-    private val headerDateFormatter = DateTimeFormatter
-        .ofPattern("EEEE, d 'de' MMMM", Locale("es", "ES"))
+    // Control de Sync Inteligente
+    private var lastSyncedYear = -1
+    private var lastSyncTime = 0L
+    private val SYNC_COOLDOWN = 60 * 1000
 
     init {
-        // Carga inicial
-        loadTasksForDate(LocalDate.now())
-    }
-
-    // =================================================================
-    // 1. CARGA DE DATOS (LECTURA)
-    // =================================================================
-
-    fun onDateSelected(date: LocalDate) {
-        if (_uiState.value.selectedDate != date) {
-            loadTasksForDate(date)
-        }
-    }
-
-    fun refreshToToday() {
         val today = LocalDate.now()
-        if (_uiState.value.selectedDate == today) {
-            onRefreshRequested()
-        } else {
-            loadTasksForDate(today)
+        loadTasksForDate(today)
+        syncYearSmart(today.year)
+    }
+
+    /**
+     * Llamado cuando el usuario selecciona una fecha en el calendario horizontal.
+     */
+    fun onDateSelected(date: LocalDate) {
+        // Evita recargar si ya estamos en esa fecha
+        if (_uiState.value.selectedDate == date) return
+
+        _uiState.update { it.copy(selectedDate = date) }
+        loadTasksForDate(date)
+
+        // Refresco silencioso de red
+        viewModelScope.launch {
+            taskRepository.refreshTasksForDate(date)
         }
     }
 
     /**
-     * Carga las tareas observando la base de datos.
-     * NOTA: Aquí usamos un Job manual en lugar de 'executeFlow' porque necesitamos
-     * cancelar la suscripción anterior explícitamente cuando el usuario cambia de fecha.
+     * Llamado al hacer Swipe to Refresh.
+     */
+    fun onRefreshRequested() {
+        lastSyncedYear = -1 // Forzar sync
+        syncYearSmart(uiState.value.selectedDate.year, force = true)
+    }
+
+    /**
+     * Carga las tareas de Room con optimización de UI.
      */
     private fun loadTasksForDate(date: LocalDate) {
-        tasksJob?.cancel() // 1. Cancelamos escucha anterior
+        tasksJob?.cancel()
 
-        // 2. Actualizamos UI con nueva fecha
-        _uiState.update {
-            it.copy(selectedDate = date, headerText = formatDateHeader(date))
-        }
+        _uiState.update { it.copy(selectedDate = date, headerText = formatDateHeader(date)) }
 
-        // 3. Lanzamos nueva escucha
         tasksJob = viewModelScope.launch {
             getTaskTodayUseCase(date)
+                // Evita redibujar el RecyclerView si la lista es idéntica
+                .distinctUntilChanged()
                 .onStart {
                     _uiState.update { it.copy(isLoading = true) }
-                    delay(300) // Pequeño delay para suavizar la transición visual
+                    delay(100)
                 }
                 .catch { e ->
                     _uiState.update { it.copy(isLoading = false) }
@@ -103,31 +105,28 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    fun onRefreshRequested() {
-        // Usamos 'executeUseCase' de tu BaseViewModel para la operación de red
-        _uiState.update { it.copy(isLoading = true) }
-
-        executeUseCase(
-            useCase = {
-                (taskRepository as? TaskRepository)?.synchronizeWithGoogle()
-            },
-            onSuccess = {
+    private fun syncYearSmart(year: Int, force: Boolean = false) {
+        val now = System.currentTimeMillis()
+        if (force || year != lastSyncedYear || (now - lastSyncTime > SYNC_COOLDOWN)) {
+            lastSyncedYear = year
+            lastSyncTime = now
+            viewModelScope.launch {
+                _uiState.update { it.copy(isLoading = true) }
+                taskRepository.syncYear(year)
+                loadTasksForDate(uiState.value.selectedDate)
                 _uiState.update { it.copy(isLoading = false) }
-                _action.postValue(HomeAction.ShowErrorSnackbar("Sincronizado correctamente"))
-            },
-            onError = { e ->
-                _uiState.update { it.copy(isLoading = false) }
-                showError("Error sincronizando: ${e.message}")
             }
-        )
+        }
     }
 
-    // =================================================================
-    // 2. ACCIONES DE USUARIO (ESCRITURA)
-    // =================================================================
+    fun refreshToToday() {
+        val today = LocalDate.now()
+        if (_uiState.value.selectedDate == today) onRefreshRequested() else loadTasksForDate(today)
+    }
+
+    // --- ACCIONES DE ESCRITURA (Local) ---
 
     fun onTaskCheckedChanged(task: TaskDomain, isDone: Boolean) {
-        // Simplificado con executeUseCase: adiós al viewModelScope.launch manual
         executeUseCase(
             useCase = { updateTaskUseCase(task.copy(isDone = isDone)) },
             onError = { showError("Error al actualizar estado") }
@@ -136,11 +135,9 @@ class HomeViewModel @Inject constructor(
 
     fun onSubTaskChanged(taskId: Int, updatedSubTask: SubTaskDomain) {
         val parentTask = _uiState.value.tasks.find { it.id == taskId } ?: return
-
         val newSubTasks = parentTask.subTasks.map {
             if (it.id == updatedSubTask.id) updatedSubTask else it
         }
-
         executeUseCase(
             useCase = { updateTaskUseCase(parentTask.copy(subTasks = newSubTasks)) },
             onError = { showError("Error al guardar subtarea") }
@@ -155,15 +152,11 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // =================================================================
-    // 3. BORRADO
-    // =================================================================
-
     fun deleteTaskInstance(task: TaskDomain) {
         executeUseCase(
             useCase = { deleteTaskUseCase.deleteInstance(task) },
             onSuccess = { _action.postValue(HomeAction.ShowErrorSnackbar("Tarea eliminada")) },
-            onError = { showError("Error al eliminar: ${it.message}") }
+            onError = { showError("Error al eliminar") }
         )
     }
 
@@ -174,10 +167,6 @@ class HomeViewModel @Inject constructor(
             onError = { showError("Error al eliminar serie") }
         )
     }
-
-    // =================================================================
-    // 4. HELPERS
-    // =================================================================
 
     private fun showError(message: String) {
         _action.postValue(HomeAction.ShowErrorSnackbar(message))

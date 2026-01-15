@@ -50,5 +50,6 @@ data class TaskEntity(
 
     // Recurrencia Interna
     val synkronRecurrence: NotificationType = NotificationType.NOTIFICATION,
-    val synkronRecurrenceDays: List<Int> = emptyList()
+    val synkronRecurrenceDays: List<Int> = emptyList(),
+    val syncStatus: Int = 0
 )

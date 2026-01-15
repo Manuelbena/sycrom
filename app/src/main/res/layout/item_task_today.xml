@@ -228,6 +228,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_m"
             android:orientation="horizontal"
+            android:gravity="center_vertical"
             app:layout_goneMarginTop="@dimen/spacing_m"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/tvEventTitle"
@@ -264,6 +265,39 @@
                 android:fontFamily="@font/nunitobold"
                 tools:text="@string/task_placeholder_tag_priority"
                 tools:drawableStart="@drawable/ic_mark"/>
+
+            <LinearLayout
+                android:id="@+id/lyActiveStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/spacing_m"
+                android:gravity="center_vertical"
+                android:textColor="@color/secondary_text"
+                android:textSize="@dimen/text_size_tag"
+                android:fontFamily="@font/nunitobold"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <com.airbnb.lottie.LottieAnimationView
+                    android:id="@+id/lottieActiveIndicator"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+
+                    app:lottie_rawRes="@raw/live"
+                    app:lottie_autoPlay="true"
+                    app:lottie_loop="true"
+                    app:lottie_speed="1.5" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="En curso"
+                    android:fontFamily="@font/nunitobold"
+                    android:textSize="@dimen/text_size_tag"
+                    android:textColor="@color/priority_low"/>
+            </LinearLayout>
+
         </LinearLayout>
 
         <com.airbnb.lottie.LottieAnimationView
