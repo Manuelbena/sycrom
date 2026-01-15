@@ -108,7 +108,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         setupHeader()
         setupCalendar()
         setupRecyclerView()
-        setupFabAnimation()
+
         setupDotIndicatorListener()
 
         isInitialized = true
@@ -167,19 +167,38 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
     }
 
-    private fun setupButtomFloating(){
-        // Configuración visual de FABs (manteniendo tu código)
-        val bgDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.bg_add_buttom)
-        listOf(binding.fabMain, binding.tvFabAddTask, binding.tvFabAddSuggestion,
-            binding.tvFabAddIng, binding.tvFabAddGasto).forEach {
-            it.background = bgDrawable
-            it.backgroundTintList = null
+    private fun setupButtomFloating() {
+
+        // 1. Ocultar botones al inicio (SIN tocar background ni tint)
+        val options = listOf(
+            binding.tvFabAddTask,
+            binding.tvFabAddSuggestion,
+            binding.tvFabAddIng,
+            binding.tvFabAddGasto
+        )
+
+        options.forEach { fab ->
+            fab.visibility = View.GONE
+            fab.alpha = 0f
+            fab.translationY = 50f
+        }
+
+        // 2. Listeners de click
+        binding.fabMain.setOnClickListener {
+            if (isFabMenuOpen) closeFabMenu() else openFabMenu()
         }
 
         binding.tvFabAddTask.setOnClickListener {
             closeFabMenu()
             showTaskBottomSheet(null)
         }
+
+        binding.tvFabAddSuggestion.setOnClickListener {
+            closeFabMenu()
+            showAiButton()
+        }
+
+        // Agrega listeners para Ingreso y Gasto aquí...
     }
 
     private fun showTaskBottomSheet(task: TaskDomain?) {
@@ -371,7 +390,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     override fun setListener() {
         binding.apply {
             fabMain.setOnClickListener {
-                it.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                 if (isFabMenuOpen) closeFabMenu() else openFabMenu()
             }
             tvFabAddTask.setOnClickListener {
@@ -421,20 +439,19 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         }
     }
 
-    private fun setupFabAnimation() {
-        binding.fabMain.extend()
-        binding.nestedScrollView.setOnScrollChangeListener(
-            NestedScrollView.OnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
-                if (scrollY > oldScrollY) binding.fabMain.shrink()
-                else if (scrollY < oldScrollY) binding.fabMain.extend()
-            }
-        )
-    }
 
     // ... (Métodos openFabMenu, closeFabMenu, showFab, hideFab sin cambios) ...
     private fun openFabMenu() {
         isFabMenuOpen = true
-        binding.fabMain.animate().setInterpolator(fabInterpolator).setDuration(300).start()
+
+        // Animación del FAB Principal: Gira 45 grados para parecer una "X"
+        binding.fabMain.animate()
+            .rotation(45f)
+            .setInterpolator(fabInterpolator)
+            .setDuration(300)
+            .start()
+
+        // Animación de aparición de las opciones
         showFab(binding.tvFabAddTask)
         showFab(binding.tvFabAddSuggestion)
         showFab(binding.tvFabAddGasto)
@@ -443,7 +460,15 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun closeFabMenu() {
         isFabMenuOpen = false
-        binding.fabMain.animate().setInterpolator(fabInterpolator).setDuration(300).start()
+
+        // Animación del FAB Principal: Vuelve a 0 grados (posición original "+")
+        binding.fabMain.animate()
+            .rotation(0f)
+            .setInterpolator(fabInterpolator)
+            .setDuration(300)
+            .start()
+
+        // Animación de desaparición de las opciones
         hideFab(binding.tvFabAddTask)
         hideFab(binding.tvFabAddSuggestion)
         hideFab(binding.tvFabAddGasto)
@@ -453,13 +478,24 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private fun showFab(fab: View) {
         fab.visibility = View.VISIBLE
         fab.alpha = 0f
+        // Empieza 20dp más abajo (desde el botón principal) y sube
         fab.translationY = 50f
-        fab.animate().alpha(1f).translationY(0f).setInterpolator(fabInterpolator).setDuration(300).start()
+        fab.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setInterpolator(fabInterpolator)
+            .setDuration(300)
+            .start()
     }
 
     private fun hideFab(fab: View) {
-        fab.animate().alpha(0f).translationY(50f).setInterpolator(fabInterpolator).setDuration(300)
-            .withEndAction { fab.visibility = View.GONE }.start()
+        fab.animate()
+            .alpha(0f)
+            .translationY(50f) // Baja hacia el botón principal y desaparece
+            .setInterpolator(fabInterpolator)
+            .setDuration(300)
+            .withEndAction { fab.visibility = View.GONE }
+            .start()
     }
 
     private fun setupRecyclerView() {

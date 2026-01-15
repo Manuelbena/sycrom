@@ -13,7 +13,6 @@
         android:background="@color/md_theme_surface"
         android:fitsSystemWindows="true"
         app:elevation="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/nested_scroll_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -54,6 +53,7 @@
                 android:textSize="@dimen/text_body"
                 app:layout_constraintStart_toStartOf="@id/textGreeting"
                 app:layout_constraintTop_toBottomOf="@id/textGreeting"
+                app:layout_constraintBottom_toTopOf="@+id/dividerHeader"
                 tools:text="12 de mayo de 2025" />
 
             <LinearLayout
@@ -114,94 +114,6 @@
                 app:dividerColor="?attr/colorOutline"
                 app:layout_constraintTop_toBottomOf="@+id/textDate" />
 
-            <LinearLayout
-                android:id="@+id/lyCalendarContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/spacing_medium"
-                android:orientation="vertical"
-                app:layout_constraintTop_toBottomOf="@+id/dividerHeader">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/spacing_medium"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/tvMonthYear"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="@font/nunitobold"
-                        android:text="@string/home_calendar_placeholder"
-                        android:textColor="@color/md_theme_onSurface"
-                        android:textSize="@dimen/text_h2"
-                        tools:text="Diciembre 2025" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnToday"
-                        style="@style/Widget.Material3.Button.TonalButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/nunitobold"
-                        android:minHeight="40dp"
-                        android:text="@string/home_btn_today"
-                        android:textColor="@color/md_theme_onSurface"
-                        android:textSize="@dimen/text_body"
-                        app:backgroundTint="@color/color_body" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/spacing_small"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        style="@style/CalendarDayLegend"
-                        android:text="@string/day_short_mon"
-                        android:textSize="@dimen/text_caption" />
-
-                    <TextView
-                        style="@style/CalendarDayLegend"
-                        android:text="@string/day_short_tue"
-                        android:textSize="@dimen/text_caption" />
-
-                    <TextView
-                        style="@style/CalendarDayLegend"
-                        android:text="@string/day_short_wed"
-                        android:textSize="@dimen/text_caption" />
-
-                    <TextView
-                        style="@style/CalendarDayLegend"
-                        android:text="@string/day_short_thu"
-                        android:textSize="@dimen/text_caption" />
-
-                    <TextView
-                        style="@style/CalendarDayLegend"
-                        android:text="@string/day_short_fri"
-                        android:textSize="@dimen/text_caption" />
-
-                    <TextView
-                        style="@style/CalendarDayLegend"
-                        android:text="@string/day_short_sat"
-                        android:textSize="@dimen/text_caption" />
-
-                    <TextView
-                        style="@style/CalendarDayLegend"
-                        android:text="@string/day_short_sun"
-                        android:textSize="@dimen/text_caption" />
-                </LinearLayout>
-
-                <com.kizitonwose.calendar.view.WeekCalendarView
-                    android:id="@+id/weekCalendarView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:cv_dayViewResource="@layout/item_calendar_day_new" />
-
-            </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -227,14 +139,190 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/lyHeader">
 
+
             <LinearLayout
                 android:id="@+id/ly_body_home"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:animateLayoutChanges="true"
                 android:background="@color/color_body"
-                android:orientation="vertical"
-                android:paddingVertical="@dimen/spacing_xxl">
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/lyCalendarContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="@dimen/spacing_large"
+                    android:background="@color/md_theme_surface"
+                    android:orientation="vertical"
+                    app:layout_constraintTop_toBottomOf="@+id/dividerHeader">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_medium"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvMonthYear"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/nunitobold"
+                            android:text="@string/home_calendar_placeholder"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="@dimen/text_h2"
+                            tools:text="Diciembre 2025" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnToday"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/nunitobold"
+                            android:minHeight="40dp"
+                            android:text="@string/home_btn_today"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="@dimen/text_body"
+                            app:backgroundTint="@color/color_body" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_small"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            style="@style/CalendarDayLegend"
+                            android:text="@string/day_short_mon"
+                            android:textSize="@dimen/text_caption" />
+
+                        <TextView
+                            style="@style/CalendarDayLegend"
+                            android:text="@string/day_short_tue"
+                            android:textSize="@dimen/text_caption" />
+
+                        <TextView
+                            style="@style/CalendarDayLegend"
+                            android:text="@string/day_short_wed"
+                            android:textSize="@dimen/text_caption" />
+
+                        <TextView
+                            style="@style/CalendarDayLegend"
+                            android:text="@string/day_short_thu"
+                            android:textSize="@dimen/text_caption" />
+
+                        <TextView
+                            style="@style/CalendarDayLegend"
+                            android:text="@string/day_short_fri"
+                            android:textSize="@dimen/text_caption" />
+
+                        <TextView
+                            style="@style/CalendarDayLegend"
+                            android:text="@string/day_short_sat"
+                            android:textSize="@dimen/text_caption" />
+
+                        <TextView
+                            style="@style/CalendarDayLegend"
+                            android:text="@string/day_short_sun"
+                            android:textSize="@dimen/text_caption" />
+                    </LinearLayout>
+
+                    <com.kizitonwose.calendar.view.WeekCalendarView
+                        android:id="@+id/weekCalendarView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cv_dayViewResource="@layout/item_calendar_day_new" />
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/clDayTimeline"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="4dp"
+                        android:visibility="visible">
+
+                        <TextView
+                            android:id="@+id/tvTimelineStart"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/nunitosemibold"
+                            android:text="00:00"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="10sp"
+                            app:layout_constraintBottom_toBottomOf="@id/viewTimeTrack"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/viewTimeTrack" />
+
+                        <TextView
+                            android:id="@+id/tvTimelineEnd"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/nunitosemibold"
+                            android:text="23:59"
+                            android:textColor="@color/md_theme_onSurface"
+                            android:textSize="10sp"
+                            app:layout_constraintBottom_toBottomOf="@id/viewTimeTrack"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/viewTimeTrack" />
+
+                        <View
+                            android:id="@+id/viewTimeTrack"
+                            android:layout_width="0dp"
+                            android:layout_height="4dp"
+                            android:layout_marginHorizontal="8dp"
+                            android:background="@drawable/shape_circle_category"
+                            android:backgroundTint="#F0F0F0"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/tvTimelineEnd"
+                            app:layout_constraintStart_toEndOf="@id/tvTimelineStart"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <View
+                            android:id="@+id/viewTimeProgress"
+                            android:layout_width="0dp"
+                            android:layout_height="4dp"
+                            android:background="@drawable/shape_circle_category"
+                            android:backgroundTint="@color/md_theme_primary"
+                            app:layout_constraintBottom_toBottomOf="@id/viewTimeTrack"
+                            app:layout_constraintEnd_toEndOf="@id/ivTimeCursor"
+                            app:layout_constraintStart_toStartOf="@id/viewTimeTrack"
+                            app:layout_constraintTop_toTopOf="@id/viewTimeTrack" />
+
+                        <ImageView
+                            android:id="@+id/ivTimeCursor"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:background="@drawable/shape_circle_background"
+                            android:backgroundTint="@color/color_card"
+                            android:elevation="4dp"
+                            android:padding="2dp"
+                            android:src="@drawable/ic_clock"
+                            app:layout_constraintBottom_toBottomOf="@id/viewTimeTrack"
+                            app:layout_constraintEnd_toEndOf="@id/viewTimeTrack"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="@id/viewTimeTrack"
+                            app:layout_constraintTop_toTopOf="@id/viewTimeTrack"
+                            app:tint="@color/md_theme_primary" />
+
+                        <TextView
+                            android:id="@+id/tvCurrentTimeBubble"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="2dp"
+                            android:fontFamily="@font/nunitobold"
+                            android:text="14:30"
+                            android:textColor="@color/md_theme_primary"
+                            android:textSize="10sp"
+                            app:layout_constraintBottom_toTopOf="@id/ivTimeCursor"
+                            app:layout_constraintEnd_toEndOf="@id/ivTimeCursor"
+                            app:layout_constraintStart_toStartOf="@id/ivTimeCursor" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -404,16 +492,19 @@
                         android:id="@+id/recyclerViewTasks"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:clipChildren="false"
-                        android:clipToPadding="false"
-                        android:layoutAnimation="@anim/layout_animation_fall_down"
                         android:orientation="horizontal"
+
+                        android:clipChildren="false"
                         android:paddingStart="20dp"
                         android:paddingEnd="20dp"
+                        android:clipToPadding="false"
+                        android:paddingBottom="16dp"
+
+                        android:layoutAnimation="@anim/layout_animation_fall_down"
                         android:visibility="invisible"
                         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                         tools:listitem="@layout/item_task_today"
-                        tools:visibility="visible" />
+                        tools:visibility="visible"/>
 
                     <com.google.android.material.tabs.TabLayout
                         android:id="@+id/tabLayoutDots"
@@ -432,92 +523,7 @@
                         app:tabPaddingTop="0dp"
                         tools:visibility="visible" />
 
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:id="@+id/clDayTimeline"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginBottom="4dp"
-                        android:paddingHorizontal="32dp"
-                        android:visibility="visible">
 
-                        <TextView
-                            android:id="@+id/tvTimelineStart"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/nunitosemibold"
-                            android:text="00:00"
-                            android:textColor="@color/md_theme_onSurface"
-                            android:textSize="10sp"
-                            app:layout_constraintBottom_toBottomOf="@id/viewTimeTrack"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="@id/viewTimeTrack" />
-
-                        <TextView
-                            android:id="@+id/tvTimelineEnd"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/nunitosemibold"
-                            android:text="23:59"
-                            android:textColor="@color/md_theme_onSurface"
-                            android:textSize="10sp"
-                            app:layout_constraintBottom_toBottomOf="@id/viewTimeTrack"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toTopOf="@id/viewTimeTrack" />
-
-                        <View
-                            android:id="@+id/viewTimeTrack"
-                            android:layout_width="0dp"
-                            android:layout_height="4dp"
-                            android:layout_marginHorizontal="8dp"
-                            android:background="@drawable/shape_circle_category"
-                            android:backgroundTint="#F0F0F0"
-                            app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toStartOf="@id/tvTimelineEnd"
-                            app:layout_constraintStart_toEndOf="@id/tvTimelineStart"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <View
-                            android:id="@+id/viewTimeProgress"
-                            android:layout_width="0dp"
-                            android:layout_height="4dp"
-                            android:background="@drawable/shape_circle_category"
-                            android:backgroundTint="@color/md_theme_primary"
-                            app:layout_constraintBottom_toBottomOf="@id/viewTimeTrack"
-                            app:layout_constraintEnd_toEndOf="@id/ivTimeCursor"
-                            app:layout_constraintStart_toStartOf="@id/viewTimeTrack"
-                            app:layout_constraintTop_toTopOf="@id/viewTimeTrack" />
-
-                        <ImageView
-                            android:id="@+id/ivTimeCursor"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:background="@drawable/shape_circle_background"
-                            android:backgroundTint="@color/color_card"
-                            android:elevation="4dp"
-                            android:padding="2dp"
-                            android:src="@drawable/ic_clock"
-                            app:layout_constraintBottom_toBottomOf="@id/viewTimeTrack"
-                            app:layout_constraintEnd_toEndOf="@id/viewTimeTrack"
-                            app:layout_constraintHorizontal_bias="0.5"
-                            app:layout_constraintStart_toStartOf="@id/viewTimeTrack"
-                            app:layout_constraintTop_toTopOf="@id/viewTimeTrack"
-                            app:tint="@color/md_theme_primary" />
-
-                        <TextView
-                            android:id="@+id/tvCurrentTimeBubble"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginBottom="2dp"
-                            android:fontFamily="@font/nunitobold"
-                            android:text="14:30"
-                            android:textColor="@color/md_theme_primary"
-                            android:textSize="10sp"
-                            app:layout_constraintBottom_toTopOf="@id/ivTimeCursor"
-                            app:layout_constraintEnd_toEndOf="@id/ivTimeCursor"
-                            app:layout_constraintStart_toStartOf="@id/ivTimeCursor" />
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
 
                 </LinearLayout>
 
@@ -753,42 +759,17 @@
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/tvFabAddTask"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/spacing_small"
-        android:layout_marginBottom="@dimen/spacing_medium"
-        android:fontFamily="@font/nunitobold"
-        android:text="@string/fab_task"
-        android:textColor="@color/white"
-        android:visibility="gone"
-        app:icon="@drawable/ic_edit"
-        app:iconTint="@color/white"
-        app:layout_constraintBottom_toTopOf="@+id/fabMain"
-        app:layout_constraintEnd_toEndOf="@+id/fabMain" />
-
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/tvFabAddSuggestion"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/spacing_medium"
-        android:fontFamily="@font/nunitobold"
-        android:text="@string/fab_task_ai"
-        android:textColor="@color/white"
-        android:visibility="gone"
-        app:icon="@drawable/ic_suggestion"
-        app:iconTint="@color/white"
-        app:layout_constraintBottom_toTopOf="@+id/tvFabAddTask"
-        app:layout_constraintEnd_toEndOf="@+id/tvFabAddTask" />
-
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/tvFabAddGasto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/spacing_medium"
         android:fontFamily="@font/nunitobold"
         android:text="@string/fab_expense"
-        android:visibility="gone"
+        android:textColor="@color/white"
+        android:visibility="invisible"
+        app:backgroundTint="@color/md_theme_primary"
+        app:icon="@drawable/banknote_arrow_down"
+        app:iconTint="@color/white"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddIng"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddIng" />
 
@@ -799,22 +780,57 @@
         android:layout_marginBottom="@dimen/spacing_medium"
         android:fontFamily="@font/nunitobold"
         android:text="@string/fab_income"
-        android:visibility="gone"
+        android:textColor="@color/white"
+        android:visibility="invisible"
+        app:backgroundTint="@color/md_theme_primary"
+        app:icon="@drawable/banknote_arrow_up"
+        app:iconTint="@color/white"
         app:layout_constraintBottom_toTopOf="@+id/tvFabAddSuggestion"
         app:layout_constraintEnd_toEndOf="@+id/tvFabAddSuggestion" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/tvFabAddSuggestion"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_medium"
+        android:fontFamily="@font/nunitobold"
+        android:text="@string/fab_task_ai"
+        android:textColor="@color/white"
+        android:visibility="invisible"
+        app:backgroundTint="@color/md_theme_primary"
+        app:icon="@drawable/sparkle"
+        app:iconTint="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/tvFabAddTask"
+        app:layout_constraintEnd_toEndOf="@+id/tvFabAddTask" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/tvFabAddTask"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/spacing_small"
+        android:layout_marginBottom="@dimen/spacing_medium"
+        android:fontFamily="@font/nunitobold"
+        android:text="@string/fab_task"
+        android:textColor="@color/white"
+        android:visibility="invisible"
+        app:backgroundTint="@color/md_theme_primary"
+        app:icon="@drawable/ic_edit"
+        app:iconTint="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/fabMain"
+        app:layout_constraintEnd_toEndOf="@+id/fabMain" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabMain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/spacing_large"
         android:layout_marginBottom="100dp"
-        android:fontFamily="@font/nunitobold"
-        android:text="@string/fab_add"
-        android:textColor="@color/white"
-        android:visibility="visible"
-        app:icon="@drawable/ic_plus"
-        app:iconTint="@color/white"
+        android:contentDescription="Abrir menú"
+        app:backgroundTint="@color/md_theme_primary"
+        app:elevation="6dp"
+        app:fabSize="normal"
+        app:srcCompat="@drawable/ic_plus"
+        app:tint="@color/white"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

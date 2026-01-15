@@ -31,9 +31,7 @@
         app:itemTextColor="@color/selector_bottom_nav"
 
 
-        app:itemTextAppearanceActiveBoldEnabled="true"
-        app:itemTextAppearanceActive="@style/TextAppearance.Material3.LabelMedium"
-        app:itemTextAppearanceInactive="@style/TextAppearance.Material3.LabelSmall" />
+        app:itemTextAppearanceActiveBoldEnabled="true" />
 
     <fragment
         android:id="@+id/nav_host_fragment_activity_main"

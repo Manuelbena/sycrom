@@ -11,6 +11,7 @@
     app:strokeWidth="@dimen/card_stroke_width"
     app:strokeColor="@color/border"
     app:cardCornerRadius="@dimen/card_corner_radius_lg"
+    android:clipToPadding="false"
     app:cardElevation="@dimen/card_elevation_default">
 
     <androidx.constraintlayout.widget.ConstraintLayout
