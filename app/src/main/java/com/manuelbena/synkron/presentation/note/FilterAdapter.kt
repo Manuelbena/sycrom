@@ -1,64 +1,98 @@
 package com.manuelbena.synkron.presentation.note
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import com.manuelbena.synkron.R
 import com.manuelbena.synkron.databinding.ItemCategoryRowSelectorBinding
+import com.manuelbena.synkron.databinding.ItemSelectorBinding
+import com.manuelbena.synkron.presentation.models.FilterModel
 
 class FilterAdapter(
-    private val filters: List<String>,
-    private val onFilterSelected: (String) -> Unit
+    private var filters: List<FilterModel>, // CAMBIO: Ahora recibe una lista de objetos, no Strings
+    private val onFilterSelected: (FilterModel) -> Unit
 ) : RecyclerView.Adapter<FilterAdapter.FilterViewHolder>() {
 
-    private var selectedIndex = 0
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FilterViewHolder {
-        return FilterViewHolder(
-            ItemCategoryRowSelectorBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        // Asegúrate de que este Binding corresponda al XML 'item_category_row_selector.xml' nuevo
+        val binding = ItemSelectorBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
         )
+        return FilterViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: FilterViewHolder, position: Int) {
-        holder.bind(filters[position], position == selectedIndex)
+        holder.bind(filters[position])
     }
 
     override fun getItemCount() = filters.size
 
-    inner class FilterViewHolder(private val binding: ItemCategoryRowSelectorBinding) :
+    inner class FilterViewHolder(private val binding: ItemSelectorBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(filterName: String, isSelected: Boolean) {
-            // CORREGIDO: Usamos el ID del TextView que está en el XML
-            binding.tvCategoryLabel.text = filterName.uppercase()
+        fun bind(item: FilterModel) {
+            // 1. ASIGNAR DATOS
+            binding.tvName.text = item.name
+            binding.tvCount.text = item.count.toString()
 
-            val context = binding.root.context
-
-            if (isSelected) {
-                // Background en el CardView (que es binding.containerCategorySelector o root)
-                binding.root.setCardBackgroundColor(ContextCompat.getColor(context, R.color.color_primary))
-                // Color de texto en el TextView
-                binding.tvCategoryLabel.setTextColor(ContextCompat.getColor(context, R.color.white))
-                // Tinte del icono
-                binding.ivCategoryLabelIcon.setColorFilter(ContextCompat.getColor(context, R.color.white))
+            // Icono opcional
+            if (item.iconRes != null) {
+                binding.ivIcon.isVisible = true
+                binding.ivIcon.setImageResource(item.iconRes)
             } else {
-                binding.root.setCardBackgroundColor(ContextCompat.getColor(context, R.color.white))
-                binding.tvCategoryLabel.setTextColor(ContextCompat.getColor(context, R.color.secondary_text))
-                binding.ivCategoryLabelIcon.setColorFilter(ContextCompat.getColor(context, R.color.secondary_text))
+                binding.ivIcon.isVisible = false
             }
 
-            // Ocultamos elementos que no usamos para este filtro simple
-            binding.tvSelectedCategoryName.visibility = android.view.View.GONE
-            binding.flSelectedCategoryIcon.visibility = android.view.View.GONE
+            // 2. LÓGICA DE COLORES (Estilo Material Design Morado)
+            if (item.isSelected) {
+                // --- ESTADO: SELECCIONADO (Fondo Morado) ---
 
+                // Card Principal: Morado
+                binding.cardContainer.setCardBackgroundColor(Color.parseColor("#7E57C2"))
+
+                // Texto e Icono: Blanco
+                binding.tvName.setTextColor(Color.WHITE)
+                binding.ivIcon.setColorFilter(Color.WHITE)
+
+                // Badge (Contador): Fondo Blanco, Texto Morado
+                binding.cardBadge.setCardBackgroundColor(Color.WHITE)
+                binding.tvCount.setTextColor(Color.parseColor("#7E57C2"))
+
+            } else {
+                // --- ESTADO: NO SELECCIONADO (Fondo Gris) ---
+
+                // Card Principal: Gris muy claro
+                binding.cardContainer.setCardBackgroundColor(Color.parseColor("#F5F5F5"))
+
+                // Texto e Icono: Gris Oscuro
+                binding.tvName.setTextColor(Color.parseColor("#4B5563"))
+                binding.ivIcon.setColorFilter(Color.parseColor("#4B5563"))
+
+                // Badge (Contador): Fondo Morado, Texto Blanco
+                binding.cardBadge.setCardBackgroundColor(Color.parseColor("#7E57C2"))
+                binding.tvCount.setTextColor(Color.WHITE)
+            }
+
+            // 3. CLICK LISTENER
             binding.root.setOnClickListener {
-                val previousIndex = selectedIndex
-                selectedIndex = bindingAdapterPosition
-                notifyItemChanged(previousIndex)
-                notifyItemChanged(selectedIndex)
-                onFilterSelected(filterName)
+                // Desmarcamos todos visualmente
+                filters.forEach { it.isSelected = false }
+                // Marcamos el actual
+                item.isSelected = true
+
+                // Notificamos cambios para repintar los colores
+                notifyDataSetChanged()
+
+                // Devolvemos el evento al fragmento
+                onFilterSelected(item)
             }
         }
+    }
+
+    // Método helper por si necesitas actualizar la lista desde el Fragmento más tarde
+    fun updateList(newFilters: List<FilterModel>) {
+        this.filters = newFilters
+        notifyDataSetChanged()
     }
 }

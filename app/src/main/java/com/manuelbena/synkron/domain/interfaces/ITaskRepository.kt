@@ -65,7 +65,6 @@ interface ITaskRepository {
     suspend fun syncYear(year: Int)
 
     suspend fun refreshTasksForDate(date: LocalDate)
-
-
+    fun getPendingTasksCount(): Flow<Int>
 
 }

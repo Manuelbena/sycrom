@@ -94,4 +94,12 @@ interface TaskDao {
     @Query("DELETE FROM task_table WHERE date >= :start AND date <= :end AND googleCalendarId IS NOT NULL")
     suspend fun deleteAllSyncedTasksInRange(start: Long, end: Long)
 
+    @Query("""
+    SELECT COUNT(DISTINCT CASE WHEN parent_id IS NOT NULL THEN parent_id ELSE CAST(id AS TEXT) END) 
+    FROM task_table 
+    WHERE isDone = 0 
+    AND summary NOT LIKE '%Cumpleaños%'
+""")
+    fun getRealPendingCount(): Flow<Int>
+
 }

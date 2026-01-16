@@ -21,10 +21,10 @@ import java.time.ZoneId
 
 /**
  * Worker encargado de la sincronización en segundo plano.
- * ESTRATEGIA: Read & Create.
- * - SUBIR: Solo tareas nuevas (que no tengan ID de Google).
- * - BAJAR: Descarga eventos de Google de los próximos 30 días.
- * - BORRAR/EDITAR: No se sincronizan hacia Google (Solo Local).
+ * ESTRATEGIA: Híbrida.
+ * - BORRAR: Prioritario. Si recibe ID, borra y termina.
+ * - SUBIR: Solo tareas nuevas.
+ * - BAJAR: Descarga eventos recientes.
  */
 @HiltWorker
 class SyncWorker @AssistedInject constructor(
@@ -36,12 +36,36 @@ class SyncWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
+            // ------------------------------------------------------------
+            // 1. GESTIONAR BORRADOS (¡NUEVO!) 🗑️
+            // ------------------------------------------------------------
+            // Buscamos si nos han pasado un ID para borrar
+            val deleteId = inputData.getString("DELETE_GOOGLE_ID")
+
+            if (!deleteId.isNullOrEmpty() && deleteId != "LOCAL_GHOST") {
+                Log.d("SyncWorker", "🗑️ WORKER: Recibida orden de borrar: $deleteId")
+
+                val success = googleRepo.deleteEvent(deleteId)
+
+                if (success) {
+                    Log.d("SyncWorker", "✅ Eliminado correctamente de Google Calendar")
+                } else {
+                    Log.w("SyncWorker", "⚠️ No se pudo borrar en Google (¿Ya no existe?)")
+                }
+
+                // IMPORTANTE: Si el trabajo era borrar, terminamos aquí.
+                // No seguimos sincronizando para evitar conflictos.
+                return@withContext Result.success()
+            }
+
+            // ------------------------------------------------------------
+            // SI NO ES BORRADO -> EJECUTAMOS SYNC NORMAL
+            // ------------------------------------------------------------
             Log.d("SyncWorker", "🔄 WORKER: Iniciando sincronización (Read & Create)...")
 
             // ------------------------------------------------------------
-            // 1. SUBIR NUEVAS TAREAS (Create) 📤
+            // 2. SUBIR NUEVAS TAREAS (Create) 📤
             // ------------------------------------------------------------
-            // Solo subimos las tareas locales que aún no tienen enlace con Google.
             val pendingTasks = taskDao.getTasksWithoutGoogleId()
 
             if (pendingTasks.isNotEmpty()) {
@@ -49,7 +73,7 @@ class SyncWorker @AssistedInject constructor(
             }
 
             pendingTasks.forEach { entity ->
-                // Ignoramos fantasmas (copias locales de series) y tareas que ya tengan ID.
+                // Ignoramos fantasmas y tareas que ya tengan ID.
                 if (entity.googleCalendarId == "LOCAL_GHOST" || !entity.googleCalendarId.isNullOrEmpty()) {
                     return@forEach
                 }
@@ -60,7 +84,7 @@ class SyncWorker @AssistedInject constructor(
                 val googleId = googleRepo.insertEvent(domainTask)
 
                 if (googleId != null) {
-                    // Si se creó con éxito, guardamos el ID para evitar duplicados futuros.
+                    // Guardamos el ID para evitar duplicados futuros.
                     val updatedEntity = entity.copy(googleCalendarId = googleId)
                     taskDao.updateTask(updatedEntity)
                     Log.d("SyncWorker", "✅ Creada en Google: ${domainTask.summary} -> ID: $googleId")
@@ -70,9 +94,8 @@ class SyncWorker @AssistedInject constructor(
             }
 
             // ------------------------------------------------------------
-            // 2. BAJAR ACTUALIZACIONES (Read) 📥
+            // 3. BAJAR ACTUALIZACIONES (Read) 📥
             // ------------------------------------------------------------
-            // Sincronizamos los próximos 30 días para mantener la agenda al día.
             syncUpcomingMonth()
 
             Log.d("SyncWorker", "🏁 Sincronización finalizada.")
@@ -102,8 +125,7 @@ class SyncWorker @AssistedInject constructor(
                 // 1. Buscamos si ya existe por su ID
                 var localEntity = taskDao.getTaskByGoogleId(gId)
 
-                // 2. Si no existe ID, buscamos por coincidencia (Nombre + Fecha)
-                // Esto evita duplicados si el ID cambió en el servidor.
+                // 2. Si no existe ID, buscamos por coincidencia
                 if (localEntity == null) {
                     val zoneId = ZoneId.systemDefault()
                     val taskDate = calculateLocalDate(googleTask)
@@ -114,12 +136,13 @@ class SyncWorker @AssistedInject constructor(
                 }
 
                 if (localEntity != null) {
-                    // UPDATE: Actualizamos nuestra copia local con lo que dice Google.
+                    // UPDATE: Actualizamos local con Google, PERO respetando el isDone local
                     val updatedEntity = localEntity.copy(
                         googleCalendarId = gId,
                         summary = googleTask.summary,
                         description = googleTask.description ?: localEntity.description,
 
+                        // 🔥 MANTENEMOS TU DECISIÓN LOCAL DEL CHECK 🔥
                         isDone = localEntity.isDone,
 
                         typeTask = googleTask.typeTask,
@@ -130,9 +153,9 @@ class SyncWorker @AssistedInject constructor(
                     )
                     taskDao.updateTask(updatedEntity)
                 } else {
-                    // INSERT: Es un evento nuevo de Google que no teníamos.
+                    // INSERT: Es un evento nuevo de Google
                     val newEntity = googleTask.toEntity().copy(
-                        id = 0, // ID 0 para autogenerar
+                        id = 0,
                         googleCalendarId = gId,
                         typeTask = googleTask.typeTask.ifEmpty { "Personal" },
                         priority = "Media",

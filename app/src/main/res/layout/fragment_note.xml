@@ -11,32 +11,33 @@
         android:id="@+id/lyHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_header"
-        android:elevation="4dp"
+        android:background="@color/color_card"
+        android:elevation="0dp"
         android:orientation="vertical"
         android:paddingBottom="@dimen/spacing_medium"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
+            android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/spacing_large"
             android:layout_marginTop="@dimen/spacing_large"
             android:fontFamily="@font/nunitoextrabold"
-            android:text="Centro de Gestión"
+            android:text="Bandeja de Tareas"
             android:textColor="@color/md_theme_onSurface"
             android:textSize="@dimen/text_h5" />
 
-        <androidx.appcompat.widget.SearchView
-            android:id="@+id/searchView"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvSubtitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/spacing_large"
-            android:layout_marginTop="@dimen/spacing_medium"
-            android:background="@drawable/bg_card_inner"
-            app:iconifiedByDefault="false"
-            app:queryBackground="@null"
-            app:queryHint="Buscar tarea..." />
+            android:layout_marginStart="@dimen/spacing_large"
+            android:layout_marginTop="4dp"
+            android:fontFamily="@font/nunitregular"
+            android:text="Gestiona todas tus tareas y plantillas"
+            android:textColor="@color/secondary_text"
+            android:textSize="@dimen/text_body" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvFilters"
@@ -47,7 +48,45 @@
             android:orientation="horizontal"
             android:paddingHorizontal="@dimen/spacing_large"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            tools:listitem="@layout/item_category_row_selector" />
+            tools:listitem="@layout/item_selector" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/spacing_large"
+            android:layout_marginTop="@dimen/spacing_medium"
+            app:cardBackgroundColor="#F3E5F5"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#E1BEE7"
+            app:strokeWidth="1dp">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="12dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_calendar_today"
+                    app:tint="#D81B60"
+                    tools:ignore="ContentDescription" />
+                <TextView
+                    android:id="@+id/tvSummaryText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:fontFamily="@font/nunitosemibold"
+                    android:text="Tienes 5 tareas pendientes"
+                    android:textColor="#8E24AA"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 

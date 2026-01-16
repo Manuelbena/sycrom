@@ -43,6 +43,8 @@ class TaskRepository @Inject constructor(
     // 1. LECTURA (READ)
     // ----------------------------------------------------------------
 
+    override fun getPendingTasksCount(): Flow<Int> = taskDao.getRealPendingCount()
+
     override fun getAllTasks(): Flow<List<TaskDomain>> =
         taskDao.getAllTasks().map { entities -> entities.map { it.toDomain() } }
 
@@ -107,29 +109,92 @@ class TaskRepository @Inject constructor(
 
     override suspend fun updateTask(task: TaskDomain) {
         withContext(Dispatchers.IO) {
-            // 1. Recuperar ID para no perder el enlace
+            // ------------------------------------------------------------
+            // 1. PREPARACIÓN Y SEGURIDAD 🛡️
+            // ------------------------------------------------------------
+            // Recuperamos la tarea actual de la BD para asegurarnos de no perder el Google ID
+            // si la UI nos ha pasado una versión incompleta.
             val currentEntity = taskDao.getTaskById(task.id)
-            if (currentEntity != null) alarmScheduler.cancel(currentEntity.toDomain())
 
-            val taskToSave = if (task.googleCalendarId.isNullOrEmpty() && currentEntity?.googleCalendarId != null) {
+            val taskWithId = if (task.googleCalendarId.isNullOrEmpty() && currentEntity?.googleCalendarId != null) {
+                Log.d("SycromSync", "🔧 Recuperando GoogleID perdido: ${currentEntity.googleCalendarId}")
                 task.copy(googleCalendarId = currentEntity.googleCalendarId)
             } else {
                 task
             }
 
-            // 2. Guardar en local
-            taskDao.updateTask(taskToSave.toEntity())
-            alarmScheduler.schedule(taskToSave)
+            // ------------------------------------------------------------
+            // 2. ACTUALIZACIÓN LOCAL (INMEDIATA) ⚡
+            // ------------------------------------------------------------
+            // Cancelamos alarma vieja y ponemos la nueva
+            if (currentEntity != null) alarmScheduler.cancel(currentEntity.toDomain())
 
-            Log.d("SycromSync", "✏️ Tarea actualizada en LOCAL. Google no se notifica.")
+            // Guardamos en Room. El usuario ve el cambio al instante.
+            taskDao.updateTask(taskWithId.toEntity())
+            alarmScheduler.schedule(taskWithId)
+
+            Log.d("SycromSync", "✏️ Tarea actualizada en LOCAL: ${taskWithId.summary}")
+
+            // ------------------------------------------------------------
+            // 3. ACTUALIZACIÓN REMOTA (SILENCIOSA) ☁️
+            // ------------------------------------------------------------
+            // Si la tarea existe en Google, enviamos los cambios.
+            // Usamos 'launch' para no bloquear la UI si Google tarda en responder.
+            if (!taskWithId.googleCalendarId.isNullOrEmpty() && taskWithId.googleCalendarId != "LOCAL_GHOST") {
+                launch {
+                    try {
+                        Log.d("SycromSync", "📤 Enviando cambios a Google Calendar...")
+
+                        // Esta función de tu repo ya se encarga de mapear Título, Hora, Color, etc.
+                        val success = googleCalendarRepository.updateEvent(taskWithId)
+
+                        if (success) {
+                            Log.d("SycromSync", "✅ Google Calendar actualizado correctamente.")
+                        } else {
+                            Log.w("SycromSync", "⚠️ Google rechazó la actualización (¿Error 403 o no existe?)")
+                        }
+                    } catch (e: Exception) {
+                        Log.e("SycromSync", "❌ Error de red al editar en Google: ${e.message}")
+                    }
+                }
+            } else {
+                // Si NO tiene ID y NO es fantasma, quizás deberíamos subirla como nueva.
+                // Pero para editar, mejor no hacer nada si no hay enlace.
+                Log.v("SycromSync", "ℹ️ Edición solo local (No tiene enlace con Google)")
+            }
         }
     }
 
     override suspend fun deleteTaskInstance(task: TaskDomain) {
         withContext(Dispatchers.IO) {
+            // 1. RECUPERAR DATOS FRESCOS (Para asegurarnos de tener el Google ID)
+            val currentEntity = taskDao.getTaskById(task.id)
+            val googleIdToDelete = currentEntity?.googleCalendarId ?: task.googleCalendarId
+
+            Log.d("SycromSync", "🗑️ Borrando tarea local. GoogleID detectado: $googleIdToDelete")
+
+            // 2. BORRADO LOCAL (Inmediato)
             alarmScheduler.cancel(task)
             taskDao.deleteTask(task.toEntity())
-            Log.d("SycromSync", "🗑️ Tarea borrada en LOCAL.")
+
+            // 3. BORRADO REMOTO (Enviar al Worker)
+            // Si tiene ID de Google, mandamos la orden de ejecución.
+            if (!googleIdToDelete.isNullOrEmpty() && googleIdToDelete != "LOCAL_GHOST") {
+
+                val data = workDataOf("DELETE_GOOGLE_ID" to googleIdToDelete)
+
+                val deleteRequest = OneTimeWorkRequestBuilder<SyncWorker>()
+                    .setInputData(data)
+                    .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+                    .build()
+
+                // Usamos un nombre único para que no se pisen los borrados
+                val uniqueWorkName = "DeleteWork_${UUID.randomUUID()}"
+
+                workManager.enqueueUniqueWork(uniqueWorkName, ExistingWorkPolicy.KEEP, deleteRequest)
+
+                Log.d("SycromSync", "📨 Orden de borrado enviada a Google para ID: $googleIdToDelete")
+            }
         }
     }
 
@@ -213,23 +278,34 @@ class TaskRepository @Inject constructor(
     // En TaskRepository.kt
 
     private suspend fun processGoogleList(googleTasks: List<TaskDomain>) {
+        // 1. Definimos el punto de corte: El inicio del día de HOY.
+        // Cualquier tarea anterior a este momento se considerará "pasada".
+        val todayStart = LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
+        // Optimización (Opcional): Carga previa de IDs como te comenté antes
+        // val googleIds = googleTasks.mapNotNull { it.googleCalendarId }
+        // val localTasksMap = taskDao.getTasksByGoogleIds(googleIds).associateBy { it.googleCalendarId }
+
         googleTasks.forEach { googleTask ->
             val gId = googleTask.googleCalendarId ?: return@forEach
             val googleDateMillis = calculateGoogleDateMillis(googleTask)
 
+            // Si no usaste la optimización del mapa, usa tu línea original:
             var localEntity = taskDao.getTaskByGoogleId(gId)
-
-            // ... (Lógica de búsqueda de candidatos sigue igual) ...
+            // val localEntity = localTasksMap[gId] // Si usaste la optimización
 
             if (localEntity != null) {
-                // === UPDATE (Es la misma tarea -> Actualizamos) ===
+                // === UPDATE (La tarea YA existía en local) ===
+                // Aquí NO tocamos isDone basado en la fecha, porque el usuario ya conoce esta tarea.
+                // Respetamos si la marcó o desmarcó localmente (o sincronizamos con Google).
+
                 val updatedEntity = localEntity.copy(
                     googleCalendarId = gId,
                     summary = googleTask.summary,
                     description = googleTask.description ?: localEntity.description,
                     date = googleDateMillis,
+                    // Mantenemos la lógica de estado que prefieras (local o google)
                     isDone = localEntity.isDone,
-
                     typeTask = googleTask.typeTask,
                     hour = if (googleTask.start?.dateTime != null) {
                         LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(googleTask.start.dateTime), ZoneId.systemDefault()).hour
@@ -238,17 +314,33 @@ class TaskRepository @Inject constructor(
                 taskDao.updateTask(updatedEntity)
 
             } else {
-                // === INSERT (Nueva tarea que viene de Google) ===
-                // Aquí SÍ usamos googleTask.isDone, porque es nueva y no tenemos opinión local.
+                // === INSERT (Tarea NUEVA o Base de Datos VACÍA) ===
+
+                // AQUÍ ESTÁ LA LÓGICA QUE PIDES:
+                // 1. ¿La tarea es del pasado? (Anterior a hoy a las 00:00)
+                val isPastTask = googleDateMillis < todayStart
+
+                // 2. Decidimos el estado inicial:
+                // Está hecha SI: Google dice que está hecha O es una tarea del pasado.
+                val initialIsDone = googleTask.isDone || isPastTask
+
                 val newEntity = googleTask.toEntity().copy(
                     id = 0,
                     googleCalendarId = gId,
-                    isDone = googleTask.isDone, // <--- Aquí sí dejamos el de Google
+
+                    // Aplicamos el estado calculado
+                    isDone = initialIsDone,
+
                     typeTask = googleTask.typeTask.ifEmpty { "Personal" },
                     priority = "Media",
                     date = googleDateMillis
                 )
                 taskDao.insertTask(newEntity)
+
+                // Opcional: Log para depurar
+                if (isPastTask && !googleTask.isDone) {
+                    Log.d("SycromSync", "🧹 Auto-completando tarea antigua al importar: ${googleTask.summary}")
+                }
             }
         }
     }
