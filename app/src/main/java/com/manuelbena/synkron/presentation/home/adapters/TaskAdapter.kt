@@ -21,6 +21,7 @@ import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.util.adapters.SubTaskAdapter
 import com.manuelbena.synkron.presentation.util.extensions.toDurationString
 import com.manuelbena.synkron.presentation.util.getCategoryColor
+import com.manuelbena.synkron.presentation.util.getCategoryGradientDrawable
 import com.manuelbena.synkron.presentation.util.getCategoryIcon
 import com.manuelbena.synkron.presentation.util.getDurationInMinutes
 import com.manuelbena.synkron.presentation.util.getName
@@ -105,6 +106,9 @@ class TaskAdapter(
             // Aseguramos estado limpio al bindear
             isAutoChecking = false
 
+            val gradientDrawable = item.typeTask.getCategoryGradientDrawable()
+
+
             with(binding) {
                 // 1. Datos básicos
                 tvEventTitle.text = item.summary
@@ -112,6 +116,7 @@ class TaskAdapter(
                 tvDescription.isVisible = !item.description.isNullOrEmpty()
 
                 // 2. Secciones Visuales
+                viewTopStrip.setBackgroundResource(gradientDrawable)
                 setupTimeSection(item)
                 setupMetadataSection(item)
                 setupTagsSection(item)

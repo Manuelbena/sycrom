@@ -1,5 +1,6 @@
 package com.manuelbena.synkron.presentation.home
 
+import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -29,8 +30,15 @@ import com.google.android.material.tabs.TabLayout
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentHomeBinding
+import com.manuelbena.synkron.domain.models.SubTaskItem
+import com.manuelbena.synkron.domain.models.SuperTaskModel
 import com.manuelbena.synkron.domain.models.TaskDomain
+import com.manuelbena.synkron.presentation.adapter.SuperTaskAdapter
+
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
+import com.manuelbena.synkron.presentation.models.Quote
+import com.manuelbena.synkron.presentation.superTask.SuperTaskBottomSheet
+import com.manuelbena.synkron.presentation.superTask.SuperTaskDetailAdapter
 import com.manuelbena.synkron.presentation.task.TaskBottomSheet
 import com.manuelbena.synkron.presentation.taskIA.TaskIaBottomSheet
 import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
@@ -103,12 +111,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             }
             return
         }
+        setupSuperTasks()
         setupSwipeRefresh()
         setupButtomFloating()
         setupHeader()
         setupCalendar()
         setupRecyclerView()
-
+        setupQuoteOfTheDay()
         setupDotIndicatorListener()
 
         isInitialized = true
@@ -211,9 +220,67 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         if (currentSystemDate != displayedDate) {
             displayedDate = currentSystemDate
             setupHeader()
+            setupQuoteOfTheDay()
             try { weekManager.scrollToToday() } catch (e: Exception) {}
             viewModel.refreshToToday()
         }
+    }
+    private fun setupSuperTasks() {
+        // Inicializamos el adaptador con el click listener
+        val superTaskAdapter = SuperTaskAdapter { task ->
+            // Al hacer click, abrimos el BottomSheet
+            val sheet = SuperTaskBottomSheet.newInstance(task)
+            sheet.onSaveClickListener = { updatedTask ->
+                // AQUÍ: Actualiza tu ViewModel con la tarea modificada
+                // viewModel.updateSuperTask(updatedTask)
+
+                // Por ahora, para ver efecto visual inmediato (si no tienes BD conectada aún),
+                // podrías refrescar la lista localmente, pero lo ideal es DB -> Flow -> UI.
+            }
+            sheet.show(childFragmentManager, "SuperTaskSheet")
+        }
+
+        val snapHelper = PagerSnapHelper()
+
+        binding.rvSuperTasks.apply {
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            adapter = superTaskAdapter
+            applyCarouselPadding(350) // 300dp es el ancho de la tarjeta
+            addOnScrollListener(CarouselScrollListener())
+            itemAnimator = null
+        }
+
+        snapHelper.attachToRecyclerView(binding.rvSuperTasks)
+
+        // --- MOCK DATA ---
+        val mockData = listOf(
+            SuperTaskModel(
+                id = 1,
+                title = "Rutina de pecho",
+                iconRes = R.drawable.ic_health,
+                completedCount = 2,
+                totalCount = 4,
+                subTasks = listOf(
+                    SubTaskItem("Press de banca", "4x12 60kg", true),
+                    SubTaskItem("Press inclinado", "3x10 45kg", true),
+                    SubTaskItem("Aperturas", "3x12 20kg", false),
+                    SubTaskItem("Flexiones", "Al fallo", false)
+                )
+            ),
+            SuperTaskModel(
+                id = 2,
+                title = "Rutina de Espalda",
+                iconRes = R.drawable.ic_work,
+                completedCount = 0,
+                totalCount = 3,
+                subTasks = listOf(
+                    SubTaskItem("Dominadas", "4x8", false),
+                    SubTaskItem("Remo con barra", "4x10 50kg", false),
+                    SubTaskItem("Jalón al pecho", "3x12 40kg", false)
+                )
+            )
+        )
+        superTaskAdapter.submitList(mockData)
     }
 
     private fun setupHeader() {
@@ -305,7 +372,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
                 // Ocultamos todo lo demás para dejar solo los "huesos" grises
                 recyclerViewTasks.isVisible = false
-                lyProgress.isVisible = false // Asegúrate que este ID coincide con tu XML (el contenedor del progreso)
+
                 ivNoTasks.isVisible = false
                 tvNoTasks.isVisible = false
                 tabLayoutDots.isVisible = false
@@ -320,7 +387,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 if (hasTasks) {
                     // A) HAY TAREAS (Mostramos todo)
                     recyclerViewTasks.isVisible = true
-                    lyProgress.isVisible = true
+
                     tabLayoutDots.isVisible = true
 
                     // Ocultamos el Empty State
@@ -350,7 +417,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                     // B) LISTA VACÍA (Terminó de cargar y no hay nada)
                     // Gracias al animateLayoutChanges="true" en el XML, esto aparecerá suave (fade-in)
                     recyclerViewTasks.isVisible = false
-                    lyProgress.isVisible = false
+
                     tabLayoutDots.isVisible = false
 
                     ivNoTasks.isVisible = true
@@ -374,15 +441,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             } else {
                 0
             }
-
-            // Actualizar textos
-            // Si el XML espera %d (enteros), asegúrate de que sean Int:
-            tvSubtitle.text = getString(R.string.home_progress_subtitle_format, completedTasks, totalTasks)
-            tvPercentage.text = "$percentage%"
-
-            // Actualizar Barra (Nota: Si usas ProgressBar estándar para el degradado, usa 'progress = percentage')
-            // linearProgressIndicator.progress = percentage // <- Descomenta esto si usas ProgressBar con degradado
-            linearProgressIndicator.setProgressCompat(percentage, true) // <- Esto es para Material LinearProgressIndicator
 
         }
     }
@@ -504,7 +562,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             val lm = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
             layoutManager = lm
             adapter = taskAdapter
-            applyCarouselPadding()
+            applyCarouselPadding(350)
             addOnScrollListener(CarouselScrollListener())
             itemAnimator = null
 
@@ -653,7 +711,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         binding.tvCurrentTimeBubble.text = now.format(formatter)
 
         // Opcional: Cambiar visibilidad si prefieres ocultarlo cuando no hay tareas
-        // binding.clDayTimeline.isVisible = viewModel.uiState.value.tasks.isNotEmpty()
+        binding.clDayTimeline.isVisible = viewModel.uiState.value.tasks.isNotEmpty()
     }
 
     // MODIFICAR TU RECEIVER EXISTENTE PARA QUE ACTUALICE CADA MINUTO
@@ -685,10 +743,44 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             }
         }
     }
+    @SuppressLint("SetTextI18n")
+    private fun setupQuoteOfTheDay() {
+        try {
+            // 1. Leer el archivo JSON desde assets
+            // Asegúrate de haber creado el archivo app/src/main/assets/quotes.json
+            val jsonString = requireContext().assets.open("quotes.json").bufferedReader().use { it.readText() }
 
-    private fun RecyclerView.applyCarouselPadding() {
-        // Asegúrate de que este valor coincida con el de tu XML (300dp)
-        val itemWidthDp = 380
+            // 2. Parsear JSON a lista de objetos
+            val quoteList = com.google.gson.Gson().fromJson(jsonString, Array<Quote>::class.java)
+
+            if (!quoteList.isNullOrEmpty()) {
+                // 3. Obtener el día del año (1 a 366)
+                val calendar = java.util.Calendar.getInstance()
+                val dayOfYear = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+
+                // 4. Algoritmo determinista: Siempre sale la misma frase para el mismo día
+                // Usamos el módulo (%) para dar la vuelta si se acaban las frases
+                val index = dayOfYear % quoteList.size
+                val todayQuote = quoteList[index]
+
+                // 5. Pintar en la UI
+                binding.tvQuoteText.text = "\"${todayQuote.texto}\""
+                binding.tvQuoteAuthor.text = "— ${todayQuote.autor}"
+
+                // Animación de entrada suave (opcional)
+                binding.cardQuote.alpha = 0f
+                binding.cardQuote.animate().alpha(1f).setDuration(500).start()
+            } else {
+                binding.cardQuote.isVisible = false
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // Si falla algo (ej. no existe el archivo), ocultamos la tarjeta
+            binding.cardQuote.isVisible = false
+        }
+    }
+
+    private fun RecyclerView.applyCarouselPadding(itemWidthDp: Int) {
         val itemWidthPx = resources.displayMetrics.density * itemWidthDp
         val screenWidthPx = resources.displayMetrics.widthPixels
 
@@ -698,7 +790,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         setPadding(padding, 0, padding, 0)
         clipToPadding = false
     }
-
     override fun onDestroyView() {
         taskDetailBottomSheet = null
         super.onDestroyView()

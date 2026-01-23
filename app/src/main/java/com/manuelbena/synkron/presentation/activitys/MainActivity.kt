@@ -52,7 +52,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     ) { isGranted: Boolean ->
         if (isGranted) {
             // Si el usuario dice SÍ, arrancamos el panel
-            startQuickAccessService()
+
         }
     }
 
@@ -69,6 +69,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.nav_host_fragment_activity_main) as NavHostFragment
         val navController = navHostFragment.navController
+
+        checkAndStartService()
         setupBadge()
 
         binding.navView.setupWithNavController(navController)

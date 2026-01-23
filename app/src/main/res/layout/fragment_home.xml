@@ -330,6 +330,51 @@
                     android:gravity="center"
                     android:orientation="vertical">
 
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardQuote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_medium"
+                        app:cardBackgroundColor="@color/color_card"
+                        app:cardCornerRadius="@dimen/card_corner_radius_lg"
+                        app:cardElevation="@dimen/card_elevation"
+                        android:layout_marginHorizontal="@dimen/spacing_large"
+                        app:strokeWidth="@dimen/card_stroke_width"
+                        android:layout_marginTop="@dimen/spacing_medium"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="@dimen/spacing_medium">
+                            <TextView
+                                android:id="@+id/tvQuoteText"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunitosemibold"
+                                android:text="Cargando inspiración..."
+                                android:textSize="@dimen/text_body"
+                                android:lineSpacingExtra="4dp"
+                                android:textColor="@color/md_theme_onSurface"
+                                android:layout_marginBottom="8dp"/>
+
+                            <TextView
+                                android:id="@+id/tvQuoteAuthor"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunitobold"
+                                android:text="— Autor"
+                                android:textSize="@dimen/text_caption"
+                                android:textColor="@color/secondary_text"
+                                android:gravity="end"/>
+                        </LinearLayout>
+
+                    </com.google.android.material.card.MaterialCardView>
+
+
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
@@ -378,62 +423,7 @@
                             app:strokeColor="@color/border"
                             app:strokeWidth="@dimen/card_stroke_width">
 
-                            <androidx.constraintlayout.widget.ConstraintLayout
-                                android:id="@+id/lyProgress"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:padding="@dimen/spacing_medium">
 
-                                <ImageView
-                                    android:id="@+id/ivProgressIcon"
-                                    android:layout_width="@dimen/icon_medium"
-                                    android:layout_height="@dimen/icon_medium"
-                                    android:src="@drawable/ic_check_circle"
-                                    app:layout_constraintStart_toStartOf="parent"
-                                    app:layout_constraintTop_toTopOf="parent"
-                                    app:tint="@color/md_theme_primary" />
-
-                                <TextView
-                                    android:id="@+id/tvSubtitle"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="@dimen/icon_small"
-                                    android:fontFamily="@font/nunitosemibold"
-                                    android:text="@string/home_progress_subtitle_format"
-                                    android:textColor="@color/md_theme_onSurface"
-                                    android:textSize="@dimen/text_body"
-                                    app:layout_constraintBottom_toBottomOf="@+id/ivProgressIcon"
-                                    app:layout_constraintStart_toEndOf="@+id/ivProgressIcon"
-                                    app:layout_constraintTop_toTopOf="@+id/ivProgressIcon" />
-
-
-                                <TextView
-                                    android:id="@+id/tvPercentage"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:fontFamily="@font/nunitoextrabold"
-                                    android:text="0%"
-                                    android:textColor="@color/md_theme_onSurface"
-                                    android:textSize="@dimen/txt_xl"
-                                    app:layout_constraintBottom_toBottomOf="@+id/tvSubtitle"
-                                    app:layout_constraintEnd_toEndOf="parent"
-                                    app:layout_constraintTop_toTopOf="@+id/tvSubtitle" />
-
-                                <com.google.android.material.progressindicator.LinearProgressIndicator
-                                    android:id="@+id/linearProgressIndicator"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="@dimen/spacing_medium"
-                                    android:progress="0"
-                                    app:indicatorColor="?attr/colorPrimary"
-                                    app:layout_constraintEnd_toEndOf="parent"
-                                    app:layout_constraintStart_toStartOf="parent"
-                                    app:layout_constraintTop_toBottomOf="@+id/ivProgressIcon"
-                                    app:trackColor="@color/secondary_text"
-                                    app:trackCornerRadius="@dimen/spacing_small"
-                                    app:trackThickness="@dimen/txt_dimen_m" />
-
-                            </androidx.constraintlayout.widget.ConstraintLayout>
 
                         </com.google.android.material.card.MaterialCardView>
 
@@ -525,6 +515,36 @@
 
 
 
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="20dp"
+                        android:layout_marginTop="20dp"
+                        android:fontFamily="@font/nunitoextrabold"
+                        android:text="Super Tareas"
+                        android:textSize="18sp"
+                        android:textColor="#1F2937"/>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvSuperTasks"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clipChildren="false"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:layoutAnimation="@anim/layout_animation_fall_down"
+                        android:clipToPadding="false"
+                        android:paddingBottom="16dp"
+                        android:layout_marginTop="12dp"
+                        android:orientation="horizontal"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:listitem="@layout/item_super_task_card" />
                 </LinearLayout>
 
                 <androidx.constraintlayout.widget.ConstraintLayout
