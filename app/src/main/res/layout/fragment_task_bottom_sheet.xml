@@ -22,7 +22,7 @@
             android:fontFamily="@font/nunitobold"
             android:text="Nueva Tarea"
             android:textColor="@color/white"
-            android:textSize="@dimen/text_h5"
+            android:textSize="@dimen/text_h6"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -131,6 +131,7 @@
                         android:hint="Ej: Reunión con el equipo"
                         android:inputType="textCapSentences"
                         android:textColor="@color/md_theme_onSurface"
+                        android:textColorHint="@color/secondary_text"
                         android:textSize="@dimen/text_body" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -159,6 +160,7 @@
                         android:id="@+id/tiet_description"
                         android:layout_width="match_parent"
                         android:layout_height="100dp"
+                        android:textColorHint="@color/secondary_text"
                         android:fontFamily="@font/nunitregular"
                         android:gravity="top|start"
                         android:hint="Añade una descripción..."

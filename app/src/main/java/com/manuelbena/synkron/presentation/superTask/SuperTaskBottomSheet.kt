@@ -58,7 +58,7 @@ class SuperTaskBottomSheet : BottomSheetDialogFragment() {
     private fun setupUI(task: SuperTaskModel) {
         binding.apply {
             tvTitle.text = task.title
-            ivMainIcon.setImageResource(task.iconRes)
+            ivMainIcon.setImageResource(task.getIconRes())
 
             // Inicializar progreso
             updateHeaderProgressInternal(task.subTasks, task.totalCount)

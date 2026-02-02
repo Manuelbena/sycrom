@@ -2,21 +2,25 @@ package com.manuelbena.synkron.presentation.note
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
-import com.manuelbena.synkron.databinding.FragmentNoteBinding // O FragmentTaskBinding si ya le cambiaste el nombre
+import com.manuelbena.synkron.databinding.FragmentNoteBinding
 import com.manuelbena.synkron.presentation.models.FilterModel
+import com.manuelbena.synkron.presentation.note.adapter.FilterAdapter
+import com.manuelbena.synkron.presentation.note.adapter.SuperPlanManagementAdapter
 
-
-
+import com.manuelbena.synkron.presentation.superTask.SuperTaskBottomSheet
 import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class NoteFragment : BaseFragment<FragmentNoteBinding, NoteViewModel>() {
@@ -25,30 +29,59 @@ class NoteFragment : BaseFragment<FragmentNoteBinding, NoteViewModel>() {
 
     // Adaptadores
     private lateinit var tasksAdapter: TaskManagementAdapter
+    private lateinit var superPlanAdapter: SuperPlanManagementAdapter
+
+    // Adaptador de filtros
     private lateinit var filterAdapter: FilterAdapter
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentNoteBinding {
-        // Asegúrate de que este binding apunte a tu XML nuevo (el que tiene el header de "Bandeja de Tareas")
         return FragmentNoteBinding.inflate(inflater, container, false)
     }
 
     override fun setUI() {
+        setupAdapters()
         setupFilters()
-        setupTasksGrid()
+    }
+
+    private fun setupAdapters() {
+        // 1. Adapter Tareas Normales (Grilla)
+        tasksAdapter = TaskManagementAdapter { task ->
+            val bottomSheet = TaskDetailBottomSheet.newInstance(task)
+            bottomSheet.show(childFragmentManager, "TaskDetailBottomSheet")
+        }
+
+        // 2. Adapter Super Planes (Lista Vertical)
+        superPlanAdapter = SuperPlanManagementAdapter { superTask ->
+            // Al hacer click, abrimos el BottomSheet de Super Tareas
+            val bottomSheet = SuperTaskBottomSheet.newInstance(superTask)
+            bottomSheet.show(childFragmentManager, "SuperTaskSheet")
+        }
     }
 
     private fun setupFilters() {
-        // Datos de ejemplo para los filtros
-        val filterList = listOf(
-            FilterModel(1, "Pendientes", 5, true, R.drawable.ic_work),
-            FilterModel(2, "Trabajo", 3, false, R.drawable.ic_work), // Asegúrate de tener icono
-            FilterModel(3, "Personal", 2, false, R.drawable.ic_work)
-        )
+        // Inicializamos el FilterAdapter con una lista vacía por ahora
+        filterAdapter = FilterAdapter(emptyList()) { selectedFilter ->
 
-        // Inicializamos el FilterAdapter (que te pasé en la respuesta anterior)
-        filterAdapter = FilterAdapter(filterList) { selectedFilter ->
-            // Llamamos a la función que acabamos de crear en el ViewModel
+            // --- LÓGICA DE CAMBIO DE VISTA ---
             viewModel.filterByCategory(selectedFilter.name)
+
+            if (selectedFilter.name== "Super Planes") {
+            // MODO SUPER PLANES
+            binding.btnCreateSuperPlan.isVisible = true
+            binding.rvTasks.layoutManager = LinearLayoutManager(context)
+            binding.rvTasks.adapter = superPlanAdapter
+            binding.tvSummaryText.text = "Gestiona tus rutinas complejas"
+
+        } else {
+            // MODO TAREAS NORMALES
+            binding.btnCreateSuperPlan.isVisible = false
+            binding.rvTasks.layoutManager =
+                StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+            binding.rvTasks.adapter = tasksAdapter
+        }
+
+            // Actualizamos visualmente los chips
+            updateFiltersUI()
         }
 
         binding.rvFilters.apply {
@@ -57,72 +90,67 @@ class NoteFragment : BaseFragment<FragmentNoteBinding, NoteViewModel>() {
         }
     }
 
-    private fun setupTasksGrid() {
-        // Inicializamos el adaptador de TAREAS
-        // Al usar ListAdapter, NO pasamos la lista en el constructor, solo el click listener
-        tasksAdapter = TaskManagementAdapter { task ->
-            val bottomSheet = TaskDetailBottomSheet.newInstance(task)
-            bottomSheet.show(childFragmentManager, "TaskDetailBottomSheet")
-        }
+    private fun updateFiltersUI() {
+        val pendingCount = viewModel.getCountForCategory("Pendientes")
+        val superPlanCount = viewModel.getSuperPlanCount()
+        val currentName = viewModel.currentFilterName
 
-        binding.rvTasks.apply {
-            layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-            adapter = tasksAdapter
-        }
+        // --- AQUÍ ESTABA EL ERROR PROBABLEMENTE ---
+        // Asegúrate de que no haya comas extra al final
+        val updatedFilters = listOf(
+            FilterModel(1, "Pendientes", pendingCount, isSelected = (currentName == "Pendientes"), iconRes = R.drawable.ic_health),
+            FilterModel(2, "Super Planes", superPlanCount, isSelected = (currentName == "Super Planes"), iconRes = R.drawable.ic_health), // Usa ic_health o ic_flash
+            FilterModel(3, "Guardados", 0, isSelected = (currentName == "Guardados"), iconRes = R.drawable.ic_health)
+        )
+
+        filterAdapter.updateList(updatedFilters)
     }
 
     override fun observe() {
         lifecycleScope.launchWhenStarted {
-            viewModel.uiTasks.collectLatest { tasks ->
-                // 1. Actualizamos la lista de tareas (esto ya lo hacías)
-                tasksAdapter.submitList(tasks)
+            // 1. Observar Tareas Normales
+            launch {
+                viewModel.uiTasks.collectLatest { tasks ->
+                    // Solo actualizamos si NO estamos viendo super planes
+                    if (viewModel.currentFilterName != "Super Planes") {
+                        tasksAdapter.submitList(tasks)
 
-                binding.lyEmptyState.isVisible = tasks.isEmpty()
-                binding.rvTasks.isVisible = tasks.isNotEmpty()
+                        binding.lyEmptyState.isVisible = tasks.isEmpty()
+                        binding.rvTasks.isVisible = tasks.isNotEmpty()
 
-                // ---------------------------------------------------------------
-                // NUEVO: Sincronización visual de contadores (Banner y Filtros)
-                // ---------------------------------------------------------------
+                        val count = tasks.size
+                        binding.tvSummaryText.text = if (count == 1) "Tienes 1 tarea pendiente" else "Tienes $count tareas pendientes"
+                    }
+                    // Siempre actualizamos los contadores de los chips
+                    updateFiltersUI()
+                }
+            }
 
-                // A. Obtenemos el número REAL de pendientes (con la lógica corregida)
-                val pendingCount = viewModel.getCountForCategory("Pendientes")
+            // 2. Observar Super Planes
+            launch {
+                viewModel.superPlans.collectLatest { plans ->
+                    // Solo actualizamos si ESTAMOS viendo super planes
+                    if (viewModel.currentFilterName == "Super Planes") {
+                        superPlanAdapter.submitList(plans)
 
-                // B. Actualizamos el Banner "Tienes X tareas pendientes"
-                // Usa el plural/singular correctamente si quieres pulirlo
-                val text = if (pendingCount == 1) "Tienes 1 tarea pendiente" else "Tienes $pendingCount tareas pendientes"
-                binding.tvSummaryText.text = text
-
-                // C. Actualizamos los números de los Filtros (Chips)
-                // Reconstruimos la lista para que se actualicen los contadores (ej: Trabajo 3 -> Trabajo 2)
-                val updatedFilters = listOf(
-                    FilterModel(1, "Pendientes", pendingCount, iconRes = R.drawable.ic_note),
-                    FilterModel(2, "Trabajo", viewModel.getCountForCategory("Trabajo"), iconRes = R.drawable.ic_work),
-                    FilterModel(3, "Personal", viewModel.getCountForCategory("Personal"), iconRes = R.drawable.ic_work),
-                    // ... añade aquí el resto de tus categorías fijas ...
-                )
-
-                // D. Mantenemos seleccionado el que estaba activo
-                val currentName = viewModel.currentFilterName
-                updatedFilters.forEach { it.isSelected = (it.name == currentName) }
-
-                // E. Enviamos la nueva lista al adaptador de filtros
-                filterAdapter.updateList(updatedFilters)
+                        binding.lyEmptyState.isVisible = plans.isEmpty()
+                        binding.rvTasks.isVisible = plans.isNotEmpty()
+                    }
+                    updateFiltersUI()
+                }
             }
         }
     }
 
     override fun setListener() {
-        // Si decidiste quitar el SearchView del XML como en la imagen, borra esto.
-        // Si lo mantienes, usa este código:
-        /*
-        binding.searchView.setOnQueryTextListener(object : androidx.appcompat.widget.SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean = false
-
-            override fun onQueryTextChange(newText: String?): Boolean {
-                viewModel.filterByQuery(newText ?: "")
-                return true
+        // Botón "+ Crear Super Plan"
+        binding.btnCreateSuperPlan.setOnClickListener {
+            val createSheet = CreateSuperTaskBottomSheet()
+            createSheet.onSaveListener = { newSuperTask ->
+                viewModel.updateSuperTask(newSuperTask)
+                Snackbar.make(binding.root, "Plan '${newSuperTask.title}' creado", Snackbar.LENGTH_SHORT).show()
             }
-        })
-        */
+            createSheet.show(childFragmentManager, "CreateSuperPlan")
+        }
     }
 }

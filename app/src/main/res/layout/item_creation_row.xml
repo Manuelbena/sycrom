@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    android:background="@color/color_card"
+    android:padding="12dp">
+
+    <TextView
+        android:id="@+id/tvIndex"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/nunitobold"
+        android:text="1."
+        android:textColor="@color/md_theme_onSurface"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/etTitle"
+        app:layout_constraintBottom_toBottomOf="@id/etTitle"/>
+
+    <EditText
+        android:id="@+id/etTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:background="@null"
+        android:hint="Nombre (ej: Press Banca)"
+        android:fontFamily="@font/nunitosemibold"
+        android:textSize="16sp"
+        android:textColorHint="@color/secondary_text"
+        android:textColor="@color/md_theme_onSurface"
+        app:layout_constraintEnd_toStartOf="@+id/btnDelete"
+        app:layout_constraintStart_toEndOf="@id/tvIndex"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/btnDelete"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_delete"
+        app:tint="@color/md_theme_onSurface"
+        android:padding="2dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/lyGymFields"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/etTitle"
+        app:layout_constraintTop_toBottomOf="@id/etTitle">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginEnd="8dp">
+            <TextView
+                android:text="Series"
+                android:textSize="10sp"
+                android:textColor="@color/md_theme_onSurface"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <EditText
+                android:id="@+id/etSeries"
+                android:layout_width="match_parent"
+                android:textColorHint="@color/secondary_text"
+                android:textColor="@color/md_theme_onSurface"
+                android:layout_height="40dp"
+                android:text="0"
+                android:background="@drawable/bg_edit_text_outline"
+                android:inputType="number"
+                android:paddingHorizontal="8dp"
+                android:textSize="14sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginEnd="8dp">
+            <TextView
+                android:text="Reps"
+                android:textSize="10sp"
+                android:textColor="@color/md_theme_onSurface"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <EditText
+                android:id="@+id/etReps"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="0"
+                android:textColor="@color/md_theme_onSurface"
+                android:textColorHint="@color/secondary_text"
+                android:background="@drawable/bg_edit_text_outline"
+                android:inputType="number"
+                android:paddingHorizontal="8dp"
+                android:textSize="14sp"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:text="Peso (kg)"
+                android:textSize="10sp"
+                android:textColor="@color/md_theme_onSurface"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+            <EditText
+                android:id="@+id/etWeight"
+                android:text="0"
+                android:layout_width="match_parent"
+                android:textColor="@color/md_theme_onSurface"
+                android:textColorHint="@color/secondary_text"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_edit_text_outline"
+                android:inputType="numberDecimal"
+                android:paddingHorizontal="8dp"
+                android:textSize="14sp"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/etDetails"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColorHint="@color/secondary_text"
+        android:background="@drawable/bg_edit_text_outline"
+        android:hint="Notas adicionales..."
+        android:padding="8dp"
+        android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/etTitle"
+        app:layout_constraintTop_toBottomOf="@id/lyGymFields" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

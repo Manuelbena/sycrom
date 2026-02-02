@@ -1,7 +1,9 @@
 package com.manuelbena.synkron.di.repository
 
 
+import com.manuelbena.synkron.data.repository.SuperTaskRepository
 import com.manuelbena.synkron.data.repository.TaskRepository
+import com.manuelbena.synkron.domain.interfaces.ISuperTaskRepository
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import dagger.Binds
 import dagger.Module
@@ -22,6 +24,13 @@ abstract class RepositoryModule {
     abstract fun bindTaskRepository(
         taskRepository: TaskRepository
     ): ITaskRepository
+
+    // AÑADE ESTO:
+    @Binds
+    @Singleton
+    abstract fun bindSuperTaskRepository(
+        superTaskRepository: SuperTaskRepository
+    ): ISuperTaskRepository
 
 
 }

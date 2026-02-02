@@ -2,9 +2,10 @@ package com.manuelbena.synkron.presentation.home
 
 import androidx.lifecycle.viewModelScope
 import com.manuelbena.synkron.base.BaseViewModel
-import com.manuelbena.synkron.data.repository.TaskRepository
+import com.manuelbena.synkron.domain.interfaces.ISuperTaskRepository
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import com.manuelbena.synkron.domain.models.SubTaskDomain
+import com.manuelbena.synkron.domain.models.SuperTaskModel
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.domain.usecase.DeleteTaskUseCase
 import com.manuelbena.synkron.domain.usecase.GetTaskTodayUseCase
@@ -32,7 +33,8 @@ class HomeViewModel @Inject constructor(
     private val getTaskTodayUseCase: GetTaskTodayUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
-    private val taskRepository: ITaskRepository
+    private val taskRepository: ITaskRepository,
+    private val superTaskRepository: ISuperTaskRepository, // Asegúrate de que esto esté en tu módulo DI
 ) : BaseViewModel<HomeAction>() {
 
     private val _uiState = MutableStateFlow(HomeState())
@@ -42,6 +44,8 @@ class HomeViewModel @Inject constructor(
     val action: SingleLiveEvent<HomeAction> = _action
 
     private var tasksJob: Job? = null
+    private var superTasksJob: Job? = null // Job separado para SuperTareas
+
     private val headerDateFormatter = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", Locale("es", "ES"))
 
     // Control de Sync Inteligente
@@ -55,41 +59,32 @@ class HomeViewModel @Inject constructor(
         syncYearSmart(today.year)
     }
 
-    /**
-     * Llamado cuando el usuario selecciona una fecha en el calendario horizontal.
-     */
     fun onDateSelected(date: LocalDate) {
-        // Evita recargar si ya estamos en esa fecha
         if (_uiState.value.selectedDate == date) return
 
         _uiState.update { it.copy(selectedDate = date) }
         loadTasksForDate(date)
 
-        // Refresco silencioso de red
         viewModelScope.launch {
             taskRepository.refreshTasksForDate(date)
         }
     }
 
-    /**
-     * Llamado al hacer Swipe to Refresh.
-     */
     fun onRefreshRequested() {
-        lastSyncedYear = -1 // Forzar sync
+        lastSyncedYear = -1
         syncYearSmart(uiState.value.selectedDate.year, force = true)
     }
 
-    /**
-     * Carga las tareas de Room con optimización de UI.
-     */
     private fun loadTasksForDate(date: LocalDate) {
+        // Cancelamos trabajos previos de esta fecha
         tasksJob?.cancel()
+        superTasksJob?.cancel()
 
         _uiState.update { it.copy(selectedDate = date, headerText = formatDateHeader(date)) }
 
+        // 1. Cargar Tareas Normales
         tasksJob = viewModelScope.launch {
             getTaskTodayUseCase(date)
-                // Evita redibujar el RecyclerView si la lista es idéntica
                 .distinctUntilChanged()
                 .onStart {
                     _uiState.update { it.copy(isLoading = true) }
@@ -103,7 +98,35 @@ class HomeViewModel @Inject constructor(
                     _uiState.update { it.copy(tasks = tasks, isLoading = false) }
                 }
         }
+
+        // 2. Cargar Super Tareas (NUEVO)
+        superTasksJob = viewModelScope.launch {
+            superTaskRepository.getSuperTasksForDate(date)
+                .catch { e ->
+                    // Manejo de error silencioso o log
+                    e.printStackTrace()
+                }
+                .collect { superTasks ->
+                    _uiState.update { it.copy(superTasks = superTasks) }
+                }
+        }
     }
+
+    // --- ACCIONES SUPER TAREAS ---
+
+    fun updateSuperTask(task: SuperTaskModel) {
+        viewModelScope.launch {
+            try {
+                // Asumiendo que tu repositorio tiene saveSuperTask o insertSuperTask
+                superTaskRepository.saveSuperTask(task)
+                // No hace falta actualizar _uiState manual, el Flow de loadTasksForDate lo hará automático
+            } catch (e: Exception) {
+                showError("Error al guardar super tarea")
+            }
+        }
+    }
+
+    // --- RESTO DE LÓGICA EXISTENTE ---
 
     private fun syncYearSmart(year: Int, force: Boolean = false) {
         val now = System.currentTimeMillis()
@@ -113,6 +136,7 @@ class HomeViewModel @Inject constructor(
             viewModelScope.launch {
                 _uiState.update { it.copy(isLoading = true) }
                 taskRepository.syncYear(year)
+                // Recargamos datos tras sync
                 loadTasksForDate(uiState.value.selectedDate)
                 _uiState.update { it.copy(isLoading = false) }
             }
@@ -123,8 +147,6 @@ class HomeViewModel @Inject constructor(
         val today = LocalDate.now()
         if (_uiState.value.selectedDate == today) onRefreshRequested() else loadTasksForDate(today)
     }
-
-    // --- ACCIONES DE ESCRITURA (Local) ---
 
     fun onTaskCheckedChanged(task: TaskDomain, isDone: Boolean) {
         executeUseCase(

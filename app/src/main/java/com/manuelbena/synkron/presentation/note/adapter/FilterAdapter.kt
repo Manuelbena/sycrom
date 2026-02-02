@@ -1,11 +1,10 @@
-package com.manuelbena.synkron.presentation.note
+package com.manuelbena.synkron.presentation.note.adapter
 
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import com.manuelbena.synkron.databinding.ItemCategoryRowSelectorBinding
 import com.manuelbena.synkron.databinding.ItemSelectorBinding
 import com.manuelbena.synkron.presentation.models.FilterModel
 

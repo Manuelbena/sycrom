@@ -29,7 +29,8 @@ class SuperTaskAdapter(
         fun bind(item: SuperTaskModel) {
             binding.tvTitle.text = item.title
             binding.tvProgressText.text = "${item.completedCount}/${item.totalCount} completados"
-            binding.ivMainIcon.setImageResource(item.iconRes)
+            binding.ivMainIcon.setImageResource(item.getIconRes())
+
 
             // Progreso
             val progress = if (item.totalCount > 0) (item.completedCount * 100) / item.totalCount else 0

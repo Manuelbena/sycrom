@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_body">
+
+    <FrameLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_header"
+        android:paddingHorizontal="@dimen/spacing_large"
+        android:paddingVertical="@dimen/spacing_medium"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="@dimen/text_h6"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_gravity="center_vertical"
+            android:fontFamily="@font/nunitobold"
+            android:text="Nueva Super Tarea"
+            />
+
+        <ImageView
+            android:id="@+id/btnClose"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/ic_close"
+            app:tint="@color/white" />
+    </FrameLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toTopOf="@id/btnSave"
+        app:layout_constraintTop_toBottomOf="@id/header">
+
+        <LinearLayout
+            android:background="@color/color_body"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:text="Nombre del plan"
+                android:fontFamily="@font/nunitosemibold"
+                android:textColor="@color/md_theme_onSurface"
+                android:textSize="@dimen/text_size_h3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/etPlanName"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:boxBackgroundColor="@color/color_card"
+                app:boxStrokeColor="@color/color_primary"
+                app:boxStrokeWidth="1dp"
+                app:boxStrokeWidthFocused="2dp"
+                app:hintEnabled="false">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/tiet_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/nunitregular"
+                    android:hint="Ej: Reunión con el equipo"
+                    android:inputType="textCapSentences"
+                    android:textColor="@color/md_theme_onSurface"
+                    android:textColorHint="@color/secondary_text"
+                    android:textSize="@dimen/text_body" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:text="Categoría"
+                android:textColor="@color/md_theme_onSurface"
+                android:textSize="@dimen/text_size_h3"
+                android:fontFamily="@font/nunitosemibold"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="6dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/lyCategories"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <TextView
+                android:text="Fecha de realización"
+                android:textColor="@color/md_theme_onSurface"
+                android:textSize="@dimen/text_size_h3"
+                android:fontFamily="@font/nunitosemibold"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="6dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/tvDateSelector"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/button_height"
+                android:fontFamily="@font/nunitregular"
+                android:gravity="center"
+                android:backgroundTint="@color/color_card"
+                android:text="Hoy"
+                android:textColor="@color/secondary_text"
+                app:icon="@drawable/ic_calendar_today"
+                app:iconTint="@color/secondary_text"
+                app:strokeColor="@color/border"
+                app:strokeWidth="1dp" />
+
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/tvItemsLabel"
+                    android:layout_width="0dp"
+                    android:textColor="@color/md_theme_onSurface"
+                    android:textSize="@dimen/text_size_h3"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Ejercicios"
+                    android:fontFamily="@font/nunitobold"/>
+
+                <TextView
+                    android:id="@+id/btnAddItem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="+ Añadir"
+                    android:textColor="@color/md_theme_onSurface"
+                    android:textSize="@dimen/text_size_h3"
+                    android:fontFamily="@font/nunitobold"
+                    android:padding="8dp"/>
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvCreationItems"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:nestedScrollingEnabled="false" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSave"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/button_height"
+        android:layout_weight="2"
+        android:fontFamily="@font/nunitobold"
+        android:text="Guardar Plantilla"
+        android:layout_margin="@dimen/spacing_large"
+        android:textColor="@color/white"
+        android:layout_marginHorizontal="@dimen/spacing_medium"
+        app:backgroundTint="@color/color_primary"
+        app:cornerRadius="@dimen/spacing_large"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
