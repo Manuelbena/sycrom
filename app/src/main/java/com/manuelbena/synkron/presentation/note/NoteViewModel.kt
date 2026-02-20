@@ -7,11 +7,13 @@ import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import com.manuelbena.synkron.domain.models.SuperTaskModel
 import com.manuelbena.synkron.domain.models.TaskDomain
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.count
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -34,8 +36,12 @@ class NoteViewModel @Inject constructor(
 
     // Flujo de Super Planes (Cargamos los del día o todos, según tu lógica de negocio)
     val superPlans: StateFlow<List<SuperTaskModel>> = superTaskRepository
-        .getSuperTasksForDate(LocalDate.now())
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+        .getAllSuperTasksForDate()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
 
     init {
         observeAllTasks()
@@ -82,7 +88,7 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    fun getSuperPlanCount(): Int = superPlans.value.size
+
 
     fun filterByCategory(categoryName: String) {
         currentFilterName = categoryName

@@ -1,4 +1,4 @@
-package com.manuelbena.synkron.presentation.note // Asegúrate del paquete correcto
+package com.manuelbena.synkron.presentation.note.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -6,8 +6,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.manuelbena.synkron.databinding.ItemTaskStaggeredBinding
-import com.manuelbena.synkron.databinding.ItemTaskTodayBinding
-
 import com.manuelbena.synkron.domain.models.TaskDomain
 
 class TaskManagementAdapter(

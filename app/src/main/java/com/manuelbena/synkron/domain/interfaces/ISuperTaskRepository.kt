@@ -6,6 +6,8 @@ import java.time.LocalDate
 
 interface ISuperTaskRepository {
     fun getSuperTasksForDate(date: LocalDate): Flow<List<SuperTaskModel>>
+
+    fun getAllSuperTasksForDate(): Flow<List<SuperTaskModel>>
     suspend fun saveSuperTask(task: SuperTaskModel)
     suspend fun deleteSuperTask(task: SuperTaskModel)
 }

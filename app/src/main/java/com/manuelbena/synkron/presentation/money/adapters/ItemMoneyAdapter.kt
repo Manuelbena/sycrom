@@ -1,4 +1,4 @@
-package com.manuelbena.synkron.presentation.money
+package com.manuelbena.synkron.presentation.money.adapters
 
 import android.annotation.SuppressLint
 import android.graphics.Color

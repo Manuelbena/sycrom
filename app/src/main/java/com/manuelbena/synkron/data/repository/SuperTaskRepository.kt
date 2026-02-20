@@ -25,6 +25,12 @@ class SuperTaskRepository @Inject constructor(
         }
     }
 
+    override fun getAllSuperTasksForDate(): Flow<List<SuperTaskModel>> {
+       return dao.observeAll().map { entities ->
+            entities.map { it.toDomain() }
+        }
+    }
+
     override suspend fun saveSuperTask(task: SuperTaskModel) {
         dao.insertSuperTask(task.toEntity())
     }

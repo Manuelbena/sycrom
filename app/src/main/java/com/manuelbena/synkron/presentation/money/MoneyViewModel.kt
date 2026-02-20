@@ -1,13 +1,20 @@
-package com.manuelbena.synkron.presentation.home
+package com.manuelbena.synkron.presentation.money
+
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class MoneyViewModel : ViewModel() {
+@HiltViewModel
+class MoneyViewModel @Inject constructor() : ViewModel() {
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is home Fragment"
+    // 0 = Resumen, 1 = Movimientos
+    private val _selectedTab = MutableLiveData<Int>(0)
+    val selectedTab: LiveData<Int> = _selectedTab
+
+    fun selectTab(index: Int) {
+        _selectedTab.value = index
     }
-    val text: LiveData<String> = _text
 }

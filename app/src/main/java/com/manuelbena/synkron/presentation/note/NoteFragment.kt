@@ -2,7 +2,6 @@ package com.manuelbena.synkron.presentation.note
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -15,6 +14,7 @@ import com.manuelbena.synkron.databinding.FragmentNoteBinding
 import com.manuelbena.synkron.presentation.models.FilterModel
 import com.manuelbena.synkron.presentation.note.adapter.FilterAdapter
 import com.manuelbena.synkron.presentation.note.adapter.SuperPlanManagementAdapter
+import com.manuelbena.synkron.presentation.note.adapter.TaskManagementAdapter
 
 import com.manuelbena.synkron.presentation.superTask.SuperTaskBottomSheet
 import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
@@ -65,12 +65,20 @@ class NoteFragment : BaseFragment<FragmentNoteBinding, NoteViewModel>() {
             // --- LÓGICA DE CAMBIO DE VISTA ---
             viewModel.filterByCategory(selectedFilter.name)
 
-            if (selectedFilter.name== "Super Planes") {
-            // MODO SUPER PLANES
-            binding.btnCreateSuperPlan.isVisible = true
-            binding.rvTasks.layoutManager = LinearLayoutManager(context)
-            binding.rvTasks.adapter = superPlanAdapter
-            binding.tvSummaryText.text = "Gestiona tus rutinas complejas"
+            if (selectedFilter.name == "Super Planes") {
+                binding.btnCreateSuperPlan.isVisible = true
+                binding.rvTasks.layoutManager = LinearLayoutManager(context)
+                binding.rvTasks.adapter = superPlanAdapter
+
+                val plans = viewModel.superPlans.value
+                superPlanAdapter.submitList(plans)
+
+                binding.lyEmptyState.isVisible = plans.isEmpty()
+                binding.rvTasks.isVisible = plans.isNotEmpty()
+                binding.tvSummaryText.text =
+                    if (plans.size == 1) "Tienes 1 Super Plan"
+                    else "Tienes ${plans.size} Super Planes"
+            
 
         } else {
             // MODO TAREAS NORMALES
@@ -92,7 +100,7 @@ class NoteFragment : BaseFragment<FragmentNoteBinding, NoteViewModel>() {
 
     private fun updateFiltersUI() {
         val pendingCount = viewModel.getCountForCategory("Pendientes")
-        val superPlanCount = viewModel.getSuperPlanCount()
+        val superPlanCount = viewModel.superPlans.value.size
         val currentName = viewModel.currentFilterName
 
         // --- AQUÍ ESTABA EL ERROR PROBABLEMENTE ---
@@ -129,12 +137,14 @@ class NoteFragment : BaseFragment<FragmentNoteBinding, NoteViewModel>() {
             // 2. Observar Super Planes
             launch {
                 viewModel.superPlans.collectLatest { plans ->
-                    // Solo actualizamos si ESTAMOS viendo super planes
                     if (viewModel.currentFilterName == "Super Planes") {
                         superPlanAdapter.submitList(plans)
-
                         binding.lyEmptyState.isVisible = plans.isEmpty()
                         binding.rvTasks.isVisible = plans.isNotEmpty()
+
+                        binding.tvSummaryText.text =
+                            if (plans.size == 1) "Tienes 1 Super Plan"
+                            else "Tienes ${plans.size} Super Planes"
                     }
                     updateFiltersUI()
                 }

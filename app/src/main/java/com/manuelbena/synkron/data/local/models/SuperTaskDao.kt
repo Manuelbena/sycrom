@@ -16,6 +16,11 @@ interface SuperTaskDao {
     @Query("SELECT * FROM super_tasks WHERE date >= :startOfDay AND date < :endOfDay")
     fun getSuperTasksForDate(startOfDay: Long, endOfDay: Long): Flow<List<SuperTaskEntity>>
 
+    // Obtener super tareas de un día específico
+    // Buscamos entre el inicio y el fin de ese día
+    @Query("SELECT * FROM super_tasks ORDER BY date DESC")
+    fun observeAll(): kotlinx.coroutines.flow.Flow<List<SuperTaskEntity>>
+
     @Delete
     suspend fun deleteSuperTask(task: SuperTaskEntity)
 }

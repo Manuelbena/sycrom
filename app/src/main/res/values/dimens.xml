@@ -72,6 +72,7 @@
     <dimen name="icon_size_lg">24dp</dimen>
     <dimen name="icon_size_xl">48dp</dimen>
     <dimen name="task_card_width">350dp</dimen>
+    <dimen name="space_card_width">250dp</dimen>
     <dimen name="card_corner_radius_lg">16dp</dimen>
     <dimen name="card_corner_radius_xl">16dp</dimen>
     <dimen name="card_elevation_default">3dp</dimen>
