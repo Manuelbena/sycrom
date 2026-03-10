@@ -24,6 +24,12 @@
         <item name="android:popupMenuStyle">@style/MyPopupMenuStyle</item>
     </style>
 
+    <style name="PremiumTabTextAppearance" parent="TextAppearance.Design.Tab">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="fontFamily">sans-serif-medium</item>
+    </style>
+
     <style name="Theme.Sycrom" parent="Base.Theme.Sycrom" />
 
     <style name="DayCircleStyle">
