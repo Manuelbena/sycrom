@@ -188,6 +188,7 @@
             android:orientation="horizontal"
             android:paddingVertical="@dimen/spacing_xxs"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="@+id/icon_time"
             app:layout_constraintTop_toBottomOf="@+id/icon_time">
 
@@ -195,20 +196,20 @@
                 android:id="@+id/ivChevron"
                 android:layout_width="@dimen/icon_size_small"
                 android:layout_height="@dimen/icon_size_small"
+                android:contentDescription="@string/cd_subtasks_chevron"
                 android:rotation="-90"
                 android:src="@drawable/ic_arrow_back"
-                app:tint="@color/secondary_text"
-                android:contentDescription="@string/cd_subtasks_chevron"/>
+                app:tint="@color/secondary_text" />
 
             <TextView
                 android:id="@+id/textView_taskDetail_progressText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/spacing_s"
+                android:fontFamily="@font/nunitobold"
                 android:textColor="@color/secondary_text"
                 android:textSize="@dimen/text_size_time"
                 android:textStyle="bold"
-                android:fontFamily="@font/nunitobold"
                 tools:text="@string/task_placeholder_subtasks" />
         </LinearLayout>
 

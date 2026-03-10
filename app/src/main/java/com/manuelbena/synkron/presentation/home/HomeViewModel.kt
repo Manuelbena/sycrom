@@ -166,13 +166,7 @@ class HomeViewModel @Inject constructor(
         )
     }
 
-    fun onTaskMenuAction(action: TaskAdapter.TaskMenuAction) {
-        when (action) {
-            is TaskAdapter.TaskMenuAction.OnDelete -> deleteTaskInstance(action.task)
-            is TaskAdapter.TaskMenuAction.OnEdit -> _action.postValue(HomeAction.NavigateToEditTask(action.task))
-            is TaskAdapter.TaskMenuAction.OnShare -> _action.postValue(HomeAction.ShareTask(action.task))
-        }
-    }
+
 
     fun deleteTaskInstance(task: TaskDomain) {
         executeUseCase(

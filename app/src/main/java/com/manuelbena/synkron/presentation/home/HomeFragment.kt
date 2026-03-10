@@ -72,7 +72,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private val taskAdapter = TaskAdapter(
         onItemClick = { task -> showTaskDetail(task) },
-        onMenuAction = { action -> viewModel.onTaskMenuAction(action) },
         onTaskCheckedChange = { task, isDone -> viewModel.onTaskCheckedChanged(task, isDone) },
         onSubTaskChange = { taskId, subTask -> viewModel.onSubTaskChanged(taskId, subTask) }
     ).apply{
@@ -112,7 +111,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         setupCalendar()
         setupRecyclerView()
         setupQuoteOfTheDay()
-        setupDotIndicatorListener()
+
 
         isInitialized = true
     }
@@ -193,6 +192,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun updateUi(state: HomeState) {
         binding.apply {
+            binding.lySuperTasksContainer.isVisible = state.superTasks.isNotEmpty()
             val hasTasks = state.tasks.isNotEmpty()
             val isFirstLoad = state.isLoading && !hasTasks
 
@@ -207,7 +207,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 recyclerViewTasks.isVisible = false
                 ivNoTasks.isVisible = false
                 tvNoTasks.isVisible = false
-                tabLayoutDots.isVisible = false
+
                 // Ocultar supertareas mientras carga inicial
                 rvSuperTasks.isVisible = false
 
@@ -219,16 +219,16 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 // 1. Tareas Normales
                 if (hasTasks) {
                     recyclerViewTasks.isVisible = true
-                    tabLayoutDots.isVisible = true
+
                     ivNoTasks.isVisible = false
                     tvNoTasks.isVisible = false
 
                     taskAdapter.submitList(state.tasks)
                     updateProgressCard(state.tasks)
-                    updateDots(state.tasks.size)
+
                 } else {
                     recyclerViewTasks.isVisible = false
-                    tabLayoutDots.isVisible = false
+
                     ivNoTasks.isVisible = true
                     tvNoTasks.isVisible = true
                 }
@@ -247,24 +247,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         weekManager.selectDate(state.selectedDate)
     }
 
-    private fun updateDots(count: Int) {
-        if (binding.tabLayoutDots.tabCount != count) {
-            binding.tabLayoutDots.removeAllTabs()
-            repeat(count) {
-                val newTab = binding.tabLayoutDots.newTab()
-                newTab.setCustomView(R.layout.dot_indicator_layout)
-                binding.tabLayoutDots.addTab(newTab)
-            }
-            val lm = binding.recyclerViewTasks.layoutManager as? LinearLayoutManager
-            val currentPos = lm?.findFirstCompletelyVisibleItemPosition()
-            if (currentPos != null && currentPos != RecyclerView.NO_POSITION && currentPos < binding.tabLayoutDots.tabCount) {
-                binding.tabLayoutDots.getTabAt(currentPos)?.select()
-            }
-        }
-    }
 
-    // --- RESTO DE MÉTODOS EXISTENTES (Setup UI, Listeners, Utils, etc.) ---
-    // (Se mantienen igual que tu código original, solo he limpiado para brevedad en la respuesta)
 
     private fun setupButtomFloating() {
         val options = listOf(binding.tvFabAddTask, binding.tvFabAddSuggestion, binding.tvFabAddIng, binding.tvFabAddGasto)
@@ -368,46 +351,16 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun setupRecyclerView() {
-        val snapHelper = PagerSnapHelper()
         binding.recyclerViewTasks.apply {
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            // 1. OBLIGATORIO: Forzamos la orientación VERTICAL
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
             adapter = taskAdapter
-            applyCarouselPadding(350)
-            addOnScrollListener(CarouselScrollListener())
             itemAnimator = null
-            addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                    super.onScrollStateChanged(recyclerView, newState)
-                    if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                        val centerView = snapHelper.findSnapView(layoutManager) ?: return
-                        val newPosition = (layoutManager as LinearLayoutManager).getPosition(centerView)
-                        if (newPosition != RecyclerView.NO_POSITION && newPosition != RecyclerView.NO_POSITION && binding.tabLayoutDots.tabCount > newPosition) {
-                            binding.tabLayoutDots.getTabAt(newPosition)?.select()
-                        }
-                    }
-                }
-            })
+
         }
-        snapHelper.attachToRecyclerView(binding.recyclerViewTasks)
     }
 
-    private fun setupDotIndicatorListener() {
-        binding.tabLayoutDots.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                tab?.let {
-                    val lm = binding.recyclerViewTasks.layoutManager as? LinearLayoutManager
-                    if (lm != null) {
-                        val currentPos = lm.findFirstCompletelyVisibleItemPosition()
-                        if (currentPos != it.position) {
-                            binding.recyclerViewTasks.smoothScrollToPosition(it.position)
-                        }
-                    }
-                }
-            }
-            override fun onTabUnselected(tab: TabLayout.Tab?) {}
-            override fun onTabReselected(tab: TabLayout.Tab?) {}
-        })
-    }
+
 
     private fun showTaskDetail(task: TaskDomain) {
         taskDetailBottomSheet?.dismiss()
@@ -486,16 +439,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun updateDayTimeline() {
-        val now = java.time.LocalTime.now()
-        val totalMinutesInDay = 24 * 60
-        val currentMinutes = now.hour * 60 + now.minute
-        val percentage = currentMinutes.toFloat() / totalMinutesInDay
-        val params = binding.ivTimeCursor.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
-        params.horizontalBias = percentage.coerceIn(0f, 1f)
-        binding.ivTimeCursor.layoutParams = params
-        val formatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm")
-        binding.tvCurrentTimeBubble.text = now.format(formatter)
-        binding.clDayTimeline.isVisible = viewModel.uiState.value.tasks.isNotEmpty()
+        binding.recyclerViewTasks.adapter?.notifyItemRangeChanged(
+            0,
+            binding.recyclerViewTasks.adapter?.itemCount ?: 0,
+            "PAYLOAD_TIME_UPDATE"
+        )
     }
 
     private val timeUpdateReceiver = object : BroadcastReceiver() {
@@ -505,8 +453,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             if (action == Intent.ACTION_TIME_TICK || action == Intent.ACTION_DATE_CHANGED || action == Intent.ACTION_TIME_CHANGED) {
                 try {
                     checkDateChange()
-                    updateDayTimeline()
-                    binding.recyclerViewTasks.adapter?.notifyItemRangeChanged(0, binding.recyclerViewTasks.adapter?.itemCount ?: 0, "PAYLOAD_TIME_UPDATE")
+                    updateDayTimeline() // Esto ahora actualizará la línea verde de las tareas
                 } catch (e: Exception) { e.printStackTrace() }
             }
         }
@@ -514,25 +461,46 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     @SuppressLint("SetTextI18n")
     private fun setupQuoteOfTheDay() {
+        // 1. Forzamos la visibilidad inicial
+        binding.cardQuote.isVisible = true
+
         try {
+            // Intento de lectura del archivo
             val jsonString = requireContext().assets.open("quotes.json").bufferedReader().use { it.readText() }
             val quoteList = com.google.gson.Gson().fromJson(jsonString, Array<Quote>::class.java)
+
             if (!quoteList.isNullOrEmpty()) {
                 val calendar = java.util.Calendar.getInstance()
                 val dayOfYear = calendar.get(java.util.Calendar.DAY_OF_YEAR)
                 val index = dayOfYear % quoteList.size
                 val todayQuote = quoteList[index]
+
                 binding.tvQuoteText.text = "\"${todayQuote.texto}\""
                 binding.tvQuoteAuthor.text = "— ${todayQuote.autor}"
+
+                // Animación de entrada
                 binding.cardQuote.alpha = 0f
                 binding.cardQuote.animate().alpha(1f).setDuration(500).start()
             } else {
-                binding.cardQuote.isVisible = false
+                setFallbackQuote() // Si el array está vacío
             }
         } catch (e: Exception) {
+            // 2. ¡Atención! Revisa tu pestaña "Logcat" en Android Studio.
+            // Si ves este error, significa que te falta crear el archivo "quotes.json"
+            // dentro de la carpeta: app/src/main/assets/
             e.printStackTrace()
-            binding.cardQuote.isVisible = false
+
+            // En lugar de desaparecer la tarjeta, mostramos una por defecto
+            setFallbackQuote()
         }
+    }
+
+    // Método auxiliar para que la UI nunca se quede vacía
+    private fun setFallbackQuote() {
+        binding.cardQuote.alpha = 1f
+        binding.cardQuote.isVisible = true
+        binding.tvQuoteText.text = "\"El secreto para salir adelante es simplemente empezar.\""
+        binding.tvQuoteAuthor.text = "— Mark Twain"
     }
 
     private fun RecyclerView.applyCarouselPadding(itemWidthDp: Int) {
