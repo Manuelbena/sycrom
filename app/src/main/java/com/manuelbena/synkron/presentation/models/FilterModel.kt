@@ -1,9 +1,10 @@
 package com.manuelbena.synkron.presentation.models
 
+
 data class FilterModel(
-    val id: Int, // ID único para identificar qué vista mostrar
+    val id: Int,
     val name: String,
-    val count: Int = 0, // Opcional, para el badge
-    val iconRes: Int? = null, // Opcional
+    val count: Int = 0,
+    val iconRes: Int? = null,
     var isSelected: Boolean = false
 )

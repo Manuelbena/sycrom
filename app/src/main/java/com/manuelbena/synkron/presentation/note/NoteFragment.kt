@@ -4,9 +4,10 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.base.BaseFragment
@@ -15,7 +16,6 @@ import com.manuelbena.synkron.presentation.models.FilterModel
 import com.manuelbena.synkron.presentation.note.adapter.FilterAdapter
 import com.manuelbena.synkron.presentation.note.adapter.SuperPlanManagementAdapter
 import com.manuelbena.synkron.presentation.note.adapter.TaskManagementAdapter
-
 import com.manuelbena.synkron.presentation.superTask.SuperTaskBottomSheet
 import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,11 +27,8 @@ class NoteFragment : BaseFragment<FragmentNoteBinding, NoteViewModel>() {
 
     override val viewModel: NoteViewModel by viewModels()
 
-    // Adaptadores
     private lateinit var tasksAdapter: TaskManagementAdapter
     private lateinit var superPlanAdapter: SuperPlanManagementAdapter
-
-    // Adaptador de filtros
     private lateinit var filterAdapter: FilterAdapter
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentNoteBinding {
@@ -44,116 +41,114 @@ class NoteFragment : BaseFragment<FragmentNoteBinding, NoteViewModel>() {
     }
 
     private fun setupAdapters() {
-        // 1. Adapter Tareas Normales (Grilla)
         tasksAdapter = TaskManagementAdapter { task ->
-            val bottomSheet = TaskDetailBottomSheet.newInstance(task)
-            bottomSheet.show(childFragmentManager, "TaskDetailBottomSheet")
+            TaskDetailBottomSheet.newInstance(task).show(childFragmentManager, "TaskDetail")
         }
 
-        // 2. Adapter Super Planes (Lista Vertical)
         superPlanAdapter = SuperPlanManagementAdapter { superTask ->
-            // Al hacer click, abrimos el BottomSheet de Super Tareas
-            val bottomSheet = SuperTaskBottomSheet.newInstance(superTask)
-            bottomSheet.show(childFragmentManager, "SuperTaskSheet")
+            SuperTaskBottomSheet.newInstance(superTask).show(childFragmentManager, "SuperTaskSheet")
+        }
+
+        // Asignamos por defecto el adapter de tareas normales
+        binding.rvTasks.apply {
+            layoutManager = LinearLayoutManager(requireContext())
+            adapter = tasksAdapter
         }
     }
 
     private fun setupFilters() {
-        // Inicializamos el FilterAdapter con una lista vacía por ahora
-        filterAdapter = FilterAdapter(emptyList()) { selectedFilter ->
+        // 1. UNIFICACIÓN: Usamos directamente tus categorías de UI, no las de Base de Datos
+        val initialFilters = listOf(
+            FilterModel(1, "Pendientes", 0, R.drawable.ic_health, isSelected = true),
+            FilterModel(2, "Super Planes", 0, R.drawable.ic_health, isSelected = false),
+            FilterModel(3, "Guardados", 0, R.drawable.ic_health, isSelected = false)
+        )
 
-            // --- LÓGICA DE CAMBIO DE VISTA ---
+        filterAdapter = FilterAdapter(initialFilters) { selectedFilter ->
             viewModel.filterByCategory(selectedFilter.name)
 
-            if (selectedFilter.name == "Super Planes") {
-                binding.btnCreateSuperPlan.isVisible = true
-                binding.rvTasks.layoutManager = LinearLayoutManager(context)
-                binding.rvTasks.adapter = superPlanAdapter
+            binding.apply {
+                if (selectedFilter.name == "Super Planes") {
+                    btnCreateSuperPlan.isVisible = true
+                    // Swapping seguro:
+                    if (rvTasks.adapter != superPlanAdapter) rvTasks.adapter = superPlanAdapter
 
-                val plans = viewModel.superPlans.value
-                superPlanAdapter.submitList(plans)
+                    val plans = viewModel.superPlans.value
+                    superPlanAdapter.submitList(plans)
 
-                binding.lyEmptyState.isVisible = plans.isEmpty()
-                binding.rvTasks.isVisible = plans.isNotEmpty()
-                binding.tvSummaryText.text =
-                    if (plans.size == 1) "Tienes 1 Super Plan"
-                    else "Tienes ${plans.size} Super Planes"
-            
+                    lyEmptyState.isVisible = plans.isEmpty()
+                    rvTasks.isVisible = plans.isNotEmpty()
+                    tvSummaryText.text = if (plans.size == 1) "Tienes 1 Super Plan" else "Tienes ${plans.size} Super Planes"
+                } else {
+                    btnCreateSuperPlan.isVisible = false
+                    // Swapping seguro: Volvemos a las tareas normales
+                    if (rvTasks.adapter != tasksAdapter) rvTasks.adapter = tasksAdapter
 
-        } else {
-            // MODO TAREAS NORMALES
-            binding.btnCreateSuperPlan.isVisible = false
-            binding.rvTasks.layoutManager =
-                StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
-            binding.rvTasks.adapter = tasksAdapter
-        }
+                    val tasks = viewModel.uiTasks.value
+                    tasksAdapter.submitList(tasks)
 
-            // Actualizamos visualmente los chips
-            updateFiltersUI()
+                    lyEmptyState.isVisible = tasks.isEmpty()
+                    rvTasks.isVisible = tasks.isNotEmpty()
+                    tvSummaryText.text = if (tasks.size == 1) "Tienes 1 tarea" else "Tienes ${tasks.size} tareas"
+                }
+            }
         }
 
         binding.rvFilters.apply {
-            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
             adapter = filterAdapter
+            itemAnimator = null
         }
     }
 
     private fun updateFiltersUI() {
+        // Solo actualizamos los contadores para no romper el estado de "isSelected"
         val pendingCount = viewModel.getCountForCategory("Pendientes")
         val superPlanCount = viewModel.superPlans.value.size
         val currentName = viewModel.currentFilterName
 
-        // --- AQUÍ ESTABA EL ERROR PROBABLEMENTE ---
-        // Asegúrate de que no haya comas extra al final
         val updatedFilters = listOf(
-            FilterModel(1, "Pendientes", pendingCount, isSelected = (currentName == "Pendientes"), iconRes = R.drawable.ic_health),
-            FilterModel(2, "Super Planes", superPlanCount, isSelected = (currentName == "Super Planes"), iconRes = R.drawable.ic_health), // Usa ic_health o ic_flash
-            FilterModel(3, "Guardados", 0, isSelected = (currentName == "Guardados"), iconRes = R.drawable.ic_health)
+            FilterModel(1, "Pendientes", pendingCount, R.drawable.ic_health, isSelected = (currentName == "Pendientes")),
+            FilterModel(2, "Super Planes", superPlanCount, R.drawable.ic_health, isSelected = (currentName == "Super Planes")),
+            FilterModel(3, "Guardados", 0, R.drawable.ic_health, isSelected = (currentName == "Guardados"))
         )
 
         filterAdapter.updateList(updatedFilters)
     }
 
     override fun observe() {
-        lifecycleScope.launchWhenStarted {
-            // 1. Observar Tareas Normales
-            launch {
-                viewModel.uiTasks.collectLatest { tasks ->
-                    // Solo actualizamos si NO estamos viendo super planes
-                    if (viewModel.currentFilterName != "Super Planes") {
-                        tasksAdapter.submitList(tasks)
+        // CORRECCIÓN: Evitamos memory leaks con repeatOnLifecycle
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
 
-                        binding.lyEmptyState.isVisible = tasks.isEmpty()
-                        binding.rvTasks.isVisible = tasks.isNotEmpty()
-
-                        val count = tasks.size
-                        binding.tvSummaryText.text = if (count == 1) "Tienes 1 tarea pendiente" else "Tienes $count tareas pendientes"
+                launch {
+                    viewModel.uiTasks.collectLatest { tasks ->
+                        if (viewModel.currentFilterName != "Super Planes") {
+                            tasksAdapter.submitList(tasks)
+                            binding.lyEmptyState.isVisible = tasks.isEmpty()
+                            binding.rvTasks.isVisible = tasks.isNotEmpty()
+                            binding.tvSummaryText.text = if (tasks.size == 1) "Tienes 1 tarea pendiente" else "Tienes ${tasks.size} tareas pendientes"
+                        }
+                        updateFiltersUI()
                     }
-                    // Siempre actualizamos los contadores de los chips
-                    updateFiltersUI()
                 }
-            }
 
-            // 2. Observar Super Planes
-            launch {
-                viewModel.superPlans.collectLatest { plans ->
-                    if (viewModel.currentFilterName == "Super Planes") {
-                        superPlanAdapter.submitList(plans)
-                        binding.lyEmptyState.isVisible = plans.isEmpty()
-                        binding.rvTasks.isVisible = plans.isNotEmpty()
-
-                        binding.tvSummaryText.text =
-                            if (plans.size == 1) "Tienes 1 Super Plan"
-                            else "Tienes ${plans.size} Super Planes"
+                launch {
+                    viewModel.superPlans.collectLatest { plans ->
+                        if (viewModel.currentFilterName == "Super Planes") {
+                            superPlanAdapter.submitList(plans)
+                            binding.lyEmptyState.isVisible = plans.isEmpty()
+                            binding.rvTasks.isVisible = plans.isNotEmpty()
+                            binding.tvSummaryText.text = if (plans.size == 1) "Tienes 1 Super Plan" else "Tienes ${plans.size} Super Planes"
+                        }
+                        updateFiltersUI()
                     }
-                    updateFiltersUI()
                 }
             }
         }
     }
 
     override fun setListener() {
-        // Botón "+ Crear Super Plan"
         binding.btnCreateSuperPlan.setOnClickListener {
             val createSheet = CreateSuperTaskBottomSheet()
             createSheet.onSaveListener = { newSuperTask ->
