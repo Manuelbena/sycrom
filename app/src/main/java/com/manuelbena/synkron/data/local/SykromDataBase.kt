@@ -12,13 +12,16 @@ import com.manuelbena.synkron.data.local.models.SuperTaskDao
 import com.manuelbena.synkron.data.local.models.TaskDao
 import com.manuelbena.synkron.data.local.models.TaskEntity
 import com.manuelbena.synkron.data.local.entities.SuperTaskEntity // <--- IMPORTANTE: Importa tu nueva entidad
+import com.manuelbena.synkron.data.local.models.BudgetDao
+import com.manuelbena.synkron.data.local.models.BudgetEntity
 
 @Database(
     entities = [
         TaskEntity::class,
-        SuperTaskEntity::class // 1. AÑADIMOS LA NUEVA TABLA AQUÍ
+        SuperTaskEntity::class,
+        BudgetEntity::class
     ],
-    version = 5, // 2. SUBIMOS LA VERSIÓN (Para forzar actualización)
+    version = 7,
     exportSchema = false
 )
 @TypeConverters(
@@ -26,9 +29,10 @@ import com.manuelbena.synkron.data.local.entities.SuperTaskEntity // <--- IMPORT
     StringListConverter::class,
     IntListConverter::class,
     RecurrenceTypeConverter::class,
-    SuperTaskConverters::class // 3. AÑADIMOS EL CONVERTIDOR PARA LA LISTA DE SUBTAREAS
+    SuperTaskConverters::class ,
 )
 abstract class SykromDataBase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun superTaskDao(): SuperTaskDao
+    abstract fun budgetDao(): BudgetDao
 }

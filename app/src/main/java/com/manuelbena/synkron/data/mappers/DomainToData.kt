@@ -1,6 +1,8 @@
 package com.manuelbena.synkron.data.mappers
 
+import com.manuelbena.synkron.data.local.models.BudgetEntity
 import com.manuelbena.synkron.data.local.models.TaskEntity
+import com.manuelbena.synkron.domain.models.BudgetDomain
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
 import com.manuelbena.synkron.domain.models.TaskDomain
 import java.time.LocalDate
@@ -115,3 +117,11 @@ private fun calculateDuration(start: GoogleEventDateTime?, end: GoogleEventDateT
         60
     }
 }
+fun BudgetDomain.toEntity() = BudgetEntity(
+    id = id,
+    name = name,
+    limitAmount = limit,
+    spentAmount = spent,
+    emoji = emoji,
+    colorHex = colorHex
+)

@@ -236,18 +236,43 @@ class TaskAdapter(
 
         private fun setupTimelineSection(item: TaskDomain) {
             binding.apply {
+                // 1. Textos de Hora
                 tvTimelineTimeStart.text = item.start?.toHourString() ?: "--:--"
                 tvTimelineTimeEnd.text = item.end?.toHourString() ?: "--:--"
 
+                // 2. MAGIA DE COLOR PASTEL AVANZADA
                 val context = root.context
                 val pureColor = ContextCompat.getColor(context, item.typeTask.getCategoryColor())
-                val alphaColor = androidx.core.graphics.ColorUtils.setAlphaComponent(pureColor, 38)
+                val surfaceColor = ContextCompat.getColor(context, R.color.color_card)
 
-                cardTask.setCardBackgroundColor(alphaColor)
+                // Detectamos el Modo Oscuro
+                val isDarkMode = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+
+                val finalCardColor = if (isDarkMode) {
+                    // EL SECRETO PASTEL PARA MODO OSCURO:
+                    // 1. Mezclamos el color puro de la categoría con un 50% de BLANCO PURO para forzar el tono pastel.
+                    val pastelizedColor = androidx.core.graphics.ColorUtils.blendARGB(pureColor, android.graphics.Color.WHITE, 0.5f)
+
+                    // 2. A ese nuevo color brillante le damos un 25% de opacidad (64/255)
+                    val alphaOverlay = androidx.core.graphics.ColorUtils.setAlphaComponent(pastelizedColor, 100)
+
+                    // 3. Lo componemos matemáticamente sobre el gris oscuro de tu tarjeta
+                    androidx.core.graphics.ColorUtils.compositeColors(alphaOverlay, surfaceColor)
+                } else {
+                    // En Modo Claro, la transparencia sobre el blanco ya crea un pastel natural
+                    val alphaOverlay = androidx.core.graphics.ColorUtils.setAlphaComponent(pureColor, 38) // 15% (38/255)
+                    androidx.core.graphics.ColorUtils.compositeColors(alphaOverlay, surfaceColor)
+                }
+
+                // 3. Pintamos la UI
+                cardTask.setCardBackgroundColor(finalCardColor)
+                viewLineMiddle.setBackgroundColor(finalCardColor) // La línea conector a juego
+
+                // Los puntos y textos los dejamos con el color PURO para mantener el contraste y que se lean bien
                 ivTimelineDotStart.backgroundTintList = ColorStateList.valueOf(pureColor)
                 ivTimelineDotEnd.backgroundTintList = ColorStateList.valueOf(pureColor)
-                viewLineMiddle.setBackgroundColor(alphaColor)
 
+                // 4. LÓGICA DEL TIEMPO ACTUAL
                 val nowMillis = System.currentTimeMillis()
                 val startMillis = item.start?.dateTime
                 val endMillis = item.end?.dateTime ?: (startMillis?.plus(3600000) ?: 0L)
@@ -278,10 +303,10 @@ class TaskAdapter(
             val catColor = ContextCompat.getColor(context, catColorRes)
 
             binding.tvCategoryTag.apply {
-                text = categoryName.getName()
+                text = categoryName.getName().uppercase()
                 setTextColor(catColor)
                 background.setTint(catColor)
-                background.alpha = 50
+                background.alpha = 60
                 val icon = ContextCompat.getDrawable(context, catIconRes)
                 icon?.setTint(catColor)
                 icon?.setBounds(0, 0, (12 * context.resources.displayMetrics.density).toInt(), (12 * context.resources.displayMetrics.density).toInt())
@@ -300,7 +325,7 @@ class TaskAdapter(
                     text = priorityName.uppercase()
                     setTextColor(prioColor)
                     background.setTint(prioColor)
-                    background.alpha = 50
+                    background.alpha = 60
                 }
             }
         }
