@@ -1,7 +1,9 @@
 package com.manuelbena.synkron.data.mappers
 
 import com.manuelbena.synkron.data.local.models.BudgetEntity
+import com.manuelbena.synkron.data.local.models.BudgetWithSpent
 import com.manuelbena.synkron.data.local.models.TaskEntity
+import com.manuelbena.synkron.data.local.models.TransactionEntity
 import com.manuelbena.synkron.data.remote.n8n.models.N8nChatResponse
 import com.manuelbena.synkron.data.remote.n8n.models.N8nSubTaskDto
 import com.manuelbena.synkron.domain.models.BudgetDomain
@@ -11,6 +13,7 @@ import com.manuelbena.synkron.domain.models.GoogleEventReminder
 import com.manuelbena.synkron.domain.models.GoogleEventReminders
 import com.manuelbena.synkron.domain.models.SubTaskDomain
 import com.manuelbena.synkron.domain.models.TaskDomain
+import com.manuelbena.synkron.domain.models.TransactionDomain
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
@@ -170,6 +173,24 @@ fun N8nChatResponse.toTaskDomain(): TaskDomain {
 }
 
 fun BudgetEntity.toDomain() = BudgetDomain(
+    id = id,
+    name = name,
+    limit = limitAmount,
+    spent = spentAmount,
+    emoji = emoji,
+    colorHex = colorHex
+)
+
+fun TransactionEntity.toDomain() = TransactionDomain(
+    id = id,
+    budgetId = budgetId,
+    amount = amount,
+    note = note,
+    dateMillis = dateMillis,
+    type = type
+)
+
+fun BudgetWithSpent.toDomain() = BudgetDomain(
     id = id,
     name = name,
     limit = limitAmount,

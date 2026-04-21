@@ -17,18 +17,23 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <ImageView
-            android:id="@+id/ivCategoryIcon"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="@drawable/bg_healt_gradient"
-            android:padding="10dp"
-            android:src="@drawable/ic_delete"
-            app:backgroundTint="#FFF3E0"
+        <FrameLayout
+            android:id="@+id/flIconBackground"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:tint="#F57C00"
-            tools:ignore="ContentDescription" />
+            android:background="@drawable/shape_circle_category">
+
+            <TextView
+                android:id="@+id/tvEmojiIcon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:textSize="24sp"
+                android:text="🍔" />
+        </FrameLayout>
+
 
         <TextView
             android:id="@+id/tvCategoryName"
@@ -39,8 +44,8 @@
             android:textColor="#111"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toEndOf="@id/ivCategoryIcon"
-            app:layout_constraintTop_toTopOf="@id/ivCategoryIcon" />
+            app:layout_constraintStart_toEndOf="@id/flIconBackground"
+            app:layout_constraintTop_toTopOf="@id/flIconBackground" />
 
         <TextView
             android:id="@+id/tvCategoryPercentage"
@@ -51,7 +56,7 @@
             android:text="98.7% del total"
             android:textColor="#757575"
             android:textSize="13sp"
-            app:layout_constraintStart_toEndOf="@id/ivCategoryIcon"
+            app:layout_constraintStart_toEndOf="@id/flIconBackground"
             app:layout_constraintTop_toBottomOf="@id/tvCategoryName" />
 
         <TextView
@@ -62,9 +67,9 @@
             android:textColor="#111"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="@id/ivCategoryIcon"
+            app:layout_constraintBottom_toBottomOf="@id/flIconBackground"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/ivCategoryIcon" />
+            app:layout_constraintTop_toTopOf="@id/flIconBackground" />
 
         <ProgressBar
             android:id="@+id/pbCategoryProgress"
@@ -76,7 +81,7 @@
             android:progress="98"
             android:progressDrawable="@drawable/bg_healt_gradient"
             android:progressTint="#F57C00"
-            app:layout_constraintTop_toBottomOf="@id/ivCategoryIcon" />
+            app:layout_constraintTop_toBottomOf="@id/flIconBackground" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

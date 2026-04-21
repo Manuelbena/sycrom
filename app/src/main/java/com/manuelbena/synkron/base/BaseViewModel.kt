@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.manuelbena.synkron.presentation.util.SingleLiveEvent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
@@ -15,8 +16,8 @@ import kotlinx.coroutines.launch
  */
 abstract class BaseViewModel<E> : ViewModel() {
 
-    protected open val _event by lazy { MutableLiveData<E>() }
-    open val event: LiveData<E> = _event
+    protected val _event = SingleLiveEvent<E>()
+    val event: LiveData<E> get() = _event
 
     protected val tag: String = this::class.java.simpleName
 

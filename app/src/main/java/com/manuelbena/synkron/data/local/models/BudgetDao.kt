@@ -13,9 +13,24 @@ interface BudgetDao {
     // Usamos Flow para que la UI se actualice sola si hay cambios en la BD
     @Query("SELECT * FROM budget_table ORDER BY id DESC")
     fun getAllBudgets(): Flow<List<BudgetEntity>>
+    @Insert
+    suspend fun insertBudget(budget: BudgetEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertBudget(budget: BudgetEntity): Long
+    @Query("""
+        SELECT b.id, b.name, b.limitAmount, b.emoji, b.colorHex, 
+               COALESCE(SUM(t.amount), 0.0) AS spentAmount
+        FROM budget_table b
+        LEFT JOIN transaction_table t 
+               ON b.id = t.budgetId 
+              AND t.type = 'EXPENSE' 
+              AND t.dateMillis >= :startOfMonth 
+              AND t.dateMillis <= :endOfMonth
+        GROUP BY b.id
+    """)
+    fun getBudgetsWithSpentForMonth(startOfMonth: Long, endOfMonth: Long): Flow<List<BudgetWithSpent>>
+
+    @Insert
+    suspend fun insertTransaction(transaction: TransactionEntity)
 
     @Update
     suspend fun updateBudget(budget: BudgetEntity)

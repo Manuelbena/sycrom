@@ -2,9 +2,11 @@ package com.manuelbena.synkron.data.mappers
 
 import com.manuelbena.synkron.data.local.models.BudgetEntity
 import com.manuelbena.synkron.data.local.models.TaskEntity
+import com.manuelbena.synkron.data.local.models.TransactionEntity
 import com.manuelbena.synkron.domain.models.BudgetDomain
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
 import com.manuelbena.synkron.domain.models.TaskDomain
+import com.manuelbena.synkron.domain.models.TransactionDomain
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Calendar
@@ -124,4 +126,13 @@ fun BudgetDomain.toEntity() = BudgetEntity(
     spentAmount = spent,
     emoji = emoji,
     colorHex = colorHex
+)
+
+fun TransactionDomain.toEntity() = TransactionEntity(
+    id = id,
+    budgetId = budgetId,
+    amount = amount,
+    note = note,
+    dateMillis = dateMillis,
+    type = type
 )

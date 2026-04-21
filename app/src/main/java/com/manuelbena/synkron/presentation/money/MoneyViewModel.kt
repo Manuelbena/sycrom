@@ -3,8 +3,10 @@ package com.manuelbena.synkron.presentation.money
 import GoalSummaryState
 import com.manuelbena.synkron.base.BaseViewModel
 import com.manuelbena.synkron.domain.models.BudgetDomain
+import com.manuelbena.synkron.domain.models.TransactionDomain
 import com.manuelbena.synkron.domain.usecase.GetBudgetsUseCase
 import com.manuelbena.synkron.domain.usecase.InsertBudgetUseCase
+import com.manuelbena.synkron.domain.usecase.InsertTransactionUseCase
 import com.manuelbena.synkron.presentation.models.BudgetPresentationModel
 import com.manuelbena.synkron.presentation.models.GoalPresentationModel
 import com.manuelbena.synkron.presentation.models.toPresentation
@@ -13,13 +15,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
 class MoneyViewModel @Inject constructor(
-    // INYECTAMOS NUESTROS CASOS DE USO DE BD
     private val getBudgetsUseCase: GetBudgetsUseCase,
-    private val insertBudgetUseCase: InsertBudgetUseCase
+    private val insertBudgetUseCase: InsertBudgetUseCase,
+    private val insertTransactionUseCase: InsertTransactionUseCase // Inyectamos el UseCase de transacciones
 ) : BaseViewModel<MoneyEvents>() {
 
     // --- ESTADOS (UI Continuos) ---
@@ -31,18 +34,33 @@ class MoneyViewModel @Inject constructor(
 
     init {
 
-        loadBudgetsFromDatabase() // <-- Ahora cargamos de BD
+        loadBudgetsForCurrentMonth()
     }
 
-    // NUEVO: Flujo reactivo con la Base de Datos
-    private fun loadBudgetsFromDatabase() {
-        executeFlow(
-            useCase = { getBudgetsUseCase() },
-            onEach = { budgetDomainList ->
-                // Mapeamos de Dominio a Presentación
-                val presentationItems = budgetDomainList.map { it.toPresentation() }
 
-                // Actualizamos la UI reactivamente
+    // --- CARGA DE DATOS (PRESUPUESTOS) ---
+    private fun loadBudgetsForCurrentMonth() {
+        // 1. Calculamos las fechas del 1 al último día de este mes
+        val calendar = Calendar.getInstance()
+
+        calendar.set(Calendar.DAY_OF_MONTH, 1)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        val startOfMonth = calendar.timeInMillis
+
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH))
+        calendar.set(Calendar.HOUR_OF_DAY, 23)
+        calendar.set(Calendar.MINUTE, 59)
+        calendar.set(Calendar.SECOND, 59)
+        val endOfMonth = calendar.timeInMillis
+
+        // 2. Pedimos los datos cruzados a Room
+        executeFlow(
+            useCase = { getBudgetsUseCase(startOfMonth, endOfMonth) },
+            onEach = { budgetList ->
+                val presentationItems = budgetList.map { it.toPresentation() }
+
                 _budgetState.value = BudgetSummaryState(
                     totalLimit = presentationItems.sumOf { it.limit },
                     totalSpent = presentationItems.sumOf { it.spent },
@@ -55,14 +73,13 @@ class MoneyViewModel @Inject constructor(
         )
     }
 
-    // --- INTENCIONES DE PRESUPUESTOS ---
+    // --- INTENCIONES DE GUARDADO ---
 
-    // NUEVO: Guardado real en Base de Datos
     fun onSaveNewBudget(emoji: String, colorHex: String, title: String, limit: Double) {
         val newBudget = BudgetDomain(
             name = title,
             limit = limit,
-            spent = 0.0, // Al empezar, el gasto es 0
+            spent = 0.0, // Solo usado temporalmente para el mapeo si es necesario
             emoji = emoji,
             colorHex = colorHex
         )
@@ -70,14 +87,46 @@ class MoneyViewModel @Inject constructor(
         executeUseCase(
             useCase = { insertBudgetUseCase(newBudget) },
             onSuccess = {
-                // Al guardarse, no hace falta recargar la BD manualmente.
-                // Room emitirá un nuevo flujo en loadBudgetsFromDatabase() y la pantalla se refrescará sola.
-                _event.value = MoneyEvents.ShowError("¡Presupuesto '$title' creado con éxito!")
+                _event.value = MoneyEvents.ShowError("¡Presupuesto '$title' creado!")
             },
             onError = {
-                _event.value = MoneyEvents.ShowError("No se pudo guardar el presupuesto.")
+                _event.value = MoneyEvents.ShowError("No se pudo crear el presupuesto.")
             }
         )
+    }
+
+    fun onSaveExpense(budget: BudgetPresentationModel, amount: Double, note: String, dateMillis: Long) {
+        val transaction = TransactionDomain(
+            budgetId = budget.id,
+            amount = amount,
+            note = note,
+            dateMillis = dateMillis, // USAMOS LA FECHA QUE ELIGIÓ EL USUARIO
+            type = "EXPENSE"
+        )
+
+        executeUseCase(
+            useCase = { insertTransactionUseCase(transaction) },
+            onSuccess = {
+                _event.value = MoneyEvents.ShowError("Gasto guardado correctamente")
+            },
+            onError = {
+                _event.value = MoneyEvents.ShowError("Error al guardar el gasto")
+            }
+        )
+    }
+
+    // --- EVENTOS DEL MENÚ FLOTANTE Y NAVEGACIÓN ---
+
+    fun onAddExpenseClicked() {
+        _event.value = MoneyEvents.ShowAddExpenseDialog
+    }
+
+    fun onAddIncomeClicked() {
+        _event.value = MoneyEvents.ShowAddIncomeDialog
+    }
+
+    fun onAddGoalClicked() {
+        _event.value = MoneyEvents.ShowAddGoalDialog
     }
 
     fun onAddBudgetClicked() {
@@ -93,7 +142,7 @@ class MoneyViewModel @Inject constructor(
     }
 
     // --- INTENCIONES DE METAS ---
-    fun onAddMoneyToGoal(goal: GoalPresentationModel, amount: Double) { /* UseCase add money */ }
+    fun onAddMoneyToGoal(goal: GoalPresentationModel, amount: Double) { /* Próximamente */ }
 
     fun onAddCustomMoneyClicked(goal: GoalPresentationModel) {
         _event.value = MoneyEvents.ShowAddCustomMoneyDialog(goal)

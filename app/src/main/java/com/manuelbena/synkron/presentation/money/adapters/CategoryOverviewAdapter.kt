@@ -1,37 +1,26 @@
-package com.manuelbena.synkron.presentation.money.adapter
+package com.manuelbena.synkron.presentation.money.adapters
 
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.manuelbena.synkron.databinding.ItemSendCategoryBinding
 import com.manuelbena.synkron.presentation.models.BudgetPresentationModel
 import java.util.Locale
 
-class CategoryAdapter(
-    // ✅ 1. CORREGIDO: Ahora recibe la lista del tipo correcto
-    private var categories: List<BudgetPresentationModel> = emptyList()
-) : RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
+class CategoryOverviewAdapter : ListAdapter<BudgetPresentationModel, CategoryOverviewAdapter.CategoryViewHolder>(BudgetDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
-        val binding = ItemSendCategoryBinding.inflate(
-            LayoutInflater.from(parent.context), parent, false
-        )
+        val binding = ItemSendCategoryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return CategoryViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
-        holder.bind(categories[position])
-    }
-
-    override fun getItemCount() = categories.size
-
-    // ✅ 2. AÑADIDO: Función para actualizar la lista desde el Fragmento
-    fun submitList(newCategories: List<BudgetPresentationModel>) {
-        categories = newCategories
-        notifyDataSetChanged()
+        holder.bind(getItem(position))
     }
 
     inner class CategoryViewHolder(private val binding: ItemSendCategoryBinding) :
@@ -39,50 +28,54 @@ class CategoryAdapter(
 
         fun bind(item: BudgetPresentationModel) {
             binding.apply {
-                // 1. Textos principales
                 tvCategoryName.text = item.name
-                tvCategoryAmount.text = String.format(Locale.getDefault(), "%.2f €", item.spent)
 
-                // 2. Porcentaje que QUEDA
+                // Muestra lo que llevas gastado (Ej: 12.00 €)
+                tvCategoryAmount.text = String.format(java.util.Locale.getDefault(), "%.2f €", item.spent)
+
+                // CALCULAMOS EL PORCENTAJE RESTANTE
                 var percentLeft = 100 - item.usedPercentage
-                if (percentLeft < 0) percentLeft = 0
+                if (percentLeft < 0) percentLeft = 0 // Para que no salga negativo si te pasas
 
-                // 3. Progreso y Emoji
+                tvCategoryPercentage.text = "Queda $percentLeft%"
+
+                // La barra de progreso muestra lo USADO (así visualmente se va llenando de color)
                 pbCategoryProgress.progress = item.usedPercentage
+
+                // PINTAMOS EL EMOJI
                 tvEmojiIcon.text = item.emoji
 
-                // APM (Aplicar Pinceladas Mágicas de Color)
+                // COLOR MÁGICO
                 try {
                     val color = Color.parseColor(item.colorHex)
 
-                    // Pintar el NUEVO fondo circular (flIconBackground) con opacidad
+                    // Fondo transparente para el círculo
                     val background = GradientDrawable()
                     background.shape = GradientDrawable.OVAL
                     background.setColor(adjustAlpha(color, 0.2f))
                     flIconBackground.background = background
 
-                    // Tintar la barra de progreso
+                    // Color de la barra
                     pbCategoryProgress.progressTintList = ColorStateList.valueOf(color)
 
-                    // Cambiar el texto del porcentaje si nos pasamos
+                    // Si te pasas, ponemos el texto rojo
                     if(item.usedPercentage >= 100) {
                         tvCategoryPercentage.setTextColor(Color.parseColor("#EF4444"))
                         tvCategoryPercentage.text = "¡Límite superado!"
                     } else {
                         tvCategoryPercentage.setTextColor(Color.parseColor("#888888"))
-                        tvCategoryPercentage.text = "Queda $percentLeft%"
                     }
-
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+                } catch (e: Exception) { e.printStackTrace() }
             }
         }
 
-        // Función auxiliar
         private fun adjustAlpha(color: Int, factor: Float): Int {
             val alpha = (Color.alpha(color) * factor).toInt()
             return Color.argb(alpha, Color.red(color), Color.green(color), Color.blue(color))
         }
+    }
+    class BudgetDiffCallback : DiffUtil.ItemCallback<BudgetPresentationModel>() {
+        override fun areItemsTheSame(oldItem: BudgetPresentationModel, newItem: BudgetPresentationModel) = oldItem.id == newItem.id
+        override fun areContentsTheSame(oldItem: BudgetPresentationModel, newItem: BudgetPresentationModel) = oldItem == newItem
     }
 }

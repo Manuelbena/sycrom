@@ -8,5 +8,8 @@ import javax.inject.Inject
 class GetBudgetsUseCase @Inject constructor(
     private val repository: IBudgetRepository
 ) {
-    operator fun invoke(): Flow<List<BudgetDomain>> = repository.getAllBudgets()
+    // AHORA RECIBE LOS PARÁMETROS DE FECHA
+    operator fun invoke(startOfMonth: Long, endOfMonth: Long): Flow<List<BudgetDomain>> {
+        return repository.getBudgetsWithSpentForMonth(startOfMonth, endOfMonth)
+    }
 }

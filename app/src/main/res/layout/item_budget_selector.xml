@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:layout_marginEnd="16dp">
+
+    <FrameLayout
+        android:id="@+id/circleBackground"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="@drawable/shape_circle_background">
+
+        <TextView
+            android:id="@+id/tvEmoji"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textSize="24sp"
+            android:text="🍔"/>
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/tvBudgetName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textSize="12sp"
+        android:textColor="#666666"
+        android:maxWidth="70dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="Comida"/>
+</LinearLayout>

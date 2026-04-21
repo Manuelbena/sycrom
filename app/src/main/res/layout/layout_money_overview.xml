@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginBottom="@dimen/space_card_width"
-    android:background="#F5F7FA">
+    android:background="@color/color_body">
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -222,6 +222,7 @@
             app:layout_constraintBaseline_toBaselineOf="@id/tvCategoriesTitle"
             app:layout_constraintEnd_toEndOf="parent" />
 
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvCategories"
             android:layout_width="match_parent"
@@ -231,8 +232,8 @@
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintTop_toBottomOf="@id/tvCategoriesTitle"
             tools:itemCount="3"
+            tools:layout_editor_absoluteX="24dp"
             tools:listitem="@layout/item_send_category" />
-
 
         <LinearLayout
             android:id="@+id/bottomGrid"

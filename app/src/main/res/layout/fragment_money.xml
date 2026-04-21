@@ -101,7 +101,7 @@
         android:id="@+id/contentContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-
+        android:background="@color/color_body"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -130,62 +130,61 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/tvFabAddGasto"
+        android:id="@+id/fabAddBudget"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/spacing_medium"
         android:fontFamily="@font/nunitobold"
-        android:text="@string/fab_expense"
+        android:text="Nuevo Presupuesto"
         android:textColor="@color/white"
-        android:visibility="invisible"
+        android:visibility="gone"
         app:backgroundTint="@color/md_theme_primary"
-        app:icon="@drawable/banknote_arrow_down"
+        app:icon="@drawable/ic_finance"
         app:iconTint="@color/white"
-        app:layout_constraintBottom_toTopOf="@+id/tvFabAddIng"
-        app:layout_constraintEnd_toEndOf="@+id/tvFabAddIng" />
+        app:layout_constraintBottom_toTopOf="@+id/fabAddGoal"
+        app:layout_constraintEnd_toEndOf="@+id/fabMain" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/tvFabAddIng"
+        android:id="@+id/fabAddGoal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/spacing_medium"
         android:fontFamily="@font/nunitobold"
-        android:text="@string/fab_income"
+        android:text="Nueva Meta"
         android:textColor="@color/white"
-        android:visibility="invisible"
+        android:visibility="gone"
         app:backgroundTint="@color/md_theme_primary"
+        app:icon="@drawable/ic_mark"
+        app:iconTint="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/fabAddIncome"
+        app:layout_constraintEnd_toEndOf="@+id/fabMain" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabAddIncome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_medium"
+        android:fontFamily="@font/nunitobold"
+        android:text="Nuevo Ingreso"
+        android:textColor="@color/white"
+        android:visibility="gone"
+        app:backgroundTint="#10B981"
         app:icon="@drawable/banknote_arrow_up"
         app:iconTint="@color/white"
-        app:layout_constraintBottom_toTopOf="@+id/tvFabAddSuggestion"
-        app:layout_constraintEnd_toEndOf="@+id/tvFabAddSuggestion" />
+        app:layout_constraintBottom_toTopOf="@+id/fabAddExpense"
+        app:layout_constraintEnd_toEndOf="@+id/fabMain" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/tvFabAddSuggestion"
+        android:id="@+id/fabAddExpense"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/spacing_medium"
         android:fontFamily="@font/nunitobold"
-        android:text="@string/fab_task_ai"
+        android:text="Nuevo Gasto"
         android:textColor="@color/white"
-        android:visibility="invisible"
-        app:backgroundTint="@color/md_theme_primary"
-        app:icon="@drawable/sparkle"
-        app:iconTint="@color/white"
-        app:layout_constraintBottom_toTopOf="@+id/tvFabAddTask"
-        app:layout_constraintEnd_toEndOf="@+id/tvFabAddTask" />
-
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/tvFabAddTask"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/spacing_small"
-        android:layout_marginBottom="@dimen/spacing_medium"
-        android:fontFamily="@font/nunitobold"
-        android:text="@string/fab_task"
-        android:textColor="@color/white"
-        android:visibility="invisible"
-        app:backgroundTint="@color/md_theme_primary"
-        app:icon="@drawable/ic_edit"
+        android:visibility="gone"
+        app:backgroundTint="#EF4444"
+        app:icon="@drawable/banknote_arrow_down"
         app:iconTint="@color/white"
         app:layout_constraintBottom_toTopOf="@+id/fabMain"
         app:layout_constraintEnd_toEndOf="@+id/fabMain" />

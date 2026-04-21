@@ -14,14 +14,16 @@ import com.manuelbena.synkron.data.local.models.TaskEntity
 import com.manuelbena.synkron.data.local.entities.SuperTaskEntity // <--- IMPORTANTE: Importa tu nueva entidad
 import com.manuelbena.synkron.data.local.models.BudgetDao
 import com.manuelbena.synkron.data.local.models.BudgetEntity
+import com.manuelbena.synkron.data.local.models.TransactionEntity
 
 @Database(
     entities = [
         TaskEntity::class,
         SuperTaskEntity::class,
-        BudgetEntity::class
+        BudgetEntity::class,
+        TransactionEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 @TypeConverters(
