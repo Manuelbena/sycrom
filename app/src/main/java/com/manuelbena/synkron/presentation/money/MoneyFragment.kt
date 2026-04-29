@@ -2,7 +2,6 @@ package com.manuelbena.synkron.presentation.money
 
 import GoalSummaryState
 import android.graphics.Color
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,11 +24,15 @@ import com.manuelbena.synkron.presentation.money.dialogs.AddExpenseBottomSheet
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 @AndroidEntryPoint
 class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
 
     override val viewModel: MoneyViewModel by viewModels()
+
+    private val monthTitleFormatter = DateTimeFormatter.ofPattern("MMMM yyyy", Locale("es", "ES"))
 
     private lateinit var goalsAdapter: GoalsAdapter
     private lateinit var budgetAdapter: BudgetAdapter
@@ -89,6 +92,13 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
         // --- Botones internos de las vistas vacías ---
         binding.viewBudgets.btnAddBudget.setOnClickListener { viewModel.onAddBudgetClicked() }
         binding.viewGoals.btnAddMeta.setOnClickListener { viewModel.onAddGoalClicked() }
+
+        binding.btnNextMonth.setOnClickListener {
+            viewModel.nextMonth()
+        }
+        binding.btnPrevMonth.setOnClickListener {
+            viewModel.prevMonth()
+        }
     }
 
     override fun observe() {
@@ -97,6 +107,14 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch { viewModel.goalState.collectLatest { renderGoalsState(it) } }
                 launch { viewModel.budgetState.collectLatest { renderBudgetState(it) } }
+                launch {
+                    viewModel.currentMonth.collectLatest { month ->
+                        val title = monthTitleFormatter.format(month)
+                        binding.tvMonthTitle.text = title.replaceFirstChar {
+                            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                        }
+                    }
+                }
             }
         }
 
@@ -204,11 +222,12 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
 
         // Actualizamos los números grandes de la pestaña General
         binding.viewGeneral.apply {
-            tvBalanceValue.text = state.formattedTotalLimit // Usaremos el límite como balance hipotético por ahora
+            tvBalanceValue.text = state.formattedTotalBalance
             tvExpenseValue.text = state.formattedTotalSpent
+            tvIncomeValue.text = state.formattedTotalIncome
 
             // Calculamos el % de presupuesto total usado para la tarjeta de abajo
-            val totalPercent = state.totalPercent
+            // val totalPercent = state.totalPercent
             // Suponiendo que el TextView de la tarjeta se llama tvBudgetUsedPercent (debes ponerle un ID en tu XML)
             // tvBudgetUsedPercent.text = "$totalPercent%"
         }
@@ -233,8 +252,8 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
     private fun handleMoneyEvents(event: MoneyEvents) {
         when (event) {
             is MoneyEvents.ShowAddBudgetDialog -> {
-                val dialog = AddBudgetDialog { emoji, colorHex, title, limit ->
-                    viewModel.onSaveNewBudget(emoji, colorHex, title, limit)
+                val dialog = AddBudgetDialog { emoji, colorHex, title, limit, type ->
+                    viewModel.onSaveNewBudget(emoji, colorHex, title, limit, type)
                 }
                 dialog.show(parentFragmentManager, "AddBudgetDialog")
             }
@@ -245,10 +264,24 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
                 Toast.makeText(requireContext(), "Detalles de: ${event.budget.name}", Toast.LENGTH_SHORT).show()
             }
 
-            // Nuevos eventos del FAB Menu
-            is MoneyEvents.ShowAddIncomeDialog -> {
-                Toast.makeText(requireContext(), "Abrir Diálogo Ingreso", Toast.LENGTH_SHORT).show()
+            is MoneyEvents.ShowAddTransactionDialog -> {
+                val currentBudgets = viewModel.budgetState.value.items
+                // Filtramos los presupuestos según el tipo de transacción
+                val filteredBudgets = currentBudgets.filter { it.type == event.type }
+
+                if (filteredBudgets.isEmpty()) {
+                    val msg = if (event.type == "EXPENSE") "Crea un presupuesto de gastos" else "Crea un presupuesto de ingresos"
+                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show()
+                    return
+                }
+
+                // ✅ Pasamos el tipo al diálogo para que sepa qué está guardando
+                val dialog = AddExpenseBottomSheet(filteredBudgets, event.type) { budget, amount, note, dateMillis, type ->
+                    viewModel.onSaveExpense(budget, amount, note, dateMillis, type)
+                }
+                dialog.show(parentFragmentManager, "AddExpenseBottomSheet")
             }
+
             is MoneyEvents.ShowAddGoalDialog -> {
                 Toast.makeText(requireContext(), "Abrir Diálogo Nueva Meta", Toast.LENGTH_SHORT).show()
             }
@@ -256,20 +289,6 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
             is MoneyEvents.ShowAddCustomMoneyDialog -> { /* Dialog añadir dinero a meta */ }
             is MoneyEvents.ShowDeleteGoalConfirmation -> { /* Dialog borrar meta */ }
             is MoneyEvents.ShowError -> Toast.makeText(requireContext(), event.message, Toast.LENGTH_SHORT).show()
-            is MoneyEvents.ShowAddExpenseDialog -> {
-                val currentBudgets = viewModel.budgetState.value.items
-                if (currentBudgets.isEmpty()) {
-                    Toast.makeText(requireContext(), "Primero debes crear un presupuesto", Toast.LENGTH_SHORT).show()
-                    return
-                }
-
-                // ✅ SOLUCIÓN: Recogemos dateMillis y se lo pasamos al ViewModel
-                val dialog = AddExpenseBottomSheet(currentBudgets) { budget, amount, note, dateMillis ->
-                    viewModel.onSaveExpense(budget, amount, note, dateMillis)
-                }
-                dialog.show(parentFragmentManager, "AddExpenseBottomSheet")
-            }
-
         }
     }
 

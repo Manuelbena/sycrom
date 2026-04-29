@@ -17,7 +17,6 @@ sealed class MoneyEvents {
     data class ShowError(val message: String) : MoneyEvents()
 
     // NUEVOS EVENTOS PARA EL FAB
-    object ShowAddExpenseDialog : MoneyEvents()
-    object ShowAddIncomeDialog : MoneyEvents()
+    data class ShowAddTransactionDialog(val type: String) : MoneyEvents()
     object ShowAddGoalDialog : MoneyEvents()
 }

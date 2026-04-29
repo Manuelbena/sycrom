@@ -17,7 +17,7 @@ import com.manuelbena.synkron.databinding.ItemColorCircleBinding
 
 
 class AddBudgetDialog(
-    private val onSave: (emoji: String, colorHex: String, title: String, limit: Double) -> Unit
+    private val onSave: (emoji: String, colorHex: String, title: String, limit: Double, type: String) -> Unit
 ) : BottomSheetDialogFragment() {
 
     private var _binding: DialogAddBudgetBinding? = null
@@ -68,8 +68,9 @@ class AddBudgetDialog(
                 return@setOnClickListener
             }
 
-            // AHORA ENVIAMOS TAMBIÉN EL COLOR
-            onSave(emoji, selectedColorHex, title, amount)
+            // AHORA ENVIAMOS TAMBIÉN EL COLOR Y EL TIPO
+            val type = if (binding.toggleGroupType.checkedButtonId == R.id.btnTypeIncome) "INCOME" else "EXPENSE"
+            onSave(emoji, selectedColorHex, title, amount, type)
             dismiss()
         }
     }
