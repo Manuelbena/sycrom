@@ -2,27 +2,32 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
     app:cardBackgroundColor="@android:color/white"
     app:cardCornerRadius="16dp"
     app:cardElevation="0dp"
-    app:strokeColor="#E0E0E0"
+    app:strokeColor="#EAEAEA"
     app:strokeWidth="1dp">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:animateLayoutChanges="true"> <LinearLayout
+        android:id="@+id/lyHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
         <FrameLayout
             android:id="@+id/flIconBackground"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             android:background="@drawable/shape_circle_category">
 
             <TextView
@@ -30,58 +35,71 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:textSize="24sp"
-                android:text="🍔" />
+                android:text="🍔"
+                android:textSize="24sp" />
         </FrameLayout>
 
-
-        <TextView
-            android:id="@+id/tvCategoryName"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:text="Alimentación"
-            android:textColor="#111"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toEndOf="@id/flIconBackground"
-            app:layout_constraintTop_toTopOf="@id/flIconBackground" />
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvCategoryPercentage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="2dp"
-            android:text="98.7% del total"
-            android:textColor="#757575"
-            android:textSize="13sp"
-            app:layout_constraintStart_toEndOf="@id/flIconBackground"
-            app:layout_constraintTop_toBottomOf="@id/tvCategoryName" />
+            <TextView
+                android:id="@+id/tvCategoryName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Alimentación"
+                android:textColor="#111111"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvCategorySubtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="100.0% del total • 3 gastos"
+                android:textColor="#888888"
+                android:textSize="13sp" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvCategoryAmount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="380,00 €"
-            android:textColor="#111"
+            android:layout_marginEnd="8dp"
+            android:text="12,00 €"
+            android:textColor="#111111"
             android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="@id/flIconBackground"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/flIconBackground" />
+            android:textStyle="bold" />
 
-        <ProgressBar
+        <ImageView
+            android:id="@+id/ivChevron"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:rotation="-90"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="#888888" />
+    </LinearLayout>
+        <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/pbCategoryProgress"
-            style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
-            android:layout_height="8dp"
-            android:layout_marginTop="16dp"
-            android:max="100"
-            android:progress="98"
-            android:progressDrawable="@drawable/bg_healt_gradient"
-            android:progressTint="#F57C00"
-            app:layout_constraintTop_toBottomOf="@id/flIconBackground" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:progress="50"
+            app:indicatorColor="#FFFFFF"
+            app:layout_constraintTop_toBottomOf="@id/tvProgressLabel"
+            app:trackColor="#4DFFFFFF"
+            app:trackCornerRadius="4dp"
+            app:trackThickness="6dp" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+        <LinearLayout
+            android:id="@+id/lyTransactionsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical"
+            android:visibility="gone" /> </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

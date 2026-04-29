@@ -198,7 +198,8 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
 
         // ¡NUEVO!: Actualiza la lista cortita de la pestaña "General" (ordenada por gasto)
         // Ordenamos los items para que salgan primero los que tienen más gasto
-        val sortedForOverview = state.items.sortedByDescending { it.spent }.take(4) // Mostrar máximo 4
+        // Mostrar TODOS los presupuestos ordenados por el gasto
+        val sortedForOverview = state.items.sortedByDescending { it.spent }
         categoryOverviewAdapter.submitList(sortedForOverview)
 
         // Actualizamos los números grandes de la pestaña General

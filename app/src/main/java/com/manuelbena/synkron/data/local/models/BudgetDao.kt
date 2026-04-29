@@ -37,4 +37,8 @@ interface BudgetDao {
 
     @Delete
     suspend fun deleteBudget(budget: BudgetEntity)
+
+    // NUEVO: Pedimos TODAS las transacciones del mes ordenadas por fecha (de más nueva a más vieja)
+    @Query("SELECT * FROM transaction_table WHERE dateMillis >= :startOfMonth AND dateMillis <= :endOfMonth AND type = 'EXPENSE' ORDER BY dateMillis DESC")
+    fun getTransactionsForMonth(startOfMonth: Long, endOfMonth: Long): kotlinx.coroutines.flow.Flow<List<TransactionEntity>>
 }
