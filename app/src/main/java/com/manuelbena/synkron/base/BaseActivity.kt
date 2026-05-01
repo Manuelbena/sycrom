@@ -1,56 +1,54 @@
 package com.manuelbena.synkron.base
 
-import android.content.res.Configuration
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.viewbinding.ViewBinding
-import com.google.android.material.color.DynamicColors
 
+/**
+ * Base Activity to handle ViewBinding and system bar styling.
+ */
 abstract class BaseActivity<VB : ViewBinding> : AppCompatActivity() {
 
     private var _binding: VB? = null
-    private var loadNavGraph = true
 
-
-    protected val binding : VB
-        get() = _binding ?: throw IllegalStateException("ViewVinding is only valid between onCreateView and onDestroyView")
+    protected val binding: VB
+        get() = _binding ?: throw IllegalStateException("Binding should not be accessed after onDestroy")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         _binding = inflateView(layoutInflater)
-        val isDarkMode = (this.baseContext.resources.configuration.uiMode and
-                Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-
-
-        this.window.decorView.systemUiVisibility = if (!isDarkMode)
-            View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR else 0
-        setContentView(_binding?.root)
-
-    }
-
-    override fun onStart() {
-        super.onStart()
-        if (loadNavGraph) setUI()
+        setContentView(binding.root)
+        setupSystemBars()
+        setUI()
         setListener()
     }
 
-    open fun setUI() {}
+    private fun setupSystemBars() {
+        val isDarkMode = (resources.configuration.uiMode and
+                android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
 
-    open fun setListener() {}
-
-    fun notReloadNavGraph() {
-        loadNavGraph = false
+        WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = !isDarkMode
     }
 
+    /**
+     * Optional method to setup the initial UI.
+     */
+    open fun setUI() {}
+
+    /**
+     * Optional method to setup listeners.
+     */
+    open fun setListener() {}
+
+    /**
+     * Inflates the ViewBinding for this activity.
+     */
     abstract fun inflateView(inflater: LayoutInflater): VB
 
     override fun onDestroy() {
         super.onDestroy()
         _binding = null
     }
-
-
 }

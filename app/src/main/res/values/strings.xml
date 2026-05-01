@@ -115,6 +115,13 @@
     <string name="cd_time_icon">Icono de hora</string>
     <string name="cd_subtasks_chevron">Desplegar subtareas</string>
 
+    <string name="permission_alarm_title">Permiso de Alarma</string>
+    <string name="permission_alarm_message">Para que Sycrom pueda avisarte a la hora exacta, necesitas permitir las alarmas y recordatorios.</string>
+    <string name="permission_fullscreen_title">Aviso importante</string>
+    <string name="permission_fullscreen_message">Para que la alarma aparezca a pantalla completa cuando el móvil está bloqueado, activa este permiso.</string>
+    <string name="action_activate">Activar ahora</string>
+    <string name="action_cancel">Cancelar</string>
+
     <string name="server_client_id">942574461858-pgtif55cl6gpm2foqs9ko4nv8jvdcdj4.apps.googleusercontent.com</string>
 
 </resources>

@@ -9,15 +9,12 @@ import androidx.lifecycle.ViewModel
 import androidx.viewbinding.ViewBinding
 
 
-abstract class BaseFragment<VB :  ViewBinding, VM : ViewModel> : Fragment() {
+abstract class BaseFragment<VB : ViewBinding, VM : ViewModel> : Fragment() {
 
-    private var _binding : ViewBinding? = null
+    private var _binding: VB? = null
+    protected val binding get() = _binding!!
 
-    @Suppress("UNCHECKED_CAST")
-    protected val binding
-        get() = _binding as VB
-
-    protected abstract val viewModel : VM
+    protected abstract val viewModel: VM
 
     protected val fragmentTag = this::class.java.simpleName
 
@@ -27,7 +24,7 @@ abstract class BaseFragment<VB :  ViewBinding, VM : ViewModel> : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = inflateView(inflater, container)
-        return _binding?.root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

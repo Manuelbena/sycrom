@@ -1,6 +1,5 @@
 package com.manuelbena.synkron.presentation.money
 
-import GoalSummaryState
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentMoneyBinding
+import com.manuelbena.synkron.presentation.goals.GoalSummaryState
 import com.manuelbena.synkron.presentation.money.BudgetSummary.BudgetSummaryState
 import com.manuelbena.synkron.presentation.money.adapter.GoalsAdapter
 import com.manuelbena.synkron.presentation.money.adapters.BudgetAdapter
@@ -36,10 +36,8 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
 
     private lateinit var goalsAdapter: GoalsAdapter
     private lateinit var budgetAdapter: BudgetAdapter
-
     private lateinit var categoryOverviewAdapter: CategoryOverviewAdapter
 
-    // ESTADO PARA EL MENÚ FLOTANTE
     private var isFabExpanded = false
 
     companion object {
@@ -54,7 +52,6 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
     }
 
     override fun setUI() {
-        super.setUI()
         setupFilters()
         setupGoalsRecyclerView()
         setupBudgetsRecyclerView()
@@ -62,86 +59,68 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
     }
 
     override fun setListener() {
-        super.setListener()
+        binding.apply {
+            fabMain.setOnClickListener { toggleFabMenu() }
+            fabAddExpense.setOnClickListener {
+                toggleFabMenu()
+                viewModel.onAddExpenseClicked()
+            }
+            fabAddIncome.setOnClickListener {
+                toggleFabMenu()
+                viewModel.onAddIncomeClicked()
+            }
+            fabAddGoal.setOnClickListener {
+                toggleFabMenu()
+                viewModel.onAddGoalClicked()
+            }
+            fabAddBudget.setOnClickListener {
+                toggleFabMenu()
+                viewModel.onAddBudgetClicked()
+            }
 
-        // --- BOTONES FLOTANTES (FAB MENU) ---
-        binding.fabMain.setOnClickListener {
-            toggleFabMenu()
-        }
+            viewBudgets.btnAddBudget.setOnClickListener { viewModel.onAddBudgetClicked() }
+            viewGoals.btnAddMeta.setOnClickListener { viewModel.onAddGoalClicked() }
 
-        binding.fabAddExpense.setOnClickListener {
-            toggleFabMenu()
-            viewModel.onAddExpenseClicked() // ¡Llama al ViewModel para abrir el gasto!
-        }
-
-        binding.fabAddIncome.setOnClickListener {
-            toggleFabMenu()
-            viewModel.onAddIncomeClicked()
-        }
-
-        binding.fabAddGoal.setOnClickListener {
-            toggleFabMenu()
-            viewModel.onAddGoalClicked()
-        }
-
-        binding.fabAddBudget.setOnClickListener {
-            toggleFabMenu()
-            viewModel.onAddBudgetClicked()
-        }
-
-        // --- Botones internos de las vistas vacías ---
-        binding.viewBudgets.btnAddBudget.setOnClickListener { viewModel.onAddBudgetClicked() }
-        binding.viewGoals.btnAddMeta.setOnClickListener { viewModel.onAddGoalClicked() }
-
-        binding.btnNextMonth.setOnClickListener {
-            viewModel.nextMonth()
-        }
-        binding.btnPrevMonth.setOnClickListener {
-            viewModel.prevMonth()
+            btnNextMonth.setOnClickListener { viewModel.nextMonth() }
+            btnPrevMonth.setOnClickListener { viewModel.prevMonth() }
         }
     }
 
     override fun observe() {
-        // Observar estados (UI)
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch { viewModel.goalState.collectLatest { renderGoalsState(it) } }
                 launch { viewModel.budgetState.collectLatest { renderBudgetState(it) } }
                 launch {
                     viewModel.currentMonth.collectLatest { month ->
-                        val title = monthTitleFormatter.format(month)
-                        binding.tvMonthTitle.text = title.replaceFirstChar {
-                            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-                        }
+                        updateMonthTitle(monthTitleFormatter.format(month))
                     }
                 }
             }
         }
 
-        // Observar Eventos de un solo uso
         viewModel.event.observe(viewLifecycleOwner) { event ->
             handleMoneyEvents(event)
         }
     }
 
-    // --- ANIMACIONES DEL FAB MENU ---
+    private fun updateMonthTitle(title: String) {
+        binding.tvMonthTitle.text = title.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+        }
+    }
 
     private fun toggleFabMenu() {
         isFabExpanded = !isFabExpanded
-        if (isFabExpanded) {
-            // Rotar el botón principal a una "X" (45 grados)
-            binding.fabMain.animate().rotation(45f).setDuration(200).start()
+        val rotation = if (isFabExpanded) 45f else 0f
+        binding.fabMain.animate().rotation(rotation).setDuration(200).start()
 
-            // Mostrar los sub-botones con un efecto cascada (retraso según posición)
+        if (isFabExpanded) {
             showFab(binding.fabAddExpense, 1)
             showFab(binding.fabAddIncome, 2)
             showFab(binding.fabAddGoal, 3)
             showFab(binding.fabAddBudget, 4)
         } else {
-            // Devolver a la posición original "+"
-            binding.fabMain.animate().rotation(0f).setDuration(200).start()
-
-            // Ocultar los sub-botones
             hideFab(binding.fabAddExpense)
             hideFab(binding.fabAddIncome)
             hideFab(binding.fabAddGoal)
@@ -166,16 +145,12 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
             .alpha(0f)
             .translationY(50f)
             .setDuration(200)
-            .setStartDelay(0)
             .withEndAction { fab.visibility = View.GONE }
             .start()
     }
 
-    // --- CONFIGURACIÓN DE LISTAS ---
     private fun setupOverviewRecyclerView() {
         categoryOverviewAdapter = CategoryOverviewAdapter()
-
-        // Accedemos al RecyclerView dentro del include 'viewGeneral'
         binding.viewGeneral.rvCategories.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = categoryOverviewAdapter
@@ -208,28 +183,14 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
         }
     }
 
-    // --- RENDERIZADO DE ESTADOS ---
-
     private fun renderBudgetState(state: BudgetSummaryState) {
-        // Actualiza la pestaña de presupuestos completa
         budgetAdapter.submitList(state.items)
+        categoryOverviewAdapter.submitList(state.items.sortedByDescending { it.spent })
 
-        // ¡NUEVO!: Actualiza la lista cortita de la pestaña "General" (ordenada por gasto)
-        // Ordenamos los items para que salgan primero los que tienen más gasto
-        // Mostrar TODOS los presupuestos ordenados por el gasto
-        val sortedForOverview = state.items.sortedByDescending { it.spent }
-        categoryOverviewAdapter.submitList(sortedForOverview)
-
-        // Actualizamos los números grandes de la pestaña General
         binding.viewGeneral.apply {
             tvBalanceValue.text = state.formattedTotalBalance
             tvExpenseValue.text = state.formattedTotalSpent
             tvIncomeValue.text = state.formattedTotalIncome
-
-            // Calculamos el % de presupuesto total usado para la tarjeta de abajo
-            // val totalPercent = state.totalPercent
-            // Suponiendo que el TextView de la tarjeta se llama tvBudgetUsedPercent (debes ponerle un ID en tu XML)
-            // tvBudgetUsedPercent.text = "$totalPercent%"
         }
     }
 
@@ -238,7 +199,7 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
         binding.viewGoals.apply {
             tvTotalSavedValue.text = state.formattedTotalSaved
             tvTotalLimitLabel.text = state.formattedTotalTarget
-            tvTotalProgressPercent.text = "${state.totalPercent}%"
+            tvTotalProgressPercent.text = String.format(Locale.getDefault(), "%d%%", state.totalPercent)
             lpiTotalMetas.setProgress(state.totalPercent, true)
 
             val statusColor = if (state.totalPercent >= 50) Color.parseColor("#10B981") else Color.parseColor("#F97316")
@@ -247,27 +208,15 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
         }
     }
 
-    // --- MANEJO DE EVENTOS ---
-
     private fun handleMoneyEvents(event: MoneyEvents) {
         when (event) {
             is MoneyEvents.ShowAddBudgetDialog -> {
-                val dialog = AddBudgetDialog { emoji, colorHex, title, limit, type ->
+                AddBudgetDialog { emoji, colorHex, title, limit, type ->
                     viewModel.onSaveNewBudget(emoji, colorHex, title, limit, type)
-                }
-                dialog.show(parentFragmentManager, "AddBudgetDialog")
+                }.show(parentFragmentManager, "AddBudgetDialog")
             }
-            is MoneyEvents.ShowEditBudgetDialog -> {
-                Toast.makeText(requireContext(), "Editar Presupuesto: ${event.budget.name}", Toast.LENGTH_SHORT).show()
-            }
-            is MoneyEvents.ShowBudgetDetails -> {
-                Toast.makeText(requireContext(), "Detalles de: ${event.budget.name}", Toast.LENGTH_SHORT).show()
-            }
-
             is MoneyEvents.ShowAddTransactionDialog -> {
-                val currentBudgets = viewModel.budgetState.value.items
-                // Filtramos los presupuestos según el tipo de transacción
-                val filteredBudgets = currentBudgets.filter { it.type == event.type }
+                val filteredBudgets = viewModel.budgetState.value.items.filter { it.type == event.type }
 
                 if (filteredBudgets.isEmpty()) {
                     val msg = if (event.type == "EXPENSE") "Crea un presupuesto de gastos" else "Crea un presupuesto de ingresos"
@@ -275,38 +224,31 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
                     return
                 }
 
-                // ✅ Pasamos el tipo al diálogo para que sepa qué está guardando
-                val dialog = AddExpenseBottomSheet(filteredBudgets, event.type) { budget, amount, note, dateMillis, type ->
+                AddExpenseBottomSheet(filteredBudgets, event.type) { budget, amount, note, dateMillis, type ->
                     viewModel.onSaveExpense(budget, amount, note, dateMillis, type)
-                }
-                dialog.show(parentFragmentManager, "AddExpenseBottomSheet")
+                }.show(parentFragmentManager, "AddExpenseBottomSheet")
             }
-
-            is MoneyEvents.ShowAddGoalDialog -> {
-                Toast.makeText(requireContext(), "Abrir Diálogo Nueva Meta", Toast.LENGTH_SHORT).show()
-            }
-
-            is MoneyEvents.ShowAddCustomMoneyDialog -> { /* Dialog añadir dinero a meta */ }
-            is MoneyEvents.ShowDeleteGoalConfirmation -> { /* Dialog borrar meta */ }
             is MoneyEvents.ShowError -> Toast.makeText(requireContext(), event.message, Toast.LENGTH_SHORT).show()
+            else -> { /* Otros eventos no implementados aún */ }
         }
     }
 
-    // --- TABS ---
     private fun setupFilters() {
         val tabLayout = binding.tabLayoutFilters
-        tabLayout.addTab(tabLayout.newTab().setText("General"))
-        tabLayout.addTab(tabLayout.newTab().setText("Presupuestos"))
-        tabLayout.addTab(tabLayout.newTab().setText("Metas"))
-        tabLayout.addTab(tabLayout.newTab().setText("Historial"))
+        tabLayout.apply {
+            addTab(newTab().setText("General"))
+            addTab(newTab().setText("Presupuestos"))
+            addTab(newTab().setText("Metas"))
+            addTab(newTab().setText("Historial"))
 
-        tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
-            override fun onTabSelected(tab: TabLayout.Tab?) {
-                updateContentVisibility((tab?.position ?: 0) + 1)
-            }
-            override fun onTabUnselected(tab: TabLayout.Tab?) {}
-            override fun onTabReselected(tab: TabLayout.Tab?) {}
-        })
+            addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+                override fun onTabSelected(tab: TabLayout.Tab?) {
+                    updateContentVisibility((tab?.position ?: 0) + 1)
+                }
+                override fun onTabUnselected(tab: TabLayout.Tab?) {}
+                override fun onTabReselected(tab: TabLayout.Tab?) {}
+            })
+        }
         updateContentVisibility(TAB_GENERAL)
     }
 
