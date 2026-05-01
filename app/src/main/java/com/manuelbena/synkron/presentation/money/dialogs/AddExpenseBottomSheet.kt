@@ -7,12 +7,10 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.manuelbena.synkron.R
 import com.manuelbena.synkron.databinding.BottomSheetAddExpenseBinding
 import com.manuelbena.synkron.presentation.models.BudgetPresentationModel
 import com.manuelbena.synkron.presentation.money.BudgetSummary.BudgetSelectorAdapter
@@ -22,9 +20,8 @@ import java.util.Locale
 
 class AddExpenseBottomSheet(
     private val budgets: List<BudgetPresentationModel>,
-    private val type: String, // "EXPENSE" o "INCOME"
     // 1. AÑADIMOS dateMillis A LA FUNCIÓN DE GUARDADO
-    private val onSaveExpense: (budget: BudgetPresentationModel, amount: Double, note: String, dateMillis: Long, type: String) -> Unit
+    private val onSaveExpense: (budget: BudgetPresentationModel, amount: Double, note: String, dateMillis: Long) -> Unit
 ) : BottomSheetDialogFragment() {
 
     private var _binding: BottomSheetAddExpenseBinding? = null
@@ -68,18 +65,7 @@ class AddExpenseBottomSheet(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Cambiar títulos según el tipo
-        if (type == "INCOME") {
-            binding.tvTitle.text = "Añadir Ingreso"
-            binding.btnSaveExpense.text = "Guardar Ingreso"
-            binding.etAmount.hint = "Importe del ingreso"
-            binding.btnSaveExpense.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.emerald)
-        } else {
-            binding.tvTitle.text = "Añadir Gasto"
-            binding.btnSaveExpense.text = "Guardar Gasto"
-            binding.etAmount.hint = "Importe del gasto"
-            binding.btnSaveExpense.backgroundTintList = ContextCompat.getColorStateList(requireContext(), R.color.red_500)
-        }
+        binding.btnClose.setOnClickListener { dismiss() }
 
         // Configurar la lista horizontal de presupuestos
         binding.rvBudgets.apply {
@@ -133,8 +119,8 @@ class AddExpenseBottomSheet(
                 return@setOnClickListener
             }
 
-            // 4. ENVIAMOS LOS DATOS AL VIEWMODEL (Incluyendo la fecha y el tipo)
-            onSaveExpense(selectedBudget!!, amount, note, selectedDateMillis, type)
+            // 4. ENVIAMOS LOS DATOS AL VIEWMODEL (Incluyendo la fecha)
+            onSaveExpense(selectedBudget!!, amount, note, selectedDateMillis)
             dismiss()
         }
     }

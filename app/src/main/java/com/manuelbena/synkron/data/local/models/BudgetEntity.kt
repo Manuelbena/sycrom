@@ -11,6 +11,5 @@ data class BudgetEntity(
     val limitAmount: Double,
     val spentAmount: Double = 0.0, // Al crearlo, el gasto inicial es 0
     val emoji: String,
-    val colorHex: String,
-    val type: String = "EXPENSE" // "EXPENSE" o "INCOME"
+    val colorHex: String
 )

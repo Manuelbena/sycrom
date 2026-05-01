@@ -125,8 +125,7 @@ fun BudgetDomain.toEntity() = BudgetEntity(
     limitAmount = limit,
     spentAmount = spent,
     emoji = emoji,
-    colorHex = colorHex,
-    type = type
+    colorHex = colorHex
 )
 
 fun TransactionDomain.toEntity() = TransactionEntity(

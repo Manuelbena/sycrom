@@ -9,7 +9,6 @@ data class BudgetPresentationModel(
     val spent: Double,
     val emoji: String,
     val colorHex: String,
-    val type: String = "EXPENSE",
     val transactions: List<TransactionPresentationModel> = emptyList() // Usará el que ya tienes creado
 ) {
     val available: Double get() = limit - spent
@@ -24,6 +23,5 @@ fun BudgetDomain.toPresentation() = BudgetPresentationModel(
     spent = spent,
     emoji = emoji,
     colorHex = colorHex,
-    type = type,
     transactions = transactions.map { it.toPresentation() } // Mapea usando tu función
 )

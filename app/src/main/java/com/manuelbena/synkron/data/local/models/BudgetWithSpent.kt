@@ -7,6 +7,5 @@ data class BudgetWithSpent(
     val limitAmount: Double,
     val emoji: String,
     val colorHex: String,
-    val type: String,
     val spentAmount: Double // Lo calculará SQL sumando las transacciones
 )
