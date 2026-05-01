@@ -10,7 +10,6 @@ import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.domain.usecase.DeleteTaskUseCase
 import com.manuelbena.synkron.domain.usecase.GetTaskTodayUseCase
 import com.manuelbena.synkron.domain.usecase.UpdateTaskUseCase
-import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
 import com.manuelbena.synkron.presentation.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -51,7 +50,7 @@ class HomeViewModel @Inject constructor(
     // Control de Sync Inteligente
     private var lastSyncedYear = -1
     private var lastSyncTime = 0L
-    private val SYNC_COOLDOWN = 60 * 1000
+    private val syncCooldown = 60 * 1000
 
     init {
         val today = LocalDate.now()
@@ -130,7 +129,7 @@ class HomeViewModel @Inject constructor(
 
     private fun syncYearSmart(year: Int, force: Boolean = false) {
         val now = System.currentTimeMillis()
-        if (force || year != lastSyncedYear || (now - lastSyncTime > SYNC_COOLDOWN)) {
+        if (force || year != lastSyncedYear || (now - lastSyncTime > syncCooldown)) {
             lastSyncedYear = year
             lastSyncTime = now
             viewModelScope.launch {

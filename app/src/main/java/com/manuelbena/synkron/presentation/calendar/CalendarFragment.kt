@@ -20,7 +20,7 @@ import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentCalendarBinding
 import com.manuelbena.synkron.databinding.ItemCalendarMonthDayBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
-import com.manuelbena.synkron.presentation.calendar.adapter.CalendarTaskAdapter
+import com.manuelbena.synkron.presentation.calendar.adapters.CalendarTaskAdapter
 import com.manuelbena.synkron.presentation.taskdetail.TaskDetailBottomSheet
 import com.manuelbena.synkron.presentation.util.getCategoryColor
 import dagger.hilt.android.AndroidEntryPoint

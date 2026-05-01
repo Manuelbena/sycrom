@@ -1,6 +1,5 @@
 package com.manuelbena.synkron.presentation.money
 
-import GoalSummaryState
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,7 +15,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.tabs.TabLayout
 import com.manuelbena.synkron.base.BaseFragment
 import com.manuelbena.synkron.databinding.FragmentMoneyBinding
-import com.manuelbena.synkron.presentation.money.BudgetSummary.BudgetSummaryState
+import com.manuelbena.synkron.presentation.money.models.BudgetSummaryState
+import com.manuelbena.synkron.presentation.money.models.GoalSummaryState
 import com.manuelbena.synkron.presentation.money.adapter.GoalsAdapter
 import com.manuelbena.synkron.presentation.money.adapters.BudgetAdapter
 import com.manuelbena.synkron.presentation.money.adapters.CategoryOverviewAdapter

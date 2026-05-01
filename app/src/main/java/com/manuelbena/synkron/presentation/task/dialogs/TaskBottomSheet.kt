@@ -394,10 +394,15 @@ class TaskBottomSheet : BottomSheetDialogFragment() {
                 is TaskEffect.ShowCategoryDialog -> CategorySelectionDialog { sel -> viewModel.onEvent(TaskEvent.OnCategorySelected(sel.title, sel.googleColorId)) }.show(childFragmentManager, "CAT")
                 is TaskEffect.ShowReminderDialog -> {
                     val s = viewModel.state.value ?: TaskState()
-                    AddReminderDialog(s.startTime.clone() as Calendar, s.endTime.clone() as Calendar) { r ->
-                        val m = when(r.method) { ReminderMethod.WHATSAPP -> "email"; ReminderMethod.ALARM -> "alarm"; else -> "popup" }
+                    val dialog = AddReminderDialog(s.startTime.clone() as Calendar, s.endTime.clone() as Calendar) { r ->
+                        val m = when(r.method) { 
+                            ReminderMethod.WHATSAPP -> "email"
+                            ReminderMethod.ALARM -> "alarm" 
+                            else -> "popup" 
+                        }
                         viewModel.onEvent(TaskEvent.OnAddReminder(com.manuelbena.synkron.domain.models.GoogleEventReminder(m, r.offsetMinutes, r.message)))
-                    }.show(childFragmentManager, "REMINDER")
+                    }
+                    dialog.show(childFragmentManager, "REMINDER")
                 }
                 is TaskEffect.ShowRecurrenceDialog -> showRecurrenceOptionsDialog()
                 else -> {}

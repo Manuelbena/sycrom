@@ -1,4 +1,4 @@
-package com.manuelbena.synkron.presentation.calendar.adapter
+package com.manuelbena.synkron.presentation.calendar.adapters
 
 import android.graphics.Color
 import android.graphics.Paint

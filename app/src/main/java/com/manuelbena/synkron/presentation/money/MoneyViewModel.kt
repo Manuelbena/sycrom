@@ -1,6 +1,5 @@
 package com.manuelbena.synkron.presentation.money
 
-import GoalSummaryState
 import com.manuelbena.synkron.base.BaseViewModel
 import com.manuelbena.synkron.domain.models.BudgetDomain
 import com.manuelbena.synkron.domain.models.TransactionDomain
@@ -10,7 +9,8 @@ import com.manuelbena.synkron.domain.usecase.InsertTransactionUseCase
 import com.manuelbena.synkron.presentation.models.BudgetPresentationModel
 import com.manuelbena.synkron.presentation.models.GoalPresentationModel
 import com.manuelbena.synkron.presentation.models.toPresentation
-import com.manuelbena.synkron.presentation.money.BudgetSummary.BudgetSummaryState
+import com.manuelbena.synkron.presentation.money.models.BudgetSummaryState
+import com.manuelbena.synkron.presentation.money.models.GoalSummaryState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

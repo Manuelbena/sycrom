@@ -5,9 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.Build
 import android.os.Bundle
-import android.os.VibrationEffect
 import android.os.Vibrator
 import android.view.LayoutInflater
 import android.view.View
@@ -63,7 +61,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private val fabInterpolator = OvershootInterpolator()
 
-    private var lastSnappedPosition = RecyclerView.NO_POSITION
     private var taskDetailBottomSheet: TaskDetailBottomSheet? = null
 
     companion object {
@@ -74,7 +71,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         onItemClick = { task -> showTaskDetail(task) },
         onTaskCheckedChange = { task, isDone -> viewModel.onTaskCheckedChanged(task, isDone) },
         onSubTaskChange = { taskId, subTask -> viewModel.onSubTaskChanged(taskId, subTask) }
-    ).apply{
+    ).apply {
         stateRestorationPolicy = RecyclerView.Adapter.StateRestorationPolicy.PREVENT_WHEN_EMPTY
     }
 
@@ -297,10 +294,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             val completedTasks = tasks.count { it.isDone }
 
             // Cálculo seguro del porcentaje
-            val percentage = if (totalTasks > 0) {
+            if (totalTasks > 0) {
                 ((completedTasks.toFloat() / totalTasks.toFloat()) * 100).toInt()
-            } else {
-                0
             }
 
         }
@@ -386,7 +381,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun generateShareText(task: TaskDomain): String {
         val builder = StringBuilder()
-        val startDateCalendar = task.start.toCalendar()
+        val startDateCalendar = task.start.toCalendar() ?: java.util.Calendar.getInstance()
         val durationInMinutes = getDurationInMinutes(task.start, task.end)
         val statusEmoji = if (task.isDone) "✅" else "🎯"
         builder.append("$statusEmoji *¡Ojo a esta tarea!* $statusEmoji\n\n")
@@ -421,8 +416,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     }
 
     private fun createGoogleCalendarLink(task: TaskDomain): String {
-        val startCalendar = task.start.toCalendar()
-        val endCalendar = task.end.toCalendar()
+        val startCalendar = task.start.toCalendar() ?: java.util.Calendar.getInstance()
+        val endCalendar = task.end.toCalendar() ?: java.util.Calendar.getInstance()
         val startTimeMillis = startCalendar.timeInMillis
         val endTimeMillis = endCalendar.timeInMillis
         val isoFormatter = SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'", Locale.US).apply {
@@ -471,7 +466,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
             if (!quoteList.isNullOrEmpty()) {
                 val calendar = java.util.Calendar.getInstance()
-                val dayOfYear = calendar.get(java.util.Calendar.DAY_OF_YEAR)
+                val dayOfYear = calendar[java.util.Calendar.DAY_OF_YEAR]
                 val index = dayOfYear % quoteList.size
                 val todayQuote = quoteList[index]
 
