@@ -11,4 +11,5 @@ interface IBudgetRepository {
 
     fun getBudgetsWithSpentForMonth(startOfMonth: Long, endOfMonth: Long): Flow<List<BudgetDomain>>
     suspend fun insertTransaction(transaction: TransactionDomain)
+    fun getTransactionsBetweenDates(start: Long, end: Long): Flow<List<TransactionDomain>>
 }

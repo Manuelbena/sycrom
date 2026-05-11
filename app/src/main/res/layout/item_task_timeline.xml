@@ -188,12 +188,12 @@
                     android:id="@+id/tvCategoryTag"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/shape_tag_background_prymary"
+                    android:background="@drawable/shape_tag_outline"
                     android:fontFamily="@font/nunitobold"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="10dp"
                     android:paddingVertical="4dp"
-                    android:textColor="@color/color_surface"
+                    android:textColor="@color/md_theme_primary"
                     android:textSize="11sp"
                     tools:text="Trabajo" />
 
@@ -205,9 +205,9 @@
                     android:background="@drawable/shape_tag_background_hight"
                     android:fontFamily="@font/nunitobold"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="10dp"
                     android:paddingVertical="4dp"
-                    android:textColor="#DC2626"
+                    android:textColor="@color/priority_high_text"
                     android:textSize="11sp"
                     tools:text="ALTA" />
             </LinearLayout>

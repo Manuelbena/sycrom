@@ -63,4 +63,10 @@ class BudgetRepositoryImpl @Inject constructor(
             }
         }
     }
+
+    override fun getTransactionsBetweenDates(start: Long, end: Long): Flow<List<TransactionDomain>> {
+        return budgetDao.getTransactionsForMonth(start, end).map { list ->
+            list.map { it.toDomain() }
+        }
+    }
 }

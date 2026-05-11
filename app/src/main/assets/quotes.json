@@ -1,0 +1,12 @@
+[
+  { "id": 1, "autor": "Mark Twain", "texto": "El secreto para salir adelante es simplemente empezar." },
+  { "id": 2, "autor": "Walt Disney", "texto": "La mejor manera de empezar es dejar de hablar y empezar a hacer." },
+  { "id": 3, "autor": "Confucio", "texto": "No importa lo lento que vayas, siempre y cuando no te detengas." },
+  { "id": 4, "autor": "Steve Jobs", "texto": "Tu tiempo es limitado, así que no lo desperdicies viviendo la vida de alguien más." },
+  { "id": 5, "autor": "Vince Lombardi", "texto": "La perfección no es alcanzable, pero si la buscamos, podemos alcanzar la excelencia." },
+  { "id": 6, "autor": "Eleanor Roosevelt", "texto": "El futuro pertenece a quienes creen en la belleza de sus sueños." },
+  { "id": 7, "autor": "Ralph Waldo Emerson", "texto": "Lo que está detrás de nosotros y lo que está ante nosotros son cosas pequeñas en comparación con lo que está dentro de nosotros." },
+  { "id": 8, "autor": "Aristóteles", "texto": "Somos lo que hacemos repetidamente. La excelencia, entonces, no es un acto, sino un hábito." },
+  { "id": 9, "autor": "Paulo Coelho", "texto": "Sólo una cosa vuelve un sueño imposible: el miedo a fracasar." },
+  { "id": 10, "autor": "Maya Angelou", "texto": "He aprendido que la gente olvidará lo que dijiste, la gente olvidará lo que hiciste, pero la gente nunca olvidará cómo la hiciste sentir." }
+]

@@ -21,9 +21,9 @@
             android:id="@+id/clHeaderContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingHorizontal="@dimen/spacing_large"
-            android:paddingTop="@dimen/spacing_medium"
-            android:paddingBottom="@dimen/spacing_medium">
+            android:paddingHorizontal="@dimen/spacing_medium"
+            android:paddingTop="@dimen/spacing_small"
+            android:paddingBottom="@dimen/spacing_small">
 
             <TextView
                 android:id="@+id/textGreeting"
@@ -110,7 +110,7 @@
                 android:id="@+id/dividerHeader"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/divider_height"
-                android:layout_marginTop="@dimen/spacing_large"
+                android:layout_marginTop="@dimen/spacing_small"
                 app:dividerColor="?attr/colorOutline"
                 app:layout_constraintTop_toBottomOf="@+id/textDate" />
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -144,14 +144,15 @@
                 android:id="@+id/lyCalendarContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingHorizontal="@dimen/spacing_large"
+                android:paddingHorizontal="@dimen/spacing_medium"
+                android:paddingVertical="@dimen/spacing_small"
                 android:background="@color/md_theme_surface"
                 android:orientation="vertical"
                 app:layout_constraintTop_toBottomOf="@+id/dividerHeader">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/spacing_medium"
+                    android:layout_marginBottom="@dimen/spacing_small"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -172,17 +173,20 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunitobold"
-                        android:minHeight="40dp"
+                        android:minHeight="32dp"
+                        android:paddingVertical="0dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         android:text="@string/home_btn_today"
                         android:textColor="@color/md_theme_onSurface"
-                        android:textSize="@dimen/text_body"
+                        android:textSize="@dimen/text_caption"
                         app:backgroundTint="@color/color_body" />
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/spacing_small"
+                    android:layout_marginBottom="@dimen/spacing_tiny"
                     android:orientation="horizontal">
                     <TextView style="@style/CalendarDayLegend" android:text="@string/day_short_mon" android:textSize="@dimen/text_caption" />
                     <TextView style="@style/CalendarDayLegend" android:text="@string/day_short_tue" android:textSize="@dimen/text_caption" />
@@ -344,15 +348,15 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recyclerViewTasks"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"  android:orientation="vertical"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
                     android:clipChildren="false"
                     android:paddingHorizontal="16dp"
                     android:clipToPadding="false"
                     android:layout_marginTop="16dp"
                     android:visibility="visible"
                     android:nestedScrollingEnabled="false"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                    tools:listitem="@layout/item_task_timeline" />
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
             </LinearLayout>
 
@@ -363,222 +367,181 @@
                 android:clipToPadding="false"
                 android:padding="@dimen/spacing_large">
 
-                <TextView
-                    android:id="@+id/tvHeaderResumen"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="@dimen/spacing_medium"
-                    android:fontFamily="@font/nunitobold"
-                    android:text="@string/home_summary_title"
-                    android:textColor="@color/secondary_text"
-                    android:textSize="@dimen/text_h2"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardProd"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_medium"
-                    android:layout_marginEnd="@dimen/spacing_small"
-                    app:cardBackgroundColor="@color/color_card"
-                    app:cardCornerRadius="@dimen/card_corner_radius_lg"
-                    app:cardElevation="@dimen/card_elevation_default"
-                    app:layout_constraintEnd_toStartOf="@+id/cardHabits"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tvHeaderResumen"
-                    app:strokeColor="@color/border"
-                    app:strokeWidth="@dimen/card_stroke_width">
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="@dimen/spacing_medium">
-
-                        <ImageView
-                            android:id="@+id/ivProdIcon"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_cicle_purpple"
-                            android:padding="@dimen/spacing_small"
-                            android:src="@drawable/ic_finance"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:tint="?attr/colorSurface" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/spacing_s"
-                            android:fontFamily="@font/nunitosemibold"
-                            android:text="@string/home_card_prod_title"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_body"
-                            app:layout_constraintBottom_toBottomOf="@+id/ivProdIcon"
-                            app:layout_constraintStart_toEndOf="@+id/ivProdIcon"
-                            app:layout_constraintTop_toTopOf="@+id/ivProdIcon" />
-
-                        <TextView
-                            android:id="@+id/tvProdValue"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_medium"
-                            android:fontFamily="@font/nunitoextrabold"
-                            android:text="85%"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_h5"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/ivProdIcon" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/nunitregular"
-                            android:text="@string/home_card_prod_subtitle"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_caption"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/tvProdValue" />
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardHabits"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/spacing_small"
-                    android:layout_marginTop="@dimen/spacing_medium"
-                    app:cardBackgroundColor="@color/color_card"
-                    app:cardCornerRadius="@dimen/card_corner_radius_lg"
-                    app:cardElevation="@dimen/card_elevation_default"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/cardProd"
-                    app:layout_constraintTop_toBottomOf="@+id/tvHeaderResumen"
-                    app:strokeColor="@color/border"
-                    app:strokeWidth="@dimen/card_stroke_width">
-
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:padding="@dimen/spacing_medium">
-
-                        <ImageView
-                            android:id="@+id/ivHabitIcon"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_cicle_green"
-                            android:padding="@dimen/spacing_small"
-                            android:src="@drawable/ic_habiut"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
-                            app:tint="?attr/colorSurface" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/spacing_s"
-                            android:fontFamily="@font/nunitosemibold"
-                            android:text="@string/home_card_habits_title"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_body"
-                            app:layout_constraintBottom_toBottomOf="@+id/ivHabitIcon"
-                            app:layout_constraintStart_toEndOf="@+id/ivHabitIcon"
-                            app:layout_constraintTop_toTopOf="@+id/ivHabitIcon" />
-
-                        <TextView
-                            android:id="@+id/tvHabitValue"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_medium"
-                            android:fontFamily="@font/nunitoextrabold"
-                            android:text="5/7"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_h5"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/ivHabitIcon" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/nunitregular"
-                            android:text="@string/home_card_habits_subtitle"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_caption"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/tvHabitValue" />
-
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardBalance"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/clSummaryContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/text_caption"
-                    app:cardBackgroundColor="@color/color_card"
-                    app:cardCornerRadius="@dimen/card_corner_radius_lg"
-                    app:cardElevation="@dimen/card_elevation_default"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/cardProd"
-                    app:strokeColor="@color/border"
-                    app:strokeWidth="@dimen/card_stroke_width">
+             
+                    >
 
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:id="@+id/tvHeaderResumen"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:padding="@dimen/spacing_large">
+                        android:fontFamily="@font/nunitobold"
+                        android:text="@string/home_summary_title"
+                        android:textColor="@color/secondary_text"
+                        android:textSize="@dimen/text_h2"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
 
-                        <ImageView
-                            android:id="@+id/ivBalanceIcon"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="@drawable/bg_cicle_blue"
-                            android:padding="@dimen/spacing_small"
-                            android:src="@drawable/ic_banck"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toTopOf="parent"
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardProd"
+                        style="@style/Widget.Material3.CardView.Elevated"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_medium"
+                        android:layout_marginEnd="@dimen/spacing_tiny"
+                        app:cardBackgroundColor="@color/color_card"
+                        app:cardCornerRadius="@dimen/card_corner_radius_lg"
+                        app:cardElevation="@dimen/card_elevation_m3"
+                        app:layout_constraintEnd_toStartOf="@+id/cardBalance"
+                        app:layout_constraintHorizontal_weight="1"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/tvHeaderResumen"
+                        app:strokeWidth="0dp">
 
-                            app:tint="?attr/colorSurface" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/spacing_s"
-                            android:fontFamily="@font/nunitosemibold"
-                            android:text="@string/home_card_balance_title"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_body"
-                            app:layout_constraintBottom_toBottomOf="@+id/ivBalanceIcon"
-                            app:layout_constraintStart_toEndOf="@+id/ivBalanceIcon"
-                            app:layout_constraintTop_toTopOf="@+id/ivBalanceIcon" />
+                            android:padding="@dimen/spacing_small">
 
-                        <TextView
-                            android:id="@+id/tvBalanceValue"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/spacing_medium"
-                            android:fontFamily="@font/nunitoextrabold"
-                            android:text="$2,450"
-                            android:textColor="@color/secondary_text"
-                            android:textSize="@dimen/text_h5"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintTop_toBottomOf="@+id/ivBalanceIcon" />
+                            <ImageView
+                                android:id="@+id/ivProdIcon"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:background="@drawable/bg_cicle_purpple"
+                                android:padding="6dp"
+                                android:src="@drawable/ic_finance"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:tint="?attr/colorSurface" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="@dimen/spacing_small"
-                            android:fontFamily="@font/nunitobold"
-                            android:text="+12.5% ↗"
-                            android:textColor="@color/priority_low"
-                            android:textSize="@dimen/text_caption"
-                            app:layout_constraintBaseline_toBaselineOf="@+id/tvBalanceValue"
-                            app:layout_constraintStart_toEndOf="@+id/tvBalanceValue" />
+                            <TextView
+                                android:id="@+id/tvProdTitle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/spacing_s"
+                                android:fontFamily="@font/nunitosemibold"
+                                android:text="@string/home_card_prod_title"
+                                android:textColor="@color/secondary_text"
+                                android:textSize="@dimen/text_caption"
+                                android:maxLines="1"
+                                android:ellipsize="end"
+                                app:layout_constraintBottom_toBottomOf="@+id/ivProdIcon"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toEndOf="@+id/ivProdIcon"
+                                app:layout_constraintTop_toTopOf="@+id/ivProdIcon" />
 
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-                </com.google.android.material.card.MaterialCardView>
+                            <TextView
+                                android:id="@+id/tvProdValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_small"
+                                android:fontFamily="@font/nunitoextrabold"
+                                android:text="85%"
+                                android:textColor="@color/secondary_text"
+                                android:textSize="@dimen/text_h6"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/ivProdIcon" />
+
+                            <TextView
+                                android:id="@+id/tvProdSubtitle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunitregular"
+                                android:text="@string/home_card_prod_subtitle"
+                                android:textColor="@color/secondary_text"
+                                android:textSize="10sp"
+                                android:maxLines="2"
+                                android:ellipsize="end"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/tvProdValue" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardBalance"
+                        style="@style/Widget.Material3.CardView.Elevated"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:layout_marginStart="@dimen/spacing_tiny"
+                        app:cardCornerRadius="@dimen/card_corner_radius_lg"
+                        app:cardBackgroundColor="@color/color_card"
+                        app:cardElevation="@dimen/card_elevation_m3"
+                        app:layout_constraintBottom_toBottomOf="@+id/cardProd"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_weight="1"
+                        app:layout_constraintStart_toEndOf="@+id/cardProd"
+                        app:layout_constraintTop_toTopOf="@+id/cardProd"
+                        app:strokeWidth="0dp">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="@dimen/spacing_small">
+
+                            <ImageView
+                                android:id="@+id/ivBalanceIcon"
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:background="@drawable/bg_cicle_blue"
+                                android:padding="6dp"
+                                android:src="@drawable/ic_banck"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:tint="?attr/colorSurface" />
+
+                            <TextView
+                                android:id="@+id/tvBalanceTitle"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/spacing_s"
+                                android:fontFamily="@font/nunitosemibold"
+                                android:text="@string/home_card_balance_title"
+                                android:textColor="@color/secondary_text"
+                                android:textSize="@dimen/text_caption"
+                                android:maxLines="1"
+                                android:ellipsize="end"
+                                app:layout_constraintBottom_toBottomOf="@+id/ivBalanceIcon"
+                                app:layout_constraintEnd_toEndOf="parent"
+                                app:layout_constraintStart_toEndOf="@+id/ivBalanceIcon"
+                                app:layout_constraintTop_toTopOf="@+id/ivBalanceIcon" />
+
+                            <TextView
+                                android:id="@+id/tvBalanceValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/spacing_small"
+                                android:fontFamily="@font/nunitoextrabold"
+                                android:text="$2,450"
+                                android:textColor="@color/secondary_text"
+                                android:textSize="@dimen/text_h6"
+                                app:layout_constraintStart_toStartOf="parent"
+                                app:layout_constraintTop_toBottomOf="@+id/ivBalanceIcon" />
+
+                            <TextView
+                                android:id="@+id/tvBalanceIndicator"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/spacing_tiny"
+                                android:fontFamily="@font/nunitobold"
+                                android:text="+12.5% ↗"
+                                android:textColor="@color/priority_low"
+                                android:textSize="10sp"
+                                app:layout_constraintBaseline_toBaselineOf="@+id/tvBalanceValue"
+                                app:layout_constraintStart_toEndOf="@+id/tvBalanceValue" />
+
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 

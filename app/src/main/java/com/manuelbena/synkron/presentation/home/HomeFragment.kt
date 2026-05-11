@@ -221,8 +221,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                     tvNoTasks.isVisible = false
 
                     taskAdapter.submitList(state.tasks)
-                    updateProgressCard(state.tasks)
-
                 } else {
                     recyclerViewTasks.isVisible = false
 
@@ -234,6 +232,24 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 // Enviamos la lista real del estado al adaptador
                 val superAdapter = rvSuperTasks.adapter as? SuperTaskAdapter
                 superAdapter?.submitList(state.superTasks)
+
+                // 3. Productividad Semanal
+                tvProdValue.text = "${state.weeklyProductivity}%"
+
+                // 4. Balance Mensual
+                val balanceFormatted = java.text.NumberFormat.getCurrencyInstance(java.util.Locale("es", "ES")).format(state.monthlyBalance)
+                tvBalanceValue.text = balanceFormatted
+
+                val comparisonSign = if (state.balanceComparisonPercent >= 0) "+" else ""
+                val arrow = if (state.balanceComparisonPercent >= 0) "↗" else "↘"
+                tvBalanceIndicator.text = "$comparisonSign${String.format(java.util.Locale.getDefault(), "%.1f", state.balanceComparisonPercent)}% $arrow"
+
+                val indicatorColor = if (state.balanceComparisonPercent >= 0) {
+                    androidx.core.content.ContextCompat.getColor(requireContext(), R.color.priority_low) // Verde
+                } else {
+                    androidx.core.content.ContextCompat.getColor(requireContext(), R.color.md_theme_error) // Rojo
+                }
+                tvBalanceIndicator.setTextColor(indicatorColor)
 
                 // Mostramos el RV solo si hay super tareas para este día
                 rvSuperTasks.isVisible = state.superTasks.isNotEmpty()
@@ -286,19 +302,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             requireContext()
         )
         weekManager.generateWeekDays()
-    }
-
-    private fun updateProgressCard(tasks: List<TaskDomain>) {
-        binding.apply {
-            val totalTasks = tasks.size
-            val completedTasks = tasks.count { it.isDone }
-
-            // Cálculo seguro del porcentaje
-            if (totalTasks > 0) {
-                ((completedTasks.toFloat() / totalTasks.toFloat()) * 100).toInt()
-            }
-
-        }
     }
 
     override fun setListener() {
@@ -467,7 +470,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             if (!quoteList.isNullOrEmpty()) {
                 val calendar = java.util.Calendar.getInstance()
                 val dayOfYear = calendar[java.util.Calendar.DAY_OF_YEAR]
-                val index = dayOfYear % quoteList.size
+                val year = calendar[java.util.Calendar.YEAR]
+                
+                // Usamos el día y el año como semilla para que la frase cambie cada día
+                // pero sea la misma durante todo el día para el usuario.
+                val seed = (year * 1000L) + dayOfYear
+                val random = java.util.Random(seed)
+                val index = random.nextInt(quoteList.size)
+
                 val todayQuote = quoteList[index]
 
                 binding.tvQuoteText.text = "\"${todayQuote.texto}\""

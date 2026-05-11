@@ -15,5 +15,8 @@ data class HomeState(
     val tasks: List<TaskDomain> = emptyList(),
     val selectedDate: LocalDate = LocalDate.now(),
     val headerText: String = "",
-    val superTasks: List<SuperTaskModel> = emptyList() // <--- NUEVO
+    val superTasks: List<SuperTaskModel> = emptyList(),
+    val weeklyProductivity: Int = 0,
+    val monthlyBalance: Double = 0.0,
+    val balanceComparisonPercent: Double = 0.0
 )
