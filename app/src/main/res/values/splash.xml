@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- El color de fondo acorde a color_card (Blanco) -->
+        <item name="windowSplashScreenBackground">@color/color_card</item>
+
+        <!-- El icono central (Icono de la App) -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+
+        <!-- Duración (opcional, para iconos animados) -->
+        <item name="windowSplashScreenAnimationDuration">200</item>
+
+        <!-- El tema al que cambiará después de cargar -->
+        <item name="postSplashScreenTheme">@style/Theme.Sycrom</item>
+    </style>
+</resources>

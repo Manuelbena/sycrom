@@ -26,10 +26,12 @@ moshi = "1.15.1"
 okhttp = "4.12.0"
 work = "2.9.0"
 hiltWork = "1.2.0"
+splashscreen = "1.2.0"
 
 
 
 [libraries]
+androidx-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 google-gson = { module = "com.google.code.gson:gson", version.ref = "gson" } # <-- AÑADE ESTA LÍNEA
 compose-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "google-fonts" }
 credentials               = { module = "androidx.credentials:credentials",                version.ref = "credentials" }

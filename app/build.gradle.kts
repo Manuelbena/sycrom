@@ -101,6 +101,7 @@ dependencies {
 
 
     // --- DEPENDENCIAS EXISTENTES ---
+    implementation(libs.androidx.splashscreen)
     implementation(libs.google.gson) // <-- AÑADE ESTA LÍNEA
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

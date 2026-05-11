@@ -59,7 +59,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private lateinit var weekManager: WeekCalendarManager
     private var displayedDate: LocalDate = LocalDate.now()
 
-    private val fabInterpolator = OvershootInterpolator()
 
     private var taskDetailBottomSheet: TaskDetailBottomSheet? = null
 
@@ -329,23 +328,42 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun openFabMenu() {
         isFabMenuOpen = true
-        binding.fabMain.animate().rotation(45f).setInterpolator(fabInterpolator).setDuration(300).start()
-        showFab(binding.tvFabAddTask); showFab(binding.tvFabAddSuggestion); showFab(binding.tvFabAddGasto); showFab(binding.tvFabAddIng)
+        binding.fabMain.animate().rotation(45f).setDuration(200).start()
+        showFab(binding.tvFabAddTask, 1)
+        showFab(binding.tvFabAddSuggestion, 2)
+        showFab(binding.tvFabAddGasto, 3)
+        showFab(binding.tvFabAddIng, 4)
     }
 
     private fun closeFabMenu() {
         isFabMenuOpen = false
-        binding.fabMain.animate().rotation(0f).setInterpolator(fabInterpolator).setDuration(300).start()
-        hideFab(binding.tvFabAddTask); hideFab(binding.tvFabAddSuggestion); hideFab(binding.tvFabAddGasto); hideFab(binding.tvFabAddIng)
+        binding.fabMain.animate().rotation(0f).setDuration(200).start()
+        hideFab(binding.tvFabAddTask)
+        hideFab(binding.tvFabAddSuggestion)
+        hideFab(binding.tvFabAddGasto)
+        hideFab(binding.tvFabAddIng)
     }
 
-    private fun showFab(fab: View) {
-        fab.visibility = View.VISIBLE; fab.alpha = 0f; fab.translationY = 50f
-        fab.animate().alpha(1f).translationY(0f).setInterpolator(fabInterpolator).setDuration(300).start()
+    private fun showFab(fab: View, position: Int) {
+        fab.visibility = View.VISIBLE
+        fab.alpha = 0f
+        fab.translationY = 50f
+        fab.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(200)
+            .setStartDelay((position * 30).toLong())
+            .start()
     }
 
     private fun hideFab(fab: View) {
-        fab.animate().alpha(0f).translationY(50f).setInterpolator(fabInterpolator).setDuration(300).withEndAction { fab.visibility = View.GONE }.start()
+        fab.animate()
+            .alpha(0f)
+            .translationY(50f)
+            .setDuration(200)
+            .setStartDelay(0)
+            .withEndAction { fab.visibility = View.GONE }
+            .start()
     }
 
     private fun setupRecyclerView() {
