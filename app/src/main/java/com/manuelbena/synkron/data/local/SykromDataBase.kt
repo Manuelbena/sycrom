@@ -23,7 +23,7 @@ import com.manuelbena.synkron.data.local.models.TransactionEntity
         BudgetEntity::class,
         TransactionEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 @TypeConverters(

@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clipToPadding="false"
+    android:clipChildren="false"
     android:paddingBottom="12dp">
 
     <TextView
@@ -58,6 +60,7 @@
         android:layout_width="2dp"
         android:layout_height="0dp"
         android:background="#E5E7EB"
+        android:translationZ="1dp"
         app:layout_constraintBottom_toTopOf="@id/iv_timeline_dot_end"
         app:layout_constraintEnd_toEndOf="@id/iv_timeline_dot_start"
         app:layout_constraintStart_toStartOf="@id/iv_timeline_dot_start"
@@ -65,13 +68,14 @@
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_task"
+        style="@style/Widget.Material3.CardView.Elevated"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:minHeight="80dp"
         app:cardBackgroundColor="@android:color/white"
         app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
+        app:cardElevation="@dimen/card_elevation_m3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/tv_timeline_time_start"
         app:layout_constraintTop_toTopOf="parent"
@@ -231,6 +235,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:visibility="gone"
+        android:translationZ="5dp"
         app:layout_constraintBottom_toBottomOf="@id/card_task"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/iv_timeline_dot_start"

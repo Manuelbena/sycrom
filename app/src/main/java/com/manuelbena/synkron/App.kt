@@ -50,7 +50,12 @@ class App : Application(), Configuration.Provider { // <--- 1. Implementa la int
         // 3. Iniciar servicio de acceso rápido (Foreground)
         val serviceIntent = Intent(this, QuickAccessService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(serviceIntent)
+            try {
+                startForegroundService(serviceIntent)
+            } catch (e: Exception) {
+                // Capturamos la excepción en Android 12+ si el app está en background
+                Log.e("SYCROM_DEBUG", "No se pudo iniciar QuickAccessService desde App: ${e.message}")
+            }
         } else {
             startService(serviceIntent)
         }
