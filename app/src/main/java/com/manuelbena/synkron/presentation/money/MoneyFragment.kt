@@ -25,6 +25,9 @@ import com.manuelbena.synkron.presentation.money.dialogs.AddExpenseBottomSheet
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.Calendar
 
 @AndroidEntryPoint
 class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
@@ -89,6 +92,10 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
         // --- Botones internos de las vistas vacías ---
         binding.viewBudgets.btnAddBudget.setOnClickListener { viewModel.onAddBudgetClicked() }
         binding.viewGoals.btnAddMeta.setOnClickListener { viewModel.onAddGoalClicked() }
+
+        // --- Navegación de Mes ---
+        binding.viewGeneral.btnPrevMonth.setOnClickListener { viewModel.changeMonth(-1) }
+        binding.viewGeneral.btnNextMonth.setOnClickListener { viewModel.changeMonth(1) }
     }
 
     override fun observe() {
@@ -97,6 +104,7 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch { viewModel.goalState.collectLatest { renderGoalsState(it) } }
                 launch { viewModel.budgetState.collectLatest { renderBudgetState(it) } }
+                launch { viewModel.currentDate.collectLatest { updateDateDisplay(it) } }
             }
         }
 
@@ -228,6 +236,12 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
         }
     }
 
+    private fun updateDateDisplay(calendar: Calendar) {
+        val formatter = SimpleDateFormat("MMMM yyyy", Locale("es", "ES"))
+        val dateText = formatter.format(calendar.time)
+        binding.viewGeneral.tvCurrentDate.text = dateText.replaceFirstChar { it.uppercase() }
+    }
+
     // --- MANEJO DE EVENTOS ---
 
     private fun handleMoneyEvents(event: MoneyEvents) {
@@ -277,7 +291,7 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
     private fun setupFilters() {
         val tabLayout = binding.tabLayoutFilters
         tabLayout.addTab(tabLayout.newTab().setText("General"))
-        tabLayout.addTab(tabLayout.newTab().setText("Presupuestos"))
+        tabLayout.addTab(tabLayout.newTab().setText("Categorías"))
         tabLayout.addTab(tabLayout.newTab().setText("Metas"))
         tabLayout.addTab(tabLayout.newTab().setText("Historial"))
 

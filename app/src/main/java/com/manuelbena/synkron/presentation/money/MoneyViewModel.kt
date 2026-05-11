@@ -32,16 +32,28 @@ class MoneyViewModel @Inject constructor(
     private val _budgetState = MutableStateFlow(BudgetSummaryState())
     val budgetState: StateFlow<BudgetSummaryState> = _budgetState.asStateFlow()
 
-    init {
+    private val _currentDate = MutableStateFlow(Calendar.getInstance())
+    val currentDate: StateFlow<Calendar> = _currentDate.asStateFlow()
 
+    init {
         loadBudgetsForCurrentMonth()
     }
 
+    fun changeMonth(amount: Int) {
+        val newDate = _currentDate.value.clone() as Calendar
+        newDate.add(Calendar.MONTH, amount)
+        _currentDate.value = newDate
+        loadBudgetsForDate(newDate)
+    }
 
     // --- CARGA DE DATOS (PRESUPUESTOS) ---
     private fun loadBudgetsForCurrentMonth() {
-        // 1. Calculamos las fechas del 1 al último día de este mes
-        val calendar = Calendar.getInstance()
+        loadBudgetsForDate(_currentDate.value)
+    }
+
+    private fun loadBudgetsForDate(date: Calendar) {
+        // 1. Calculamos las fechas del 1 al último día del mes dado
+        val calendar = date.clone() as Calendar
 
         calendar.set(Calendar.DAY_OF_MONTH, 1)
         calendar.set(Calendar.HOUR_OF_DAY, 0)

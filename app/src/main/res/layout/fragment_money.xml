@@ -50,7 +50,7 @@
             android:id="@+id/card_tab_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="24dp"
+
             android:layout_marginTop="24dp"
             app:cardBackgroundColor="#F3F4F6"
             app:cardCornerRadius="24dp"
@@ -61,15 +61,18 @@
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tab_layout_filters"
                 android:layout_width="match_parent"
-                android:layout_height="52dp"
+                android:layout_height="wrap_content"
                 android:background="@android:color/transparent"
 
-                app:tabMode="fixed"
-                app:tabGravity="center"
+                app:tabMode="scrollable"
+                app:tabGravity="fill"
+                app:tabMinWidth="0dp"
+                app:tabPaddingStart="12dp"
+                app:tabPaddingEnd="12dp"
 
                 app:tabRippleColor="@null"
                 app:tabSelectedTextColor="@android:color/white"
-                app:tabTextColor="#6B7280"
+                app:tabTextColor="@color/color_surface"
                 app:tabTextAppearance="@style/PremiumTabTextAppearance"
 
                 app:tabBackground="@android:color/transparent"
