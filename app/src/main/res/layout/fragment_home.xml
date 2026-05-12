@@ -130,6 +130,7 @@
             android:id="@+id/nested_scroll_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/color_body"
             android:clipToPadding="false"
             android:paddingBottom="100dp"
             android:fillViewport="true"> <LinearLayout
@@ -137,6 +138,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:animateLayoutChanges="true"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:background="@color/color_body"
             android:orientation="vertical">
 
@@ -211,7 +214,7 @@
                 android:layout_marginBottom="@dimen/spacing_medium"
                 app:cardBackgroundColor="@color/color_card"
                 app:cardCornerRadius="@dimen/card_corner_radius_lg"
-                app:cardElevation="@dimen/card_elevation"
+                app:cardElevation="@dimen/card_elevation_m3"
                 android:layout_marginHorizontal="@dimen/spacing_large"
                 app:strokeWidth="@dimen/card_stroke_width"
                 android:layout_marginTop="@dimen/spacing_medium">
@@ -250,7 +253,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:visibility="gone"
-                tools:visibility="visible">
+                tools:visibility="gone">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -352,6 +355,7 @@
                     android:orientation="vertical"
                     android:clipChildren="false"
                     android:paddingHorizontal="16dp"
+                    android:paddingBottom="12dp"
                     android:clipToPadding="false"
                     android:layout_marginTop="16dp"
                     android:visibility="visible"
@@ -367,16 +371,7 @@
                 android:clipToPadding="false"
                 android:padding="@dimen/spacing_large">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/clSummaryContainer"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:clipChildren="false"
-                    android:clipToPadding="false"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-             
-                    >
+
 
                     <TextView
                         android:id="@+id/tvHeaderResumen"
@@ -541,7 +536,7 @@
                         </androidx.constraintlayout.widget.ConstraintLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                </androidx.constraintlayout.widget.ConstraintLayout>
+
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
