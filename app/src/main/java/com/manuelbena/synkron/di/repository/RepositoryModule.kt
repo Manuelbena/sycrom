@@ -4,9 +4,11 @@ package com.manuelbena.synkron.di.repository
 import com.manuelbena.synkron.data.repository.BudgetRepositoryImpl
 import com.manuelbena.synkron.data.repository.SuperTaskRepository
 import com.manuelbena.synkron.data.repository.TaskRepository
+import com.manuelbena.synkron.data.repository.WeatherRepositoryImpl
 import com.manuelbena.synkron.domain.interfaces.IBudgetRepository
 import com.manuelbena.synkron.domain.interfaces.ISuperTaskRepository
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
+import com.manuelbena.synkron.domain.interfaces.WeatherRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -40,6 +42,13 @@ abstract class RepositoryModule {
         superBudgetRepository: BudgetRepositoryImpl
     ): IBudgetRepository
 
+    @Binds
+    @Singleton
+    abstract fun bindWeatherRepository(
+        weatherRepository: WeatherRepositoryImpl
+    ): WeatherRepository
+
 
 }
+
 

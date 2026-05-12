@@ -235,10 +235,11 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:visibility="gone"
-        android:translationZ="5dp"
+        android:translationZ="12dp"
+        android:clipChildren="false"
         app:layout_constraintBottom_toBottomOf="@id/card_task"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/iv_timeline_dot_start"
+        app:layout_constraintStart_toStartOf="@id/view_line_middle"
         app:layout_constraintTop_toTopOf="@id/card_task"
         app:layout_constraintVertical_bias="0.5"
         tools:visibility="visible">
@@ -252,6 +253,7 @@
             app:lottie_rawRes="@raw/direct"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <View

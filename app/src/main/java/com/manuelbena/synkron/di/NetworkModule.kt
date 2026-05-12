@@ -1,6 +1,7 @@
 package com.manuelbena.synkron.di
 
 import android.util.Base64
+import com.manuelbena.synkron.data.remote.api.WeatherApi
 import com.manuelbena.synkron.data.remote.n8n.N8nApi
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -17,6 +18,7 @@ import java.time.Instant
 import java.util.UUID
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -29,6 +31,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
+    @Named("n8nClient")
     fun provideOkHttpClient(): OkHttpClient {
         val authInterceptor = Interceptor { chain ->
             val original = chain.request()
@@ -64,7 +67,16 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideN8nApi(client: OkHttpClient): N8nApi {
+    @Named("weatherClient")
+    fun provideWeatherOkHttpClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY })
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideN8nApi(@Named("n8nClient") client: OkHttpClient): N8nApi {
         // 1. Creamos la instancia de Moshi con soporte para Kotlin
         val moshi = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
@@ -77,5 +89,20 @@ object NetworkModule {
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .build()
             .create(N8nApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWeatherApi(@Named("weatherClient") client: OkHttpClient): WeatherApi {
+        val moshi = Moshi.Builder()
+            .add(KotlinJsonAdapterFactory())
+            .build()
+
+        return Retrofit.Builder()
+            .baseUrl(WeatherApi.BASE_URL)
+            .client(client)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+            .create(WeatherApi::class.java)
     }
 }

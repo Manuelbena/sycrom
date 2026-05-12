@@ -12,6 +12,9 @@ import com.manuelbena.synkron.domain.models.TransactionDomain
 import com.manuelbena.synkron.domain.usecase.DeleteTaskUseCase
 import com.manuelbena.synkron.domain.usecase.GetTaskTodayUseCase
 import com.manuelbena.synkron.domain.usecase.UpdateTaskUseCase
+import com.manuelbena.synkron.domain.usecase.GetWeatherUseCase
+import com.manuelbena.synkron.presentation.home.models.HomeAction
+import com.manuelbena.synkron.presentation.home.models.HomeState
 import com.manuelbena.synkron.presentation.util.SingleLiveEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -34,6 +37,7 @@ class HomeViewModel @Inject constructor(
     private val getTaskTodayUseCase: GetTaskTodayUseCase,
     private val updateTaskUseCase: UpdateTaskUseCase,
     private val deleteTaskUseCase: DeleteTaskUseCase,
+    private val getWeatherUseCase: GetWeatherUseCase,
     private val taskRepository: ITaskRepository,
     private val budgetRepository: IBudgetRepository,
     private val superTaskRepository: ISuperTaskRepository, // Asegúrate de que esto esté en tu módulo DI
@@ -49,6 +53,7 @@ class HomeViewModel @Inject constructor(
     private var superTasksJob: Job? = null // Job separado para SuperTareas
     private var productivityJob: Job? = null
     private var balanceJob: Job? = null
+    private var weatherJob: Job? = null
 
     private val headerDateFormatter = DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM", Locale("es", "ES"))
 
@@ -63,6 +68,21 @@ class HomeViewModel @Inject constructor(
         syncYearSmart(today.year)
         observeWeeklyProductivity()
         observeMonthlyBalance()
+        _action.postValue(HomeAction.RequestLocation)
+    }
+
+    fun loadWeather(lat: Double, lon: Double) {
+        weatherJob?.cancel()
+        weatherJob = viewModelScope.launch {
+            getWeatherUseCase(lat, lon).fold(
+                onSuccess = { weather ->
+                    _uiState.update { it.copy(weather = weather) }
+                },
+                onFailure = { e ->
+                    e.printStackTrace()
+                }
+            )
+        }
     }
 
     private fun observeMonthlyBalance() {

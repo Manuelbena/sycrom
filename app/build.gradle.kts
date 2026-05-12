@@ -95,6 +95,8 @@ dependencies {
     kapt("com.google.dagger:hilt-compiler:2.50")
 
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation(libs.play.services.location)
+    implementation("com.google.android.gms:play-services-base:18.5.0")
     implementation("com.google.api-client:google-api-client-android:2.2.0")
     implementation("com.google.apis:google-api-services-calendar:v3-rev20220715-2.0.0")
     implementation("com.google.guava:guava:31.1-android")

@@ -1,4 +1,4 @@
-package com.manuelbena.synkron.presentation.home
+package com.manuelbena.synkron.presentation.home.models
 
 import com.manuelbena.synkron.domain.models.TaskDomain
 
@@ -10,4 +10,5 @@ sealed class HomeAction {
     data class NavigateToEditTask(val task: TaskDomain) : HomeAction()
     data class ShowErrorSnackbar(val message: String) : HomeAction()
     data class ShareTask(val task: TaskDomain) : HomeAction()
+    object RequestLocation : HomeAction()
 }

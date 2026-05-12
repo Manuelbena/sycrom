@@ -1,9 +1,10 @@
-package com.manuelbena.synkron.presentation.home
+package com.manuelbena.synkron.presentation.home.models
 
 
 
 import com.manuelbena.synkron.domain.models.SuperTaskModel
 import com.manuelbena.synkron.domain.models.TaskDomain
+import com.manuelbena.synkron.domain.models.WeatherModel
 import java.time.LocalDate
 
 /**
@@ -18,5 +19,6 @@ data class HomeState(
     val superTasks: List<SuperTaskModel> = emptyList(),
     val weeklyProductivity: Int = 0,
     val monthlyBalance: Double = 0.0,
-    val balanceComparisonPercent: Double = 0.0
+    val balanceComparisonPercent: Double = 0.0,
+    val weather: WeatherModel? = null
 )

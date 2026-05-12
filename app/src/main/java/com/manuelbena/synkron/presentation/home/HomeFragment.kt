@@ -1,16 +1,20 @@
 package com.manuelbena.synkron.presentation.home
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Vibrator
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -19,6 +23,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.PagerSnapHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.manuelbena.synkron.R
@@ -27,6 +32,8 @@ import com.manuelbena.synkron.databinding.FragmentHomeBinding
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.presentation.adapter.SuperTaskAdapter
 import com.manuelbena.synkron.presentation.home.adapters.TaskAdapter
+import com.manuelbena.synkron.presentation.home.models.HomeAction
+import com.manuelbena.synkron.presentation.home.models.HomeState
 import com.manuelbena.synkron.presentation.models.Quote
 import com.manuelbena.synkron.presentation.superTask.SuperTaskBottomSheet
 import com.manuelbena.synkron.presentation.task.TaskBottomSheet
@@ -58,6 +65,16 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
     private var isFabMenuOpen = false
     private lateinit var weekManager: WeekCalendarManager
     private var displayedDate: LocalDate = LocalDate.now()
+
+    private val fusedLocationClient by lazy { LocationServices.getFusedLocationProviderClient(requireContext()) }
+
+    private val requestLocationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            getCurrentLocation()
+        }
+    }
 
 
     private var taskDetailBottomSheet: TaskDetailBottomSheet? = null
@@ -155,6 +172,30 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 is HomeAction.ShowErrorSnackbar -> Snackbar.make(binding.root, action.message, Snackbar.LENGTH_SHORT).show()
                 is HomeAction.NavigateToEditTask -> showTaskBottomSheet(action.task)
                 is HomeAction.ShareTask -> shareTask(action.task)
+                is HomeAction.RequestLocation -> checkLocationPermission()
+            }
+        }
+    }
+
+    private fun checkLocationPermission() {
+        when {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                getCurrentLocation()
+            }
+            else -> {
+                requestLocationPermissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION)
+            }
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun getCurrentLocation() {
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+            location?.let {
+                viewModel.loadWeather(it.latitude, it.longitude)
             }
         }
     }
@@ -252,8 +293,22 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
                 // Mostramos el RV solo si hay super tareas para este día
                 rvSuperTasks.isVisible = state.superTasks.isNotEmpty()
-                // Opcional: Ocultar el título "Super Tareas" si la lista está vacía
-                // binding.tvSuperTasksTitle.isVisible = state.superTasks.isNotEmpty()
+
+                // 5. Clima
+                state.weather?.let { weather ->
+                    textTemperature.text = "${weather.temperature.toInt()}°C"
+                    // Mapeo básico de iconos de OpenWeatherMap a tus recursos
+                    val iconRes = when (weather.iconCode) {
+                        "01d", "01n" -> R.drawable.ic_sol // Despejado
+                        "02d", "02n", "03d", "03n", "04d", "04n" -> R.drawable.ic_sol // Nubes (puedes añadir ic_nubes si tienes)
+                        "09d", "09n", "10d", "10n" -> R.drawable.ic_finance // Lluvia (puedes añadir ic_lluvia)
+                        "11d", "11n" -> R.drawable.ic_finance // Tormenta
+                        "13d", "13n" -> R.drawable.ic_sol // Nieve
+                        "50d", "50n" -> R.drawable.ic_sol // Niebla
+                        else -> R.drawable.ic_sol
+                    }
+                    iconWeather.setImageResource(iconRes)
+                }
             }
         }
         weekManager.selectDate(state.selectedDate)
