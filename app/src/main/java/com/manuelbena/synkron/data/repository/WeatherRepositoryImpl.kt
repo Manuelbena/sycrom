@@ -10,12 +10,9 @@ class WeatherRepositoryImpl @Inject constructor(
     private val api: WeatherApi
 ) : WeatherRepository {
 
-    // Nota: Deberías poner tu API KEY real aquí o inyectarla por Hilt
-    private val API_KEY = "80f8f0477265a7f23a1a1b41505c9285" // Reemplazar con una válida si esta no funciona
-
     override suspend fun getWeather(lat: Double, lon: Double): Result<WeatherModel> {
         return try {
-            val response = api.getCurrentWeather(lat, lon, API_KEY)
+            val response = api.getCurrentWeather(lat, lon)
             Result.success(response.toDomain())
         } catch (e: Exception) {
             Result.failure(e)

@@ -1,23 +1,29 @@
 package com.manuelbena.synkron.presentation.money.dialogs
 
+import android.util.Log
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.tabs.TabLayout
 import com.manuelbena.synkron.R
 import com.manuelbena.synkron.databinding.DialogAddBudgetBinding
 import com.manuelbena.synkron.databinding.ItemColorCircleBinding
 
 
 class AddBudgetDialog(
-    private val onSave: (emoji: String, colorHex: String, title: String, limit: Double) -> Unit
+    private val onSave: (emoji: String, colorHex: String, title: String, limit: Double, type: String) -> Unit
 ) : BottomSheetDialogFragment() {
 
     private var _binding: DialogAddBudgetBinding? = null
@@ -37,6 +43,26 @@ class AddBudgetDialog(
     // Estado del color seleccionado (Rojo por defecto)
     private var selectedColorHex = predefinedColors[0]
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): android.app.Dialog {
+        val dialog = super.onCreateDialog(savedInstanceState) as BottomSheetDialog
+
+        dialog.setOnShowListener { dialogInterface ->
+            val bottomSheetDialog = dialogInterface as BottomSheetDialog
+            val bottomSheet = bottomSheetDialog.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) as FrameLayout?
+
+            bottomSheet?.let {
+                val behavior = BottomSheetBehavior.from(it)
+                // Permitimos que se expanda solo hasta su contenido
+                behavior.state = BottomSheetBehavior.STATE_EXPANDED
+            }
+        }
+        return dialog
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -48,30 +74,55 @@ class AddBudgetDialog(
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.btnClose.setOnClickListener { dismiss() }
         setupColorRecyclerView()
-
-        binding.btnCancel.setOnClickListener { dismiss() }
+        setupTabListener()
 
         binding.btnSave.setOnClickListener {
             val emoji = binding.etEmoji.text.toString().trim()
             val title = binding.etTitle.text.toString().trim()
             val amountStr = binding.etAmount.text.toString().trim()
+            val selectedTab = binding.tabLayoutType.selectedTabPosition
+            val type = if (selectedTab == 0) "EXPENSE" else "INCOME"
 
-            if (emoji.isEmpty() || title.isEmpty() || amountStr.isEmpty()) {
+            Log.d("DEBUG_BUDGET", "Dialog: Botón Guardar pulsado. Tab seleccionado: $selectedTab -> Tipo: $type")
+
+            if (emoji.isEmpty() || title.isEmpty()) {
                 Toast.makeText(requireContext(), "Por favor, rellena todos los campos", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            val amount = amountStr.toDoubleOrNull()
-            if (amount == null || amount <= 0) {
-                Toast.makeText(requireContext(), "Introduce un importe válido", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+            var amount = 0.0
+            if (type == "EXPENSE") {
+                if (amountStr.isEmpty()) {
+                    Toast.makeText(requireContext(), "Introduce un importe para el límite", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                val parsedAmount = amountStr.toDoubleOrNull()
+                if (parsedAmount == null || parsedAmount <= 0) {
+                    Toast.makeText(requireContext(), "Introduce un importe válido", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                amount = parsedAmount
             }
 
-            // AHORA ENVIAMOS TAMBIÉN EL COLOR
-            onSave(emoji, selectedColorHex, title, amount)
+            // AHORA ENVIAMOS TAMBIÉN EL COLOR Y EL TIPO
+            onSave(emoji, selectedColorHex, title, amount, type)
             dismiss()
         }
+    }
+
+    private fun setupTabListener() {
+        binding.tabLayoutType.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                val isExpense = tab?.position == 0
+                binding.tvAmountLabel.visibility = if (isExpense) View.VISIBLE else View.GONE
+                binding.tilAmount.visibility = if (isExpense) View.VISIBLE else View.GONE
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
     }
 
     private fun setupColorRecyclerView() {

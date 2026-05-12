@@ -7,5 +7,6 @@ data class BudgetDomain(
     val spent: Double,
     val emoji: String,
     val colorHex: String,
-    val transactions: List<TransactionDomain> = emptyList() // <-- AÑADE ESTA LÍNEA
+    val type: String = "EXPENSE", // "INCOME" o "EXPENSE"
+    val transactions: List<TransactionDomain> = emptyList()
 )

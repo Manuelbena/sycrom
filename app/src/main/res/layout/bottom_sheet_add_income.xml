@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/color_body">
@@ -20,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/nunitobold"
-            android:text="Añadir gasto"
+            android:text="Añadir ingreso"
             android:textColor="@color/white"
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -59,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:fontFamily="@font/nunitobold"
-                android:text="Importe del gasto"
+                android:text="Importe del ingreso"
                 android:textColor="@color/md_theme_onSurface"
                 android:textSize="16sp" />
 
@@ -90,7 +89,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
                 android:fontFamily="@font/nunitobold"
-                android:text="Presupuesto"
+                android:text="Categoría"
                 android:textColor="@color/md_theme_onSurface"
                 android:textSize="16sp" />
 
@@ -151,19 +150,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunitregular"
-                    android:hint="Ej: Compra semanal"
+                    android:hint="Ej: Nómina mensual"
                     android:inputType="textCapSentences"
                     android:textColor="@color/md_theme_onSurface" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSaveExpense"
+                android:id="@+id/btnSaveIncome"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
                 android:fontFamily="@font/nunitobold"
-                android:text="Guardar Gasto"
+                android:text="Guardar Ingreso"
                 android:textColor="@color/white"
-                app:backgroundTint="#EF4444"
+                app:backgroundTint="#10B981"
                 app:cornerRadius="16dp" />
 
         </LinearLayout>

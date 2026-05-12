@@ -5,18 +5,11 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class WeatherResponseDto(
-    @Json(name = "main") val main: MainDto,
-    @Json(name = "weather") val weather: List<WeatherDescriptionDto>,
-    @Json(name = "name") val name: String
+    @Json(name = "current_weather") val currentWeather: CurrentWeatherDto? = null
 )
 
 @JsonClass(generateAdapter = true)
-data class MainDto(
-    @Json(name = "temp") val temp: Double
-)
-
-@JsonClass(generateAdapter = true)
-data class WeatherDescriptionDto(
-    @Json(name = "description") val description: String,
-    @Json(name = "icon") val icon: String
+data class CurrentWeatherDto(
+    @Json(name = "temperature") val temperature: Double,
+    @Json(name = "weathercode") val weatherCode: Int
 )

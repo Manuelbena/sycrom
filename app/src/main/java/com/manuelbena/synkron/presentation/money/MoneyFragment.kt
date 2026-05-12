@@ -1,6 +1,7 @@
 package com.manuelbena.synkron.presentation.money
 
 import android.graphics.Color
+import android.util.Log
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -22,6 +23,7 @@ import com.manuelbena.synkron.presentation.money.adapters.BudgetAdapter
 import com.manuelbena.synkron.presentation.money.adapters.CategoryOverviewAdapter
 import com.manuelbena.synkron.presentation.money.dialogs.AddBudgetDialog
 import com.manuelbena.synkron.presentation.money.dialogs.AddExpenseBottomSheet
+import com.manuelbena.synkron.presentation.money.dialogs.AddIncomeBottomSheet
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -105,6 +107,18 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
                 launch { viewModel.goalState.collectLatest { renderGoalsState(it) } }
                 launch { viewModel.budgetState.collectLatest { renderBudgetState(it) } }
                 launch { viewModel.currentDate.collectLatest { updateDateDisplay(it) } }
+                launch {
+                    viewModel.incomeTotal.collectLatest { income ->
+                        binding.viewGeneral.tvIncomeValue.text = String.format(Locale.getDefault(), "%.2f €", income)
+                        updateBalanceDisplay()
+                    }
+                }
+                launch {
+                    viewModel.budgetState.collectLatest { state ->
+                        renderBudgetState(state)
+                        updateBalanceDisplay()
+                    }
+                }
             }
         }
 
@@ -200,14 +214,24 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
 
     // --- RENDERIZADO DE ESTADOS ---
 
-    private fun renderBudgetState(state: BudgetSummaryState) {
-        // Actualiza la pestaña de presupuestos completa
-        budgetAdapter.submitList(state.items)
+    private fun updateBalanceDisplay() {
+        val income = viewModel.incomeTotal.value
+        val expense = viewModel.budgetState.value.totalSpent
+        val balance = income - expense
+        binding.viewGeneral.tvBalanceValue.text = String.format(Locale.getDefault(), "%.2f €", balance)
+    }
 
-        // ¡NUEVO!: Actualiza la lista cortita de la pestaña "General" (ordenada por gasto)
-        // Ordenamos los items para que salgan primero los que tienen más gasto
-        // Mostrar TODOS los presupuestos ordenados por el gasto
-        val sortedForOverview = state.items.sortedByDescending { it.spent }
+    private fun renderBudgetState(state: BudgetSummaryState) {
+        // Filtramos solo las categorías de GASTO
+        val expenseBudgets = state.items.filter { 
+            it.type.equals("GASTO", ignoreCase = true) || it.type.equals("EXPENSE", ignoreCase = true) 
+        }
+
+        // Actualiza la pestaña de presupuestos completa (solo gastos)
+        budgetAdapter.submitList(expenseBudgets)
+
+        // Actualiza la lista de la pestaña "General" (ordenada por gasto)
+        val sortedForOverview = expenseBudgets.sortedByDescending { it.spent }
         categoryOverviewAdapter.submitList(sortedForOverview)
 
         // Actualizamos los números grandes de la pestaña General
@@ -247,8 +271,8 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
     private fun handleMoneyEvents(event: MoneyEvents) {
         when (event) {
             is MoneyEvents.ShowAddBudgetDialog -> {
-                val dialog = AddBudgetDialog { emoji, colorHex, title, limit ->
-                    viewModel.onSaveNewBudget(emoji, colorHex, title, limit)
+                val dialog = AddBudgetDialog { emoji, colorHex, title, limit, type ->
+                    viewModel.onSaveNewBudget(emoji, colorHex, title, limit, type)
                 }
                 dialog.show(parentFragmentManager, "AddBudgetDialog")
             }
@@ -261,7 +285,25 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
 
             // Nuevos eventos del FAB Menu
             is MoneyEvents.ShowAddIncomeDialog -> {
-                Toast.makeText(requireContext(), "Abrir Diálogo Ingreso", Toast.LENGTH_SHORT).show()
+                val allItems = viewModel.budgetState.value.items
+                Log.d("DEBUG_BUDGET", "Botón Nuevo Ingreso pulsado. Total categorías en estado: ${allItems.size}")
+                allItems.forEach { Log.d("DEBUG_BUDGET", "Item: ${it.name}, Tipo: ${it.type}") }
+
+                val currentBudgets = allItems.filter { 
+                    it.type.equals("INGRESO", ignoreCase = true) || it.type.equals("INCOME", ignoreCase = true) 
+                }
+                
+                Log.d("DEBUG_BUDGET", "Filtradas para INGRESO: ${currentBudgets.size}")
+                
+                if (currentBudgets.isEmpty()) {
+                    Toast.makeText(requireContext(), "No hay categorías de ingreso (Total: ${allItems.size})", Toast.LENGTH_SHORT).show()
+                    return
+                }
+
+                val dialog = AddIncomeBottomSheet(currentBudgets) { budget, amount, note, dateMillis ->
+                    viewModel.onSaveIncome(budget, amount, note, dateMillis)
+                }
+                dialog.show(parentFragmentManager, "AddIncomeBottomSheet")
             }
             is MoneyEvents.ShowAddGoalDialog -> {
                 Toast.makeText(requireContext(), "Abrir Diálogo Nueva Meta", Toast.LENGTH_SHORT).show()
@@ -271,9 +313,17 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
             is MoneyEvents.ShowDeleteGoalConfirmation -> { /* Dialog borrar meta */ }
             is MoneyEvents.ShowError -> Toast.makeText(requireContext(), event.message, Toast.LENGTH_SHORT).show()
             is MoneyEvents.ShowAddExpenseDialog -> {
-                val currentBudgets = viewModel.budgetState.value.items
+                val allItems = viewModel.budgetState.value.items
+                Log.d("DEBUG_BUDGET", "Botón Nuevo Gasto pulsado. Total categorías: ${allItems.size}")
+                
+                val currentBudgets = allItems.filter { 
+                    it.type.equals("GASTO", ignoreCase = true) || it.type.equals("EXPENSE", ignoreCase = true) 
+                }
+                
+                Log.d("DEBUG_BUDGET", "Filtradas para GASTO: ${currentBudgets.size}")
+
                 if (currentBudgets.isEmpty()) {
-                    Toast.makeText(requireContext(), "Primero debes crear un presupuesto", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "Primero debes crear una categoría de gasto", Toast.LENGTH_SHORT).show()
                     return
                 }
 

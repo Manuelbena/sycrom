@@ -17,12 +17,11 @@ interface BudgetDao {
     suspend fun insertBudget(budget: BudgetEntity)
 
     @Query("""
-        SELECT b.id, b.name, b.limitAmount, b.emoji, b.colorHex, 
-               COALESCE(SUM(t.amount), 0.0) AS spentAmount
+        SELECT b.id, b.name, b.limitAmount, b.emoji, b.colorHex, b.type,
+               COALESCE(SUM(CASE WHEN t.type = 'EXPENSE' THEN t.amount ELSE 0 END), 0.0) AS spentAmount
         FROM budget_table b
         LEFT JOIN transaction_table t 
                ON b.id = t.budgetId 
-              AND t.type = 'EXPENSE' 
               AND t.dateMillis >= :startOfMonth 
               AND t.dateMillis <= :endOfMonth
         GROUP BY b.id
@@ -41,4 +40,7 @@ interface BudgetDao {
     // NUEVO: Pedimos TODAS las transacciones del mes ordenadas por fecha (de más nueva a más vieja)
     @Query("SELECT * FROM transaction_table WHERE dateMillis >= :startOfMonth AND dateMillis <= :endOfMonth AND type = 'EXPENSE' ORDER BY dateMillis DESC")
     fun getTransactionsForMonth(startOfMonth: Long, endOfMonth: Long): kotlinx.coroutines.flow.Flow<List<TransactionEntity>>
+
+    @Query("SELECT * FROM transaction_table WHERE dateMillis >= :start AND dateMillis <= :end ORDER BY dateMillis DESC")
+    fun getTransactionsBetweenDates(start: Long, end: Long): Flow<List<TransactionEntity>>
 }

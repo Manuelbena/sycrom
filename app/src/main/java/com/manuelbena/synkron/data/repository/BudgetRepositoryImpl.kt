@@ -1,5 +1,6 @@
 package com.manuelbena.synkron.data.repository
 
+import android.util.Log
 import com.manuelbena.synkron.data.local.models.BudgetDao
 import com.manuelbena.synkron.data.mappers.toDomain
 import com.manuelbena.synkron.data.mappers.toEntity
@@ -22,6 +23,7 @@ class BudgetRepositoryImpl @Inject constructor(
     }
 
     override suspend fun insertBudget(budget: BudgetDomain) {
+        Log.d("DEBUG_BUDGET", "Repositorio: Insertando presupuesto ${budget.name} con tipo ${budget.type}")
         budgetDao.insertBudget(budget.toEntity())
     }
 
@@ -45,7 +47,9 @@ class BudgetRepositoryImpl @Inject constructor(
 
         // 3. COMBINAMOS LOS DOS RESULTADOS
         return budgetsFlow.combine(transactionsFlow) { budgetsList, transactionsList ->
+            Log.d("DEBUG_BUDGET", "Repositorio: Combinando ${budgetsList.size} presupuestos de BD")
             budgetsList.map { budgetSQL ->
+                Log.d("DEBUG_BUDGET", "SQL Item: ${budgetSQL.name}, Tipo: ${budgetSQL.type}")
 
                 // Filtramos solo los gastos que pertenecen a este presupuesto
                 val myTransactions = transactionsList.filter { it.budgetId == budgetSQL.id }
@@ -58,6 +62,7 @@ class BudgetRepositoryImpl @Inject constructor(
                     spent = budgetSQL.spentAmount,
                     emoji = budgetSQL.emoji,
                     colorHex = budgetSQL.colorHex,
+                    type = budgetSQL.type, // <-- FIJAMOS EL TIPO AQUÍ TAMBIÉN
                     transactions = myTransactions.map { it.toDomain() } // <-- Le pasamos los gastos al Dominio
                 )
             }
@@ -65,7 +70,7 @@ class BudgetRepositoryImpl @Inject constructor(
     }
 
     override fun getTransactionsBetweenDates(start: Long, end: Long): Flow<List<TransactionDomain>> {
-        return budgetDao.getTransactionsForMonth(start, end).map { list ->
+        return budgetDao.getTransactionsBetweenDates(start, end).map { list ->
             list.map { it.toDomain() }
         }
     }
