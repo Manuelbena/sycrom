@@ -29,11 +29,18 @@ class LoginViewModel @Inject constructor(
 
     // 1. Verificamos si el usuario ya entró antes (Auto-login)
     private fun checkCurrentSession() {
-        val account = GoogleSignIn.getLastSignedInAccount(context)
-        if (account != null && !account.isExpired()) {
-            _loginState.value = LoginState.Success(account)
-        } else {
-            _loginState.value = LoginState.Idle // Esperando a que pulse el botón
+        googleSignInClient.silentSignIn().addOnCompleteListener { task ->
+            try {
+                val account = task.getResult(ApiException::class.java)
+                if (account != null && !account.isExpired()) {
+                    _loginState.value = LoginState.Success(account)
+                } else {
+                    _loginState.value = LoginState.Idle
+                }
+            } catch (e: ApiException) {
+                // Si falla el silent sign-in (por ejemplo, sesión expirada de verdad), vamos a Idle
+                _loginState.value = LoginState.Idle
+            }
         }
     }
 
