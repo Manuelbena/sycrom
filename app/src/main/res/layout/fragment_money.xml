@@ -64,8 +64,8 @@
                 android:layout_height="wrap_content"
                 android:background="@android:color/transparent"
 
-                app:tabMode="scrollable"
-                app:tabGravity="fill"
+                app:tabMode="fixed"
+                app:tabGravity="center"
                 app:tabMinWidth="0dp"
                 app:tabPaddingStart="12dp"
                 app:tabPaddingEnd="12dp"
@@ -123,11 +123,6 @@
         <include
             android:id="@+id/viewGoals"
             layout="@layout/layout_metas_section"
-            android:visibility="gone" />
-
-        <include
-            android:id="@+id/viewHistory"
-            layout="@layout/layout_history_section"
             android:visibility="gone" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="24dp"
+    app:cardBackgroundColor="@color/md_theme_surface"
+    app:cardElevation="0dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="#EAEAEA">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="24dp"
+        android:paddingBottom="16dp">
+
+        <TextView
+            android:id="@+id/tvPickerTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Selecciona un icono"
+            android:gravity="center"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/color_primary"
+            android:fontFamily="@font/nunitobold"
+            android:layout_marginBottom="24dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvEmojis"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:paddingHorizontal="16dp"
+            android:clipToPadding="false"
+            android:fadeScrollbars="false"
+            android:scrollbarSize="4dp"
+            android:scrollbarThumbVertical="@color/slate_300"
+            android:scrollbars="vertical"
+            android:fadingEdgeLength="32dp"
+            android:requiresFadingEdge="vertical"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            app:spanCount="4"
+            tools:listitem="@layout/item_emoji_picker"
+            tools:itemCount="12"/>
+
+        <Button
+            android:id="@+id/btnClosePicker"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="CANCELAR"
+            android:fontFamily="@font/nunitobold"
+            android:textColor="@color/md_theme_onSurface"
+            android:textStyle="bold"/>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

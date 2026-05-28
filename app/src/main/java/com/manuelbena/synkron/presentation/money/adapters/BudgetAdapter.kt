@@ -35,16 +35,14 @@ class BudgetAdapter(
                 tvSpentValue.text = String.Companion.format(Locale.getDefault(), "%.2f €", budget.spent)
                 tvAvailableValue.text = String.Companion.format(Locale.getDefault(), "%.2f €", budget.available)
                 tvUsedPercent.text = "${budget.usedPercentage}%"
+                tvCategoryEmoji.text = budget.emoji
 
                 // Configurar Barra de progreso
                 lpiCategory.progress = budget.usedPercentage
 
-                // Configurar Icono y Colores
-                        //ivCategoryIcon.setImageResource(ic)
-
                 try {
                     val color = Color.parseColor(budget.colorHex)
-                    ivCategoryIcon.imageTintList = ColorStateList.valueOf(color)
+                    flCategoryIcon.backgroundTintList = ColorStateList.valueOf(color)
                     lpiCategory.setIndicatorColor(color)
                 } catch (e: Exception) {
                     // Fallback color in case of parsing error

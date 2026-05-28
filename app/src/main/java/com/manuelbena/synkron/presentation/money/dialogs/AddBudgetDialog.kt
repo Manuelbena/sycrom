@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -42,6 +41,7 @@ class AddBudgetDialog(
 
     // Estado del color seleccionado (Rojo por defecto)
     private var selectedColorHex = predefinedColors[0]
+    private var selectedEmoji = "🏷️"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,17 +77,16 @@ class AddBudgetDialog(
         binding.btnClose.setOnClickListener { dismiss() }
         setupColorRecyclerView()
         setupTabListener()
+        setupEmojiPicker()
 
         binding.btnSave.setOnClickListener {
-            val emoji = binding.etEmoji.text.toString().trim()
             val title = binding.etTitle.text.toString().trim()
             val amountStr = binding.etAmount.text.toString().trim()
-            val selectedTab = binding.tabLayoutType.selectedTabPosition
-            val type = if (selectedTab == 0) "EXPENSE" else "INCOME"
+            val type = if (binding.tabLayoutType.selectedTabPosition == 0) "EXPENSE" else "INCOME"
 
-            Log.d("DEBUG_BUDGET", "Dialog: Botón Guardar pulsado. Tab seleccionado: $selectedTab -> Tipo: $type")
+            Log.d("DEBUG_BUDGET", "Dialog: Botón Guardar pulsado. Tab seleccionado: ${binding.tabLayoutType.selectedTabPosition} -> Tipo: $type")
 
-            if (emoji.isEmpty() || title.isEmpty()) {
+            if (title.isEmpty()) {
                 Toast.makeText(requireContext(), "Por favor, rellena todos los campos", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -107,8 +106,27 @@ class AddBudgetDialog(
             }
 
             // AHORA ENVIAMOS TAMBIÉN EL COLOR Y EL TIPO
-            onSave(emoji, selectedColorHex, title, amount, type)
+            onSave(selectedEmoji, selectedColorHex, title, amount, type)
             dismiss()
+        }
+    }
+
+    private fun setupEmojiPicker() {
+        binding.btnEmojiSelector.setOnClickListener {
+            val type = if (binding.tabLayoutType.selectedTabPosition == 0) "EXPENSE" else "INCOME"
+            val emojiList = if (type == "EXPENSE") {
+                BudgetEmojiPickerDialog.EXPENSE_EMOJIS
+            } else {
+                BudgetEmojiPickerDialog.INCOME_EMOJIS
+            }
+            
+            val pickerTitle = if (type == "EXPENSE") "Icono de Gasto" else "Icono de Ingreso"
+
+            val picker = BudgetEmojiPickerDialog(pickerTitle, emojiList) { emoji ->
+                selectedEmoji = emoji
+                binding.tvSelectedEmoji.text = emoji
+            }
+            picker.show(childFragmentManager, "EmojiPicker")
         }
     }
 
@@ -118,6 +136,9 @@ class AddBudgetDialog(
                 val isExpense = tab?.position == 0
                 binding.tvAmountLabel.visibility = if (isExpense) View.VISIBLE else View.GONE
                 binding.tilAmount.visibility = if (isExpense) View.VISIBLE else View.GONE
+                
+                // Si cambiamos de pestaña, reseteamos el icono por defecto si el usuario no ha elegido uno específico? 
+                // O mejor dejamos el que está pero avisamos que la lista cambia.
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {}

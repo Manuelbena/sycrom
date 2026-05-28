@@ -87,25 +87,27 @@
             android:layout_marginBottom="16dp"
             android:orientation="horizontal">
 
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnEmojiSelector"
                 android:layout_width="80dp"
-                android:layout_height="wrap_content"
-                app:boxBackgroundColor="@color/color_card"
-                app:boxStrokeColor="@color/color_primary"
-                app:hintEnabled="false">
+                android:layout_height="56dp"
+                app:cardBackgroundColor="@color/color_card"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/color_primary"
+                app:strokeWidth="1dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etEmoji"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/tvSelectedEmoji"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="@font/nunitregular"
-                    android:gravity="center"
-                    android:hint="🏷️"
-                    android:inputType="textShortMessage"
-                    android:maxLength="2"
-                    android:maxLines="1" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_gravity="center"
+                    android:text="🏷️"
+                    android:textSize="24sp" />
+            </com.google.android.material.card.MaterialCardView>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvColors"

@@ -24,6 +24,8 @@ import com.manuelbena.synkron.presentation.money.adapters.CategoryOverviewAdapte
 import com.manuelbena.synkron.presentation.money.dialogs.AddBudgetDialog
 import com.manuelbena.synkron.presentation.money.dialogs.AddExpenseBottomSheet
 import com.manuelbena.synkron.presentation.money.dialogs.AddIncomeBottomSheet
+import com.manuelbena.synkron.presentation.components.PieSlice
+import com.manuelbena.synkron.presentation.models.BudgetPresentationModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -48,7 +50,6 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
         private const val TAB_GENERAL = 1
         private const val TAB_PRESUPUESTOS = 2
         private const val TAB_METAS = 3
-        private const val TAB_HISTORIAL = 4
     }
 
     override fun inflateView(inflater: LayoutInflater, container: ViewGroup?): FragmentMoneyBinding {
@@ -219,6 +220,7 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
         val expense = viewModel.budgetState.value.totalSpent
         val balance = income - expense
         binding.viewGeneral.tvBalanceValue.text = String.format(Locale.getDefault(), "%.2f €", balance)
+        updateDonutBalance()
     }
 
     private fun renderBudgetState(state: BudgetSummaryState) {
@@ -227,22 +229,69 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
             it.type.equals("GASTO", ignoreCase = true) || it.type.equals("EXPENSE", ignoreCase = true) 
         }
 
-        // Actualiza la pestaña de presupuestos completa (solo gastos)
-        budgetAdapter.submitList(expenseBudgets)
+        // --- VISIÓN DE EXPERTO: ORDENAMOS POR GASTO (RANKING) ---
+        // Así el usuario ve arriba del todo dónde se le va más el dinero (ej: Casa)
+        val rankingBudgets = expenseBudgets.sortedByDescending { it.spent }
 
-        // Actualiza la lista de la pestaña "General" (ordenada por gasto)
+        // Actualiza la pestaña de presupuestos completa
+        budgetAdapter.submitList(rankingBudgets)
+
+        // Actualiza la lista de la pestaña "General"
         val sortedForOverview = expenseBudgets.sortedByDescending { it.spent }
         categoryOverviewAdapter.submitList(sortedForOverview)
 
         // Actualizamos los números grandes de la pestaña General
         binding.viewGeneral.apply {
-            tvBalanceValue.text = state.formattedTotalLimit // Usaremos el límite como balance hipotético por ahora
+            tvBalanceValue.text = state.formattedTotalLimit 
             tvExpenseValue.text = state.formattedTotalSpent
+        }
 
-            // Calculamos el % de presupuesto total usado para la tarjeta de abajo
-            val totalPercent = state.totalPercent
-            // Suponiendo que el TextView de la tarjeta se llama tvBudgetUsedPercent (debes ponerle un ID en tu XML)
-            // tvBudgetUsedPercent.text = "$totalPercent%"
+        // --- ACTUALIZACIÓN DEL RESUMEN EJECUTIVO (Barra de progreso total) ---
+        binding.viewBudgets.apply {
+            lpiTotalProgress.progress = state.totalPercent
+            tvTotalSpentLabel.text = "Gastado: ${state.formattedTotalSpent}"
+            tvTotalLimitLabel.text = "Límite: ${state.formattedTotalLimit}"
+            
+            // Color de la barra según estado
+            val color = if (state.totalPercent >= 100) Color.parseColor("#EF4444") else Color.parseColor("#8B5CF6")
+            lpiTotalProgress.setIndicatorColor(color)
+        }
+
+        // --- ACTUALIZACIÓN DEL DONUT CHART (Mantenemos como detalle visual opcional) ---
+        val donutSlices = expenseBudgets.filter { it.spent > 0 }.map { budget ->
+            PieSlice(
+                value = budget.spent.toFloat(),
+                color = try { Color.parseColor(budget.colorHex) } catch (e: Exception) { Color.GRAY }
+            )
+        }
+        
+        binding.viewBudgets.cpiDonutChart.setData(donutSlices)
+        updateDonutBalance()
+
+        // --- INSIGHT DE EXPERTO: CATEGORÍA TOP ---
+        updateTopSpendingInsight(rankingBudgets, state.totalSpent)
+    }
+
+    private fun updateTopSpendingInsight(ranking: List<BudgetPresentationModel>, totalSpent: Double) {
+        if (ranking.isNotEmpty() && totalSpent > 0) {
+            val top = ranking[0]
+            val percentOfTotal = ((top.spent / totalSpent) * 100).toInt()
+            
+            binding.viewBudgets.tvTopInsight.text = "Tu mayor gasto es ${top.name} (${percentOfTotal}% del total)"
+        } else {
+            binding.viewBudgets.tvTopInsight.text = "Aún no hay gastos registrados este mes"
+        }
+    }
+
+    private fun updateDonutBalance() {
+        val income = viewModel.incomeTotal.value
+        val expense = viewModel.budgetState.value.totalSpent
+        val balance = income - expense
+        
+        binding.viewBudgets.tvDonutBalanceValue.apply {
+            text = String.format(Locale.getDefault(), "%.2f €", balance)
+            val color = if (balance >= 0) Color.parseColor("#10B981") else Color.parseColor("#EF4444")
+            setTextColor(color)
         }
     }
 
@@ -343,7 +392,6 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
         tabLayout.addTab(tabLayout.newTab().setText("General"))
         tabLayout.addTab(tabLayout.newTab().setText("Categorías"))
         tabLayout.addTab(tabLayout.newTab().setText("Metas"))
-        tabLayout.addTab(tabLayout.newTab().setText("Historial"))
 
         tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -360,7 +408,6 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
             viewGeneral.root.isVisible = selectedTabId == TAB_GENERAL
             viewBudgets.root.isVisible = selectedTabId == TAB_PRESUPUESTOS
             viewGoals.root.isVisible = selectedTabId == TAB_METAS
-            viewHistory.root.isVisible = selectedTabId == TAB_HISTORIAL
         }
     }
 }
