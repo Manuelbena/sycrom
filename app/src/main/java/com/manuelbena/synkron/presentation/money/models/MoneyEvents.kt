@@ -20,4 +20,6 @@ sealed class MoneyEvents {
     object ShowAddExpenseDialog : MoneyEvents()
     object ShowAddIncomeDialog : MoneyEvents()
     object ShowAddGoalDialog : MoneyEvents()
+
+    data class ExportExcel(val csvData: String) : MoneyEvents()
 }

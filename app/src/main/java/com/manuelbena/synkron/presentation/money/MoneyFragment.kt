@@ -32,6 +32,10 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.Calendar
+import java.io.File
+import androidx.core.content.FileProvider
+import android.content.Intent
+import android.net.Uri
 
 @AndroidEntryPoint
 class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
@@ -99,6 +103,17 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
         // --- Navegación de Mes ---
         binding.viewGeneral.btnPrevMonth.setOnClickListener { viewModel.changeMonth(-1) }
         binding.viewGeneral.btnNextMonth.setOnClickListener { viewModel.changeMonth(1) }
+
+        // --- Exportar Excel ---
+        binding.viewBudgets.btnExportExcel.setOnClickListener {
+            exportFinancialReport()
+        }
+    }
+
+    private fun exportFinancialReport() {
+        Toast.makeText(requireContext(), "Generando informe anual...", Toast.LENGTH_SHORT).show()
+        // Aquí llamaremos al ViewModel para obtener los datos y luego usaremos un Helper para generar el Excel
+        viewModel.onExportExcelClicked()
     }
 
     override fun observe() {
@@ -220,7 +235,6 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
         val expense = viewModel.budgetState.value.totalSpent
         val balance = income - expense
         binding.viewGeneral.tvBalanceValue.text = String.format(Locale.getDefault(), "%.2f €", balance)
-        updateDonutBalance()
     }
 
     private fun renderBudgetState(state: BudgetSummaryState) {
@@ -257,17 +271,6 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
             lpiTotalProgress.setIndicatorColor(color)
         }
 
-        // --- ACTUALIZACIÓN DEL DONUT CHART (Mantenemos como detalle visual opcional) ---
-        val donutSlices = expenseBudgets.filter { it.spent > 0 }.map { budget ->
-            PieSlice(
-                value = budget.spent.toFloat(),
-                color = try { Color.parseColor(budget.colorHex) } catch (e: Exception) { Color.GRAY }
-            )
-        }
-        
-        binding.viewBudgets.cpiDonutChart.setData(donutSlices)
-        updateDonutBalance()
-
         // --- INSIGHT DE EXPERTO: CATEGORÍA TOP ---
         updateTopSpendingInsight(rankingBudgets, state.totalSpent)
     }
@@ -280,18 +283,6 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
             binding.viewBudgets.tvTopInsight.text = "Tu mayor gasto es ${top.name} (${percentOfTotal}% del total)"
         } else {
             binding.viewBudgets.tvTopInsight.text = "Aún no hay gastos registrados este mes"
-        }
-    }
-
-    private fun updateDonutBalance() {
-        val income = viewModel.incomeTotal.value
-        val expense = viewModel.budgetState.value.totalSpent
-        val balance = income - expense
-        
-        binding.viewBudgets.tvDonutBalanceValue.apply {
-            text = String.format(Locale.getDefault(), "%.2f €", balance)
-            val color = if (balance >= 0) Color.parseColor("#10B981") else Color.parseColor("#EF4444")
-            setTextColor(color)
         }
     }
 
@@ -358,6 +349,10 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
                 Toast.makeText(requireContext(), "Abrir Diálogo Nueva Meta", Toast.LENGTH_SHORT).show()
             }
 
+            is MoneyEvents.ExportExcel -> {
+                shareExcelReport(event.csvData)
+            }
+
             is MoneyEvents.ShowAddCustomMoneyDialog -> { /* Dialog añadir dinero a meta */ }
             is MoneyEvents.ShowDeleteGoalConfirmation -> { /* Dialog borrar meta */ }
             is MoneyEvents.ShowError -> Toast.makeText(requireContext(), event.message, Toast.LENGTH_SHORT).show()
@@ -383,6 +378,30 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
                 dialog.show(parentFragmentManager, "AddExpenseBottomSheet")
             }
 
+        }
+    }
+
+    private fun shareExcelReport(csvData: String) {
+        try {
+            val fileName = "Informe_Financiero_${System.currentTimeMillis()}.csv"
+            val file = File(requireContext().cacheDir, fileName)
+            file.writeText(csvData)
+
+            val uri = FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.fileprovider",
+                file
+            )
+
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/comma-separated-values"
+                putExtra(Intent.EXTRA_SUBJECT, "Informe Financiero")
+                putExtra(Intent.EXTRA_STREAM, uri)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(intent, "Compartir informe"))
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Error al exportar: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 
