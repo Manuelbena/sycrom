@@ -71,23 +71,52 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         val navController = navHostFragment.navController
 
         checkAndStartService()
+        setupNavigation(navController)
         setupBadge()
 
-        binding.navView.setupWithNavController(navController)
-
-        // Gestión de visibilidad del BottomNav
+        // Gestión de visibilidad del BottomNav y NavRail
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-                R.id.navigation_home,
-                R.id.navigation_calendar,
-                R.id.navigation_money,
-                R.id.navigation_note -> binding.navView.visibility = View.VISIBLE
-
-                else -> binding.navView.visibility = View.GONE
-            }
+            updateNavigationVisibility(destination.id)
         }
+    }
 
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment_activity_main) as NavHostFragment
+        val navController = navHostFragment.navController
+        setupNavigation(navController)
+        updateNavigationVisibility(navController.currentDestination?.id ?: 0)
+    }
 
+    private fun setupNavigation(navController: androidx.navigation.NavController) {
+        val isTablet = resources.configuration.screenWidthDp >= 600
+
+        if (isTablet) {
+            binding.navView.visibility = View.GONE
+            binding.navRail.visibility = View.VISIBLE
+            binding.navRail.setupWithNavController(navController)
+        } else {
+            binding.navRail.visibility = View.GONE
+            binding.navView.visibility = View.VISIBLE
+            binding.navView.setupWithNavController(navController)
+        }
+    }
+
+    private fun updateNavigationVisibility(destinationId: Int) {
+        val isTablet = resources.configuration.screenWidthDp >= 600
+        val isMainDestination = destinationId == R.id.navigation_home ||
+                destinationId == R.id.navigation_calendar ||
+                destinationId == R.id.navigation_money ||
+                destinationId == R.id.navigation_note
+
+        if (isTablet) {
+            binding.navView.visibility = View.GONE
+            binding.navRail.visibility = if (isMainDestination) View.VISIBLE else View.GONE
+        } else {
+            binding.navRail.visibility = View.GONE
+            binding.navView.visibility = if (isMainDestination) View.VISIBLE else View.GONE
+        }
     }
 
     private fun setupBadge() {
@@ -106,23 +135,31 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     }
 
     private fun updateNotesBadge(count: Int) {
-        val navView = binding.navView
-
+        val isTablet = resources.configuration.screenWidthDp >= 600
+        val navView = if (isTablet) binding.navRail else binding.navView
+        
         // ⚠️ IMPORTANTE: Verifica que este ID existe en tu 'res/menu/bottom_nav_menu.xml'
         val menuItemId = R.id.navigation_note
 
         // Obtenemos la insignia
-        val badge = navView.getOrCreateBadge(menuItemId)
+        // NavigationRailView no tiene getOrCreateBadge como BottomNavigationView?
+        // En realidad, ambos heredan de NavigationBarView que tiene badge support.
+        
+        try {
+            val badge = navView.getOrCreateBadge(menuItemId)
 
-        if (count > 0) {
-            badge.isVisible = true
-            badge.number = count
+            if (count > 0) {
+                badge.isVisible = true
+                badge.number = count
 
-            badge.backgroundColor = ContextCompat.getColor(this, R.color.md_theme_error)
-            badge.badgeTextColor = ContextCompat.getColor(this, R.color.white)
-        } else {
-            badge.isVisible = false
-            badge.clearNumber() // Buena práctica limpiar el número al ocultar
+                badge.backgroundColor = ContextCompat.getColor(this, R.color.md_theme_error)
+                badge.badgeTextColor = ContextCompat.getColor(this, R.color.white)
+            } else {
+                badge.isVisible = false
+                badge.clearNumber() // Buena práctica limpiar el número al ocultar
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("SycromBadge", "Error actualizando badge: ${e.message}")
         }
     }
         /**

@@ -40,41 +40,52 @@ class GoogleCalendarRepository @Inject constructor(
                 val maxTime = DateTime(endMillis)
 
                 val calendarList = service.calendarList().list().execute()
+                val calendarIds = mutableSetOf<String>()
+                
+                // Siempre añadimos el calendario primario por defecto
+                calendarIds.add("primary")
+                
+                // Añadimos el resto de calendarios visibles
+                calendarList.items?.forEach { 
+                    it.id?.let { id -> calendarIds.add(it.id) }
+                }
 
-                // Recorremos los calendarios con delay para evitar bloqueo 403
-                for (calendarEntry in calendarList.items ?: emptyList()) {
-                    delay(200)
-
+                for (calendarId in calendarIds) {
+                    delay(100)
                     try {
-                        val events = service.events().list(calendarEntry.id)
-                            .setTimeMin(minTime)
-                            .setTimeMax(maxTime)
-                            .setSingleEvents(true)
-                            .setOrderBy("startTime")
-                            .execute()
+                        var pageToken: String? = null
+                        do {
+                            val request = service.events().list(calendarId)
+                                .setTimeMin(minTime)
+                                .setTimeMax(maxTime)
+                                .setSingleEvents(true)
+                                .setOrderBy("startTime")
+                                .setPageToken(pageToken)
 
-                        events.items?.forEach { event ->
-                            try {
-                                if (event.status != "cancelled") {
-                                    // Intentamos mapear. Si falla, el try-catch interno lo captura.
-                                    val mappedTask = mapGoogleEventToTaskDomain(event, calendarEntry.summary ?: "Google")
-                                    if (mappedTask != null) {
-                                        tasks.add(mappedTask)
+                            val events = request.execute()
+                            events.items?.forEach { event ->
+                                try {
+                                    if (event.status != "cancelled") {
+                                        val mappedTask = mapGoogleEventToTaskDomain(event, "Google")
+                                        if (mappedTask != null) {
+                                            tasks.add(mappedTask)
+                                        }
                                     }
+                                } catch (e: Exception) {
+                                    Log.e("SycromRepo", "⚠️ Saltando evento corrupto: ${e.message}")
                                 }
-                            } catch (e: Exception) {
-                                Log.e("SycromRepo", "⚠️ Saltando evento corrupto '${event.summary}': ${e.message}")
                             }
-                        }
+                            pageToken = events.nextPageToken
+                        } while (pageToken != null)
+
                     } catch (e: GoogleJsonResponseException) {
                         if (e.statusCode == 403) {
-                            Log.w("SycromRepo", "🛑 Cuota Google excedida. Parando sync de este lote.")
-                            break
-                        } else {
-                            Log.e("SycromRepo", "Error leyendo calendario: ${e.message}")
+                            Log.w("SycromRepo", "🛑 Cuota excedida para $calendarId")
+                            continue 
                         }
+                        Log.e("SycromRepo", "Error API Google ($calendarId): ${e.message}")
                     } catch (e: Exception) {
-                        Log.e("SycromRepo", "Error genérico calendario", e)
+                        Log.e("SycromRepo", "Error genérico calendario $calendarId", e)
                     }
                 }
             }

@@ -37,9 +37,8 @@ class SyncWorker @AssistedInject constructor(
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         try {
             // ------------------------------------------------------------
-            // 1. GESTIONAR BORRADOS (¡NUEVO!) 🗑️
+            // 1. GESTIONAR BORRADOS🗑️
             // ------------------------------------------------------------
-            // Buscamos si nos han pasado un ID para borrar
             val deleteId = inputData.getString("DELETE_GOOGLE_ID")
 
             if (!deleteId.isNullOrEmpty() && deleteId != "LOCAL_GHOST") {
@@ -52,9 +51,6 @@ class SyncWorker @AssistedInject constructor(
                 } else {
                     Log.w("SyncWorker", "⚠️ No se pudo borrar en Google (¿Ya no existe?)")
                 }
-
-                // IMPORTANTE: Si el trabajo era borrar, terminamos aquí.
-                // No seguimos sincronizando para evitar conflictos.
                 return@withContext Result.success()
             }
 
@@ -73,18 +69,14 @@ class SyncWorker @AssistedInject constructor(
             }
 
             pendingTasks.forEach { entity ->
-                // Ignoramos fantasmas y tareas que ya tengan ID.
                 if (entity.googleCalendarId == "LOCAL_GHOST" || !entity.googleCalendarId.isNullOrEmpty()) {
                     return@forEach
                 }
 
                 val domainTask = entity.toDomain()
-
-                // Usamos INSERT para crear en Google.
                 val googleId = googleRepo.insertEvent(domainTask)
 
                 if (googleId != null) {
-                    // Guardamos el ID para evitar duplicados futuros.
                     val updatedEntity = entity.copy(googleCalendarId = googleId)
                     taskDao.updateTask(updatedEntity)
                     Log.d("SyncWorker", "✅ Creada en Google: ${domainTask.summary} -> ID: $googleId")
@@ -97,6 +89,9 @@ class SyncWorker @AssistedInject constructor(
             // 3. BAJAR ACTUALIZACIONES (Read) 📥
             // ------------------------------------------------------------
             syncUpcomingMonth()
+            
+            // 4. LIMPIEZA DE HUÉRFANOS 🧹
+            cleanOrphanedTasks()
 
             Log.d("SyncWorker", "🏁 Sincronización finalizada.")
             Result.success()
@@ -108,24 +103,25 @@ class SyncWorker @AssistedInject constructor(
     }
 
     /**
-     * Descarga eventos de Google (próximos 30 días) y los fusiona con la base de datos local.
+     * Descarga eventos de Google y los fusiona con la base de datos local.
      */
     private suspend fun syncUpcomingMonth() {
         val now = System.currentTimeMillis()
-        val rangeEnd = now + (30L * 24 * 60 * 60 * 1000) // +30 días
+        
+        // Ventana amplia: desde hace 7 días hasta dentro de 90 días
+        val rangeStart = now - (7L * 24 * 60 * 60 * 1000) 
+        val rangeEnd = now + (90L * 24 * 60 * 60 * 1000)
 
-        val googleTasks = googleRepo.fetchEventsBetween(now, rangeEnd)
+        val googleTasks = googleRepo.fetchEventsBetween(rangeStart, rangeEnd)
 
         if (googleTasks.isNotEmpty()) {
-            Log.d("SyncWorker", "📥 Descargados ${googleTasks.size} eventos recientes.")
+            Log.d("SyncWorker", "📥 Descargados ${googleTasks.size} eventos de Google.")
 
             googleTasks.forEach { googleTask ->
                 val gId = googleTask.googleCalendarId ?: return@forEach
 
-                // 1. Buscamos si ya existe por su ID
                 var localEntity = taskDao.getTaskByGoogleId(gId)
 
-                // 2. Si no existe ID, buscamos por coincidencia
                 if (localEntity == null) {
                     val zoneId = ZoneId.systemDefault()
                     val taskDate = calculateLocalDate(googleTask)
@@ -136,34 +132,57 @@ class SyncWorker @AssistedInject constructor(
                 }
 
                 if (localEntity != null) {
-                    // UPDATE: Actualizamos local con Google, PERO respetando el isDone local
                     val updatedEntity = localEntity.copy(
                         googleCalendarId = gId,
                         summary = googleTask.summary,
                         description = googleTask.description ?: localEntity.description,
-
-                        // 🔥 MANTENEMOS TU DECISIÓN LOCAL DEL CHECK 🔥
                         isDone = localEntity.isDone,
-
                         typeTask = googleTask.typeTask,
                         date = calculateGoogleDateMillis(googleTask),
-                        hour = if (googleTask.start?.dateTime != null) {
-                            LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(googleTask.start.dateTime), ZoneId.systemDefault()).hour
-                        } else localEntity.hour
+                        hour = calculateGoogleHourMinutes(googleTask)
                     )
                     taskDao.updateTask(updatedEntity)
                 } else {
-                    // INSERT: Es un evento nuevo de Google
                     val newEntity = googleTask.toEntity().copy(
                         id = 0,
                         googleCalendarId = gId,
                         typeTask = googleTask.typeTask.ifEmpty { "Personal" },
                         priority = "Media",
-                        date = calculateGoogleDateMillis(googleTask)
+                        date = calculateGoogleDateMillis(googleTask),
+                        hour = calculateGoogleHourMinutes(googleTask)
                     )
                     taskDao.insertTask(newEntity)
+                    Log.d("SyncWorker", "🆕 Importado desde Google: ${googleTask.summary}")
                 }
             }
+        }
+    }
+
+    private fun calculateGoogleHourMinutes(googleTask: TaskDomain): Int {
+        val dt = googleTask.start?.dateTime
+        return if (dt != null) {
+            val cal = java.util.Calendar.getInstance()
+            cal.timeInMillis = dt
+            (cal.get(java.util.Calendar.HOUR_OF_DAY) * 60) + cal.get(java.util.Calendar.MINUTE)
+        } else {
+            -1 // Todo el día
+        }
+    }
+
+    /**
+     * Borra las tareas locales que tienen un ID de Google pero ya no existen en el calendario remoto.
+     */
+    private suspend fun cleanOrphanedTasks() {
+        val now = System.currentTimeMillis()
+        val start = now - (7L * 24 * 60 * 60 * 1000)
+        val end = now + (90L * 24 * 60 * 60 * 1000)
+
+        val googleTasks = googleRepo.fetchEventsBetween(start, end)
+        val googleIds = googleTasks.mapNotNull { it.googleCalendarId }
+
+        if (googleIds.isNotEmpty()) {
+            taskDao.deleteOrphanedTasks(start, end, googleIds)
+            Log.d("SyncWorker", "🧹 Limpieza de huérfanos completada.")
         }
     }
 

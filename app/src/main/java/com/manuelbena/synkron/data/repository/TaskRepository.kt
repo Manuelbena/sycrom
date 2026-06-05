@@ -208,7 +208,7 @@ class TaskRepository @Inject constructor(
     override suspend fun syncYear(year: Int) {
         withContext(Dispatchers.IO) {
             try {
-                Log.d("SycromSync", "📅 Sincronizando AÑO (Modo Espejo): $year")
+                Log.d("SycromSync", "📅 Sincronizando AÑO: $year")
                 val zoneId = ZoneId.systemDefault()
                 val startOfYear = LocalDate.of(year, 1, 1).atStartOfDay(zoneId).toInstant().toEpochMilli()
                 val endOfYear = LocalDate.of(year, 12, 31).atTime(LocalTime.MAX).atZone(zoneId).toInstant().toEpochMilli()
@@ -216,21 +216,12 @@ class TaskRepository @Inject constructor(
                 val googleTasks = googleCalendarRepository.fetchEventsBetween(startOfYear, endOfYear)
 
                 if (googleTasks.isNotEmpty()) {
-                    // 1. Hay eventos en Google: Actualizamos los que existen
                     processGoogleList(googleTasks)
-
-                    // 2. BORRADO DE HUÉRFANOS:
-                    // Si tengo una tarea local que NO está en esta lista de Google, la borro.
+                    
                     val validIds = googleTasks.mapNotNull { it.googleCalendarId }
-                    if (validIds.isNotEmpty()) {
-                        Log.d("SycromSync", "🧹 Limpiando tareas que ya no existen en Google...")
+                    if (validIds.size > 5) {
                         taskDao.deleteOrphanedTasks(startOfYear, endOfYear, validIds)
                     }
-                } else {
-                    // 3. CASO CRÍTICO: Google está vacío para este año.
-                    // Si Google no tiene nada, borramos TODO lo local que esté sincronizado.
-                    Log.d("SycromSync", "🧽 Año vacío en Google. Borrando todo lo local...")
-                    taskDao.deleteAllSyncedTasksInRange(startOfYear, endOfYear)
                 }
                 Unit
             } catch (e: Exception) {
@@ -260,9 +251,7 @@ class TaskRepository @Inject constructor(
                         taskDao.deleteOrphanedTasks(startOfMonth, endOfMonth, validIds)
                     }
                 } else {
-                    // Si el mes está vacío en Google, limpiamos el mes en local
-                    Log.d("SycromSync", "🧽 Mes vacío en Google. Borrando local...")
-                    taskDao.deleteAllSyncedTasksInRange(startOfMonth, endOfMonth)
+                    Log.d("SycromSync", "ℹ️ Mes vacío en Google. No se borra local por seguridad.")
                 }
                 Unit
             } catch (e: Exception) {
@@ -304,44 +293,39 @@ class TaskRepository @Inject constructor(
                     summary = googleTask.summary,
                     description = googleTask.description ?: localEntity.description,
                     date = googleDateMillis,
-                    // Mantenemos la lógica de estado que prefieras (local o google)
                     isDone = localEntity.isDone,
                     typeTask = googleTask.typeTask,
-                    hour = if (googleTask.start?.dateTime != null) {
-                        LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(googleTask.start.dateTime), ZoneId.systemDefault()).hour
-                    } else localEntity.hour
+                    hour = calculateGoogleHourMinutes(googleTask)
                 )
                 taskDao.updateTask(updatedEntity)
 
             } else {
-                // === INSERT (Tarea NUEVA o Base de Datos VACÍA) ===
-
-                // AQUÍ ESTÁ LA LÓGICA QUE PIDES:
-                // 1. ¿La tarea es del pasado? (Anterior a hoy a las 00:00)
                 val isPastTask = googleDateMillis < todayStart
-
-                // 2. Decidimos el estado inicial:
-                // Está hecha SI: Google dice que está hecha O es una tarea del pasado.
                 val initialIsDone = googleTask.isDone || isPastTask
 
                 val newEntity = googleTask.toEntity().copy(
                     id = 0,
                     googleCalendarId = gId,
-
-                    // Aplicamos el estado calculado
                     isDone = initialIsDone,
-
                     typeTask = googleTask.typeTask.ifEmpty { "Personal" },
                     priority = "Media",
-                    date = googleDateMillis
+                    date = googleDateMillis,
+                    hour = calculateGoogleHourMinutes(googleTask)
                 )
                 taskDao.insertTask(newEntity)
-
-                // Opcional: Log para depurar
-                if (isPastTask && !googleTask.isDone) {
-                    Log.d("SycromSync", "🧹 Auto-completando tarea antigua al importar: ${googleTask.summary}")
-                }
+                Log.d("SycromSync", "🆕 Importada nueva: ${googleTask.summary} para el día ${LocalDate.now()}")
             }
+        }
+    }
+
+    private fun calculateGoogleHourMinutes(googleTask: TaskDomain): Int {
+        val dt = googleTask.start?.dateTime
+        return if (dt != null) {
+            val cal = java.util.Calendar.getInstance()
+            cal.timeInMillis = dt
+            (cal.get(java.util.Calendar.HOUR_OF_DAY) * 60) + cal.get(java.util.Calendar.MINUTE)
+        } else {
+            -1 // Todo el día
         }
     }
 
@@ -362,13 +346,16 @@ class TaskRepository @Inject constructor(
                 val newStart = originalTask.start?.copyWithNewDate(currentDate)
                 val newEnd = originalTask.end?.copyWithNewDate(currentDate)
                 val taskToInsert: TaskDomain
+                val parentIdToUse: String?
                 if (isFirstTask) {
                     taskToInsert = originalTask.copy(id = 0, start = newStart, end = newEnd, googleCalendarId = null)
+                    parentIdToUse = null
                     isFirstTask = false
                 } else {
                     taskToInsert = originalTask.copy(id = 0, start = newStart, end = newEnd, synkronRecurrenceDays = emptyList(), recurrence = emptyList(), parentId = batchId, googleCalendarId = "LOCAL_GHOST")
+                    parentIdToUse = batchId
                 }
-                insertSingleTask(taskToInsert, if (isFirstTask) null else batchId)
+                insertSingleTask(taskToInsert, parentIdToUse)
             }
             currentDate = currentDate.plusDays(1)
         }

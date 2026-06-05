@@ -229,7 +229,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
     private fun updateUi(state: HomeState) {
         binding.apply {
-            binding.lySuperTasksContainer.isVisible = state.superTasks.isNotEmpty()
+            lySuperTasksContainer.isVisible = state.superTasks.isNotEmpty()
             val hasTasks = state.tasks.isNotEmpty()
             val isFirstLoad = state.isLoading && !hasTasks
 
