@@ -2,10 +2,12 @@ package com.manuelbena.synkron.di.repository
 
 
 import com.manuelbena.synkron.data.repository.BudgetRepositoryImpl
+import com.manuelbena.synkron.data.repository.GoalRepositoryImpl
 import com.manuelbena.synkron.data.repository.SuperTaskRepository
 import com.manuelbena.synkron.data.repository.TaskRepository
 import com.manuelbena.synkron.data.repository.WeatherRepositoryImpl
 import com.manuelbena.synkron.domain.interfaces.IBudgetRepository
+import com.manuelbena.synkron.domain.interfaces.IGoalRepository
 import com.manuelbena.synkron.domain.interfaces.ISuperTaskRepository
 import com.manuelbena.synkron.domain.interfaces.ITaskRepository
 import com.manuelbena.synkron.domain.interfaces.WeatherRepository
@@ -47,6 +49,12 @@ abstract class RepositoryModule {
     abstract fun bindWeatherRepository(
         weatherRepository: WeatherRepositoryImpl
     ): WeatherRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindGoalRepository(
+        goalRepository: GoalRepositoryImpl
+    ): IGoalRepository
 
 
 }

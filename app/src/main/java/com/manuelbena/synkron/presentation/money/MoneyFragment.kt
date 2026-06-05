@@ -23,7 +23,9 @@ import com.manuelbena.synkron.presentation.money.adapters.BudgetAdapter
 import com.manuelbena.synkron.presentation.money.adapters.CategoryOverviewAdapter
 import com.manuelbena.synkron.presentation.money.dialogs.AddBudgetDialog
 import com.manuelbena.synkron.presentation.money.dialogs.AddExpenseBottomSheet
+import com.manuelbena.synkron.presentation.money.dialogs.AddGoalBottomSheet
 import com.manuelbena.synkron.presentation.money.dialogs.AddIncomeBottomSheet
+import com.manuelbena.synkron.presentation.money.dialogs.AddMoneyToGoalBottomSheet
 import com.manuelbena.synkron.presentation.components.PieSlice
 import com.manuelbena.synkron.presentation.models.BudgetPresentationModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -98,6 +100,7 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
 
         // --- Botones internos de las vistas vacías ---
         binding.viewBudgets.btnAddBudget.setOnClickListener { viewModel.onAddBudgetClicked() }
+        binding.viewGoals.btnAddMeta.setOnClickListener { viewModel.onAddGoalClicked() }
         binding.viewGoals.btnAddMeta.setOnClickListener { viewModel.onAddGoalClicked() }
 
         // --- Navegación de Mes ---
@@ -346,14 +349,22 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
                 dialog.show(parentFragmentManager, "AddIncomeBottomSheet")
             }
             is MoneyEvents.ShowAddGoalDialog -> {
-                Toast.makeText(requireContext(), "Abrir Diálogo Nueva Meta", Toast.LENGTH_SHORT).show()
+                val dialog = AddGoalBottomSheet { title, target, color ->
+                    viewModel.onSaveNewGoal(title, target, color)
+                }
+                dialog.show(parentFragmentManager, "AddGoalBottomSheet")
             }
 
             is MoneyEvents.ExportExcel -> {
                 shareExcelReport(event.csvData)
             }
 
-            is MoneyEvents.ShowAddCustomMoneyDialog -> { /* Dialog añadir dinero a meta */ }
+            is MoneyEvents.ShowAddCustomMoneyDialog -> {
+                val dialog = AddMoneyToGoalBottomSheet(event.goal) { amount ->
+                    viewModel.onAddMoneyToGoal(event.goal, amount)
+                }
+                dialog.show(parentFragmentManager, "AddMoneyToGoalBottomSheet")
+            }
             is MoneyEvents.ShowDeleteGoalConfirmation -> { /* Dialog borrar meta */ }
             is MoneyEvents.ShowError -> Toast.makeText(requireContext(), event.message, Toast.LENGTH_SHORT).show()
             is MoneyEvents.ShowAddExpenseDialog -> {

@@ -1,26 +1,26 @@
 package com.manuelbena.synkron.presentation.money
 
 import android.util.Log
+import androidx.lifecycle.viewModelScope
 import com.manuelbena.synkron.base.BaseViewModel
-import com.manuelbena.synkron.domain.models.BudgetDomain
-import com.manuelbena.synkron.domain.models.TransactionDomain
-import com.manuelbena.synkron.domain.usecase.GetBudgetsUseCase
-import com.manuelbena.synkron.domain.usecase.GetTransactionsBetweenDatesUseCase
-import com.manuelbena.synkron.domain.usecase.InsertBudgetUseCase
-import com.manuelbena.synkron.domain.usecase.InsertTransactionUseCase
+import com.manuelbena.synkron.domain.models.*
+import com.manuelbena.synkron.domain.usecase.*
 import com.manuelbena.synkron.presentation.models.BudgetPresentationModel
 import com.manuelbena.synkron.presentation.models.GoalPresentationModel
 import com.manuelbena.synkron.presentation.models.toPresentation
 import com.manuelbena.synkron.presentation.money.models.BudgetSummaryState
 import com.manuelbena.synkron.presentation.money.models.GoalSummaryState
+import com.manuelbena.synkron.presentation.money.MoneyEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
@@ -29,17 +29,21 @@ class MoneyViewModel @Inject constructor(
     private val getBudgetsUseCase: GetBudgetsUseCase,
     private val getTransactionsBetweenDatesUseCase: GetTransactionsBetweenDatesUseCase,
     private val insertBudgetUseCase: InsertBudgetUseCase,
-    private val insertTransactionUseCase: InsertTransactionUseCase // Inyectamos el UseCase de transacciones
+    private val insertTransactionUseCase: InsertTransactionUseCase,
+    private val getGoalsUseCase: GetGoalsUseCase,
+    private val insertGoalUseCase: InsertGoalUseCase,
+    private val addMoneyToGoalUseCase: AddMoneyToGoalUseCase,
+    private val deleteGoalUseCase: DeleteGoalUseCase,
+    private val getGoalContributionsUseCase: GetGoalContributionsUseCase
 ) : BaseViewModel<MoneyEvents>() {
 
-    // --- ESTADOS (UI Continuos) ---
     private val _goalState = MutableStateFlow(GoalSummaryState())
     val goalState: StateFlow<GoalSummaryState> = _goalState.asStateFlow()
 
     private val _budgetState = MutableStateFlow(BudgetSummaryState())
     val budgetState: StateFlow<BudgetSummaryState> = _budgetState.asStateFlow()
 
-    private val _currentDate = MutableStateFlow(Calendar.getInstance())
+    private val _currentDate = MutableStateFlow<Calendar>(Calendar.getInstance())
     val currentDate: StateFlow<Calendar> = _currentDate.asStateFlow()
 
     private val _incomeTotal = MutableStateFlow(0.0)
@@ -48,164 +52,111 @@ class MoneyViewModel @Inject constructor(
     init {
         loadBudgetsForCurrentMonth()
         loadTransactionsForCurrentMonth()
+        loadGoals()
     }
 
-    fun changeMonth(amount: Int) {
+    fun changeMonth(offset: Int) {
         val newDate = _currentDate.value.clone() as Calendar
-        newDate.add(Calendar.MONTH, amount)
+        newDate.add(Calendar.MONTH, offset)
         _currentDate.value = newDate
         loadBudgetsForDate(newDate)
         loadTransactionsForDate(newDate)
     }
 
-    // --- CARGA DE DATOS (PRESUPUESTOS) ---
-    private fun loadBudgetsForCurrentMonth() {
+    fun loadBudgetsForCurrentMonth() {
         loadBudgetsForDate(_currentDate.value)
     }
 
-    private fun loadBudgetsForDate(date: Calendar) {
-        val calendar = date.clone() as Calendar
+    fun loadBudgetsForDate(calendar: Calendar) {
+        val start = calendar.clone() as Calendar
+        start.set(Calendar.DAY_OF_MONTH, 1)
+        start.set(Calendar.HOUR_OF_DAY, 0)
+        start.set(Calendar.MINUTE, 0)
 
-        calendar.set(Calendar.DAY_OF_MONTH, 1)
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        val startOfMonth = calendar.timeInMillis
-
-        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH))
-        calendar.set(Calendar.HOUR_OF_DAY, 23)
-        calendar.set(Calendar.MINUTE, 59)
-        calendar.set(Calendar.SECOND, 59)
-        val endOfMonth = calendar.timeInMillis
+        val end = calendar.clone() as Calendar
+        end.set(Calendar.DAY_OF_MONTH, end.getActualMaximum(Calendar.DAY_OF_MONTH))
+        end.set(Calendar.HOUR_OF_DAY, 23)
+        end.set(Calendar.MINUTE, 59)
 
         executeFlow(
-            useCase = { getBudgetsUseCase(startOfMonth, endOfMonth) },
-            onEach = { budgetList ->
-                Log.d("DEBUG_BUDGET", "--- CARGA DE PRESUPUESTOS ---")
-                budgetList.forEach { 
-                    Log.d("DEBUG_BUDGET", "ID: ${it.id}, Nombre: ${it.name}, Tipo: ${it.type}")
-                }
-                
-                val presentationItems = budgetList.map { it.toPresentation() }
+            useCase = { getBudgetsUseCase(start.timeInMillis, end.timeInMillis) },
+            onEach = { domainList ->
+                val presentationItems = domainList.map { it.toPresentation() }
+                val totalSpent = domainList.filter { it.type == "GASTO" || it.type == "EXPENSE" }.sumOf { it.spent }
+                val totalLimit = domainList.filter { it.type == "GASTO" || it.type == "EXPENSE" }.sumOf { it.limit }
 
                 _budgetState.value = BudgetSummaryState(
-                    totalLimit = presentationItems.sumOf { it.limit },
-                    totalSpent = presentationItems.sumOf { it.spent },
-                    items = presentationItems
+                    items = presentationItems,
+                    totalSpent = totalSpent,
+                    totalLimit = totalLimit
                 )
-            },
-            onError = { error ->
-                Log.e("DEBUG_BUDGET", "❌ Error al cargar: ${error.message}")
-                _event.value = MoneyEvents.ShowError("Error al cargar presupuestos: ${error.message}")
             }
         )
     }
 
-    // --- INTENCIONES DE GUARDADO ---
-
-    fun onSaveNewBudget(emoji: String, colorHex: String, title: String, limit: Double, type: String) {
-        Log.d("DEBUG_BUDGET", "--- INICIO GUARDADO PRESUPUESTO ---")
-        Log.d("DEBUG_BUDGET", "Título: $title, Tipo: $type, Límite: $limit")
-        
-        val newBudget = BudgetDomain(
-            name = title,
-            limit = limit,
-            spent = 0.0,
-            emoji = emoji,
-            colorHex = colorHex,
-            type = type
-        )
-
-        executeUseCase(
-            useCase = { insertBudgetUseCase(newBudget) },
-            onSuccess = {
-                Log.d("DEBUG_BUDGET", "✅ Éxito al insertar en BD")
-                _event.value = MoneyEvents.ShowError("¡Categoría '$title' creada!")
-                loadBudgetsForCurrentMonth()
-                loadTransactionsForCurrentMonth()
-            },
-            onError = {
-                Log.e("DEBUG_BUDGET", "❌ Error al insertar: ${it.message}")
-                _event.value = MoneyEvents.ShowError("No se pudo crear la categoría.")
-            }
-        )
+    fun onSaveNewBudget(emoji: String, color: String, title: String, limit: Double, type: String) {
+        viewModelScope.launch {
+            val newBudget = BudgetDomain(
+                name = title,
+                limit = limit,
+                spent = 0.0,
+                emoji = emoji,
+                colorHex = color,
+                type = type
+            )
+            insertBudgetUseCase(newBudget)
+        }
     }
 
-    private fun loadTransactionsForCurrentMonth() {
+    fun loadTransactionsForCurrentMonth() {
         loadTransactionsForDate(_currentDate.value)
     }
 
-    private fun loadTransactionsForDate(date: Calendar) {
-        val calendar = date.clone() as Calendar
-        calendar.set(Calendar.DAY_OF_MONTH, 1)
-        calendar.set(Calendar.HOUR_OF_DAY, 0)
-        calendar.set(Calendar.MINUTE, 0)
-        calendar.set(Calendar.SECOND, 0)
-        val startOfMonth = calendar.timeInMillis
+    fun loadTransactionsForDate(calendar: Calendar) {
+        val start = calendar.clone() as Calendar
+        start.set(Calendar.DAY_OF_MONTH, 1)
+        start.set(Calendar.HOUR_OF_DAY, 0)
 
-        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH))
-        calendar.set(Calendar.HOUR_OF_DAY, 23)
-        calendar.set(Calendar.MINUTE, 59)
-        calendar.set(Calendar.SECOND, 59)
-        val endOfMonth = calendar.timeInMillis
+        val end = calendar.clone() as Calendar
+        end.set(Calendar.DAY_OF_MONTH, end.getActualMaximum(Calendar.DAY_OF_MONTH))
+        end.set(Calendar.HOUR_OF_DAY, 23)
 
         executeFlow(
-            useCase = { getTransactionsBetweenDatesUseCase(startOfMonth, endOfMonth) },
+            useCase = { getTransactionsBetweenDatesUseCase(start.timeInMillis, end.timeInMillis) },
             onEach = { transactions ->
-                val totalIncome = transactions.filter { it.type == "INCOME" }.sumOf { it.amount }
+                val totalIncome = transactions.filter { it.type == "INCOME" || it.type == "INGRESO" }.sumOf { it.amount }
                 _incomeTotal.value = totalIncome
-                
-                // También actualizamos el balance en budgetState si es necesario
-                val totalSpent = transactions.filter { it.type == "EXPENSE" }.sumOf { it.amount }
-                _budgetState.value = _budgetState.value.copy(
-                    totalSpent = totalSpent,
-                    totalLimit = _budgetState.value.totalLimit // Mantener el limite
-                )
             }
         )
     }
 
     fun onSaveIncome(budget: BudgetPresentationModel, amount: Double, note: String, dateMillis: Long) {
-        val transaction = TransactionDomain(
-            budgetId = budget.id, // Usamos el ID del presupuesto seleccionado
-            amount = amount,
-            note = note,
-            dateMillis = dateMillis,
-            type = "INCOME"
-        )
-
-        executeUseCase(
-            useCase = { insertTransactionUseCase(transaction) },
-            onSuccess = {
-                _event.value = MoneyEvents.ShowError("Ingreso guardado correctamente")
-            },
-            onError = {
-                _event.value = MoneyEvents.ShowError("Error al guardar el ingreso")
-            }
-        )
+        viewModelScope.launch {
+            insertTransactionUseCase(
+                TransactionDomain(
+                    budgetId = budget.id,
+                    amount = amount,
+                    note = note,
+                    dateMillis = dateMillis,
+                    type = "INCOME"
+                )
+            )
+        }
     }
 
     fun onSaveExpense(budget: BudgetPresentationModel, amount: Double, note: String, dateMillis: Long) {
-        val transaction = TransactionDomain(
-            budgetId = budget.id,
-            amount = amount,
-            note = note,
-            dateMillis = dateMillis, // USAMOS LA FECHA QUE ELIGIÓ EL USUARIO
-            type = "EXPENSE"
-        )
-
-        executeUseCase(
-            useCase = { insertTransactionUseCase(transaction) },
-            onSuccess = {
-                _event.value = MoneyEvents.ShowError("Gasto guardado correctamente")
-            },
-            onError = {
-                _event.value = MoneyEvents.ShowError("Error al guardar el gasto")
-            }
-        )
+        viewModelScope.launch {
+            insertTransactionUseCase(
+                TransactionDomain(
+                    budgetId = budget.id,
+                    amount = amount,
+                    note = note,
+                    dateMillis = dateMillis,
+                    type = "EXPENSE"
+                )
+            )
+        }
     }
-
-    // --- EVENTOS DEL MENÚ FLOTANTE Y NAVEGACIÓN ---
 
     fun onAddExpenseClicked() {
         _event.value = MoneyEvents.ShowAddExpenseDialog
@@ -247,7 +198,6 @@ class MoneyViewModel @Inject constructor(
 
         val months = listOf("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre", "Total")
         
-        // Header
         sb.append("Actualizado: $year;")
         months.forEach { sb.append("$it;") }
         sb.append("\n")
@@ -263,7 +213,6 @@ class MoneyViewModel @Inject constructor(
             val sectionTotals = DoubleArray(12) { 0.0 }
             
             budgetsInSection.forEach { budget ->
-                // Row for the category title
                 sb.append("${budget.name.uppercase()};")
                 var rowTotal = 0.0
                 val monthTotals = DoubleArray(12) { 0.0 }
@@ -281,7 +230,6 @@ class MoneyViewModel @Inject constructor(
                 monthTotals.forEach { sb.append("${formatCsvAmount(it)};") }
                 sb.append("${formatCsvAmount(rowTotal)}\n")
 
-                // Sub-rows for each movement in this category
                 val categoryTransactions = transactions.filter { it.budgetId == budget.id }.sortedBy { it.dateMillis }
                 categoryTransactions.forEach { tx ->
                     val cal = Calendar.getInstance().apply { timeInMillis = tx.dateMillis }
@@ -293,11 +241,10 @@ class MoneyViewModel @Inject constructor(
                         if (i == m) sb.append("${formatCsvAmount(tx.amount)};")
                         else sb.append(";")
                     }
-                    sb.append(";\n") // No total for individual movements
+                    sb.append(";\n")
                 }
             }
             
-            // Total row for section
             sb.append("$labelTotal;")
             var grandTotal = 0.0
             sectionTotals.forEach {
@@ -308,17 +255,14 @@ class MoneyViewModel @Inject constructor(
             return sectionTotals
         }
 
-        // Section: Incomes
         sb.append("INGRESOS;;\n")
         val incomeTotals = appendSection(incomeBudgets, "TOTAL INGRESOS")
         sb.append(";\n")
 
-        // Section: Expenses
         sb.append("GASTOS;;\n")
         val expenseTotals = appendSection(expenseBudgets, "TOTAL GASTOS")
         sb.append(";\n")
 
-        // Section: Savings
         sb.append("AHORRO (Ingresos - Gastos);")
         var totalAhorroYear = 0.0
         for (m in 0..11) {
@@ -340,13 +284,67 @@ class MoneyViewModel @Inject constructor(
     }
 
     // --- INTENCIONES DE METAS ---
-    fun onAddMoneyToGoal(goal: GoalPresentationModel, amount: Double) { /* Próximamente */ }
+
+    private fun loadGoals() {
+        viewModelScope.launch {
+            getGoalsUseCase().collectLatest { goals ->
+                getGoalContributionsUseCase.getAll().collectLatest { contributions ->
+                    val year = _currentDate.value.get(Calendar.YEAR)
+                    val month = _currentDate.value.get(Calendar.MONTH)
+
+                    val goalItems = goals.map { goal ->
+                        val thisMonthSaved = contributions.filter {
+                            val cal = Calendar.getInstance().apply { timeInMillis = it.dateMillis }
+                            it.goalId == goal.id && cal.get(Calendar.YEAR) == year && cal.get(Calendar.MONTH) == month
+                        }.sumOf { it.amount }
+
+                        val remaining = goal.targetAmount - goal.currentAmount
+                        val suggestion = if (remaining <= 0) "¡Meta alcanzada!" 
+                                        else "Este mes has aportado ${String.format(Locale.getDefault(), "%.2f", thisMonthSaved)} €"
+
+                        GoalPresentationModel(
+                            id = goal.id,
+                            title = goal.title,
+                            currentAmount = goal.currentAmount,
+                            targetAmount = goal.targetAmount,
+                            timeRemaining = "Sin límite",
+                            colorHex = goal.colorHex,
+                            suggestionText = suggestion
+                        )
+                    }
+
+                    val totalSaved = goals.sumOf { it.currentAmount }
+                    val totalTarget = goals.sumOf { it.targetAmount }
+
+                    _goalState.value = GoalSummaryState(
+                        goals = goalItems,
+                        totalSaved = totalSaved,
+                        totalTarget = totalTarget
+                    )
+                }
+            }
+        }
+    }
+
+    fun onSaveNewGoal(title: String, target: Double, color: String) {
+        viewModelScope.launch {
+            insertGoalUseCase(GoalDomain(title = title, targetAmount = target, colorHex = color))
+        }
+    }
+
+    fun onAddMoneyToGoal(goal: GoalPresentationModel, amount: Double) {
+        viewModelScope.launch {
+            addMoneyToGoalUseCase(goal.id, amount, System.currentTimeMillis())
+        }
+    }
 
     fun onAddCustomMoneyClicked(goal: GoalPresentationModel) {
         _event.value = MoneyEvents.ShowAddCustomMoneyDialog(goal)
     }
 
     fun onDeleteGoalClicked(goal: GoalPresentationModel) {
-        _event.value = MoneyEvents.ShowDeleteGoalConfirmation(goal)
+        viewModelScope.launch {
+            deleteGoalUseCase(GoalDomain(id = goal.id, title = goal.title, targetAmount = goal.targetAmount, colorHex = goal.colorHex))
+        }
     }
 }

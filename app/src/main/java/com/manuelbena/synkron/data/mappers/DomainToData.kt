@@ -1,9 +1,13 @@
 package com.manuelbena.synkron.data.mappers
 
 import com.manuelbena.synkron.data.local.models.BudgetEntity
+import com.manuelbena.synkron.data.local.models.GoalContributionEntity
+import com.manuelbena.synkron.data.local.models.GoalEntity
 import com.manuelbena.synkron.data.local.models.TaskEntity
 import com.manuelbena.synkron.data.local.models.TransactionEntity
 import com.manuelbena.synkron.domain.models.BudgetDomain
+import com.manuelbena.synkron.domain.models.GoalContributionDomain
+import com.manuelbena.synkron.domain.models.GoalDomain
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
 import com.manuelbena.synkron.domain.models.TaskDomain
 import com.manuelbena.synkron.domain.models.TransactionDomain
@@ -136,4 +140,20 @@ fun TransactionDomain.toEntity() = TransactionEntity(
     note = note,
     dateMillis = dateMillis,
     type = type
+)
+
+fun GoalDomain.toEntity() = GoalEntity(
+    id = id,
+    title = title,
+    targetAmount = targetAmount,
+    currentAmount = currentAmount,
+    colorHex = colorHex,
+    deadline = deadline
+)
+
+fun GoalContributionDomain.toEntity() = GoalContributionEntity(
+    id = id,
+    goalId = goalId,
+    amount = amount,
+    dateMillis = dateMillis
 )

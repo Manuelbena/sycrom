@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.manuelbena.synkron.data.local.SykromDataBase
 import com.manuelbena.synkron.data.local.models.BudgetDao
+import com.manuelbena.synkron.data.local.models.GoalDao
 import com.manuelbena.synkron.data.local.models.SuperTaskDao
 import com.manuelbena.synkron.data.local.models.TaskDao
 import dagger.Module
@@ -46,5 +47,11 @@ object DatabaseModule {
     @Singleton
     fun provideBudgetDao(database: SykromDataBase): BudgetDao {
         return database.budgetDao() // <-- Aquí llamamos a la función abstracta de la BD
+    }
+
+    @Provides
+    @Singleton
+    fun provideGoalDao(database: SykromDataBase): GoalDao {
+        return database.goalDao()
     }
 }

@@ -2,11 +2,15 @@ package com.manuelbena.synkron.data.mappers
 
 import com.manuelbena.synkron.data.local.models.BudgetEntity
 import com.manuelbena.synkron.data.local.models.BudgetWithSpent
+import com.manuelbena.synkron.data.local.models.GoalContributionEntity
+import com.manuelbena.synkron.data.local.models.GoalEntity
 import com.manuelbena.synkron.data.local.models.TaskEntity
 import com.manuelbena.synkron.data.local.models.TransactionEntity
 import com.manuelbena.synkron.data.remote.n8n.models.N8nChatResponse
 import com.manuelbena.synkron.data.remote.n8n.models.N8nSubTaskDto
 import com.manuelbena.synkron.domain.models.BudgetDomain
+import com.manuelbena.synkron.domain.models.GoalContributionDomain
+import com.manuelbena.synkron.domain.models.GoalDomain
 import com.manuelbena.synkron.domain.models.GoogleEventAttendee
 import com.manuelbena.synkron.domain.models.GoogleEventDateTime
 import com.manuelbena.synkron.domain.models.GoogleEventReminder
@@ -189,6 +193,22 @@ fun TransactionEntity.toDomain() = TransactionDomain(
     note = note,
     dateMillis = dateMillis,
     type = type
+)
+
+fun GoalEntity.toDomain() = GoalDomain(
+    id = id,
+    title = title,
+    targetAmount = targetAmount,
+    currentAmount = currentAmount,
+    colorHex = colorHex,
+    deadline = deadline
+)
+
+fun GoalContributionEntity.toDomain() = GoalContributionDomain(
+    id = id,
+    goalId = goalId,
+    amount = amount,
+    dateMillis = dateMillis
 )
 
 fun BudgetWithSpent.toDomain() = BudgetDomain(

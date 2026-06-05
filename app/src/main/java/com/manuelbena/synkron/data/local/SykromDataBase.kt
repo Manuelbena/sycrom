@@ -14,6 +14,9 @@ import com.manuelbena.synkron.data.local.models.TaskEntity
 import com.manuelbena.synkron.data.local.entities.SuperTaskEntity // <--- IMPORTANTE: Importa tu nueva entidad
 import com.manuelbena.synkron.data.local.models.BudgetDao
 import com.manuelbena.synkron.data.local.models.BudgetEntity
+import com.manuelbena.synkron.data.local.models.GoalDao
+import com.manuelbena.synkron.data.local.models.GoalEntity
+import com.manuelbena.synkron.data.local.models.GoalContributionEntity
 import com.manuelbena.synkron.data.local.models.TransactionEntity
 
 @Database(
@@ -21,9 +24,11 @@ import com.manuelbena.synkron.data.local.models.TransactionEntity
         TaskEntity::class,
         SuperTaskEntity::class,
         BudgetEntity::class,
-        TransactionEntity::class
+        TransactionEntity::class,
+        GoalEntity::class,
+        GoalContributionEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 @TypeConverters(
@@ -37,4 +42,5 @@ abstract class SykromDataBase : RoomDatabase() {
     abstract fun taskDao(): TaskDao
     abstract fun superTaskDao(): SuperTaskDao
     abstract fun budgetDao(): BudgetDao
+    abstract fun goalDao(): GoalDao
 }
