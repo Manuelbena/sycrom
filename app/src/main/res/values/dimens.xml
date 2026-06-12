@@ -56,6 +56,7 @@
     <dimen name="spacing_xl">20dp</dimen>
     <dimen name="spacing_xxl">24dp</dimen>
     <dimen name="spacing_3xl">32dp</dimen>
+    <dimen name="spacing_4xl">40dp</dimen>
     <dimen name="text_size_h1">24sp</dimen>
     <dimen name="text_size_h2">18sp</dimen>
     <dimen name="text_size_h3">16sp</dimen>

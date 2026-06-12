@@ -204,7 +204,7 @@
                                 android:layout_height="32dp"
                                 android:background="@drawable/bg_cicle_purpple"
                                 android:padding="6dp"
-                                android:src="@drawable/ic_finance"
+                                android:src="@drawable/ic_work"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toTopOf="parent"
                                 app:tint="?attr/colorSurface" />
@@ -245,69 +245,6 @@
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintStart_toStartOf="parent"
                                 app:layout_constraintTop_toBottomOf="@+id/tvProdValue" />
-
-                        </androidx.constraintlayout.widget.ConstraintLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardBalance"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_medium"
-                        app:cardBackgroundColor="@color/color_card"
-                        app:cardCornerRadius="@dimen/card_corner_radius_lg"
-                        app:cardElevation="@dimen/card_elevation_m3">
-
-                        <androidx.constraintlayout.widget.ConstraintLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:padding="@dimen/spacing_small">
-
-                            <ImageView
-                                android:id="@+id/ivBalanceIcon"
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:background="@drawable/bg_cicle_blue"
-                                android:padding="6dp"
-                                android:src="@drawable/ic_banck"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:tint="?attr/colorSurface" />
-
-                            <TextView
-                                android:id="@+id/tvBalanceTitle"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="@dimen/spacing_s"
-                                android:fontFamily="@font/nunitosemibold"
-                                android:text="@string/home_card_balance_title"
-                                android:textColor="@color/secondary_text"
-                                android:textSize="@dimen/text_caption"
-                                app:layout_constraintBottom_toBottomOf="@+id/ivBalanceIcon"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintStart_toEndOf="@+id/ivBalanceIcon"
-                                app:layout_constraintTop_toTopOf="@+id/ivBalanceIcon" />
-
-                            <TextView
-                                android:id="@+id/tvBalanceValue"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="@dimen/spacing_small"
-                                android:fontFamily="@font/nunitoextrabold"
-                                android:textColor="@color/secondary_text"
-                                android:textSize="@dimen/text_h6"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintTop_toBottomOf="@+id/ivBalanceIcon" />
-
-                            <TextView
-                                android:id="@+id/tvBalanceIndicator"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="@dimen/spacing_tiny"
-                                android:fontFamily="@font/nunitobold"
-                                android:textSize="10sp"
-                                app:layout_constraintBaseline_toBaselineOf="@+id/tvBalanceValue"
-                                app:layout_constraintStart_toEndOf="@+id/tvBalanceValue" />
 
                         </androidx.constraintlayout.widget.ConstraintLayout>
                     </com.google.android.material.card.MaterialCardView>
@@ -417,36 +354,6 @@
 
     <!-- FABs stay at bottom right -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/tvFabAddGasto"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/spacing_medium"
-        android:fontFamily="@font/nunitobold"
-        android:text="@string/fab_expense"
-        android:textColor="@color/white"
-        android:visibility="invisible"
-        app:backgroundTint="@color/md_theme_primary"
-        app:icon="@drawable/banknote_arrow_down"
-        app:iconTint="@color/white"
-        app:layout_constraintBottom_toTopOf="@+id/tvFabAddIng"
-        app:layout_constraintEnd_toEndOf="@+id/tvFabAddIng" />
-
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/tvFabAddIng"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/spacing_medium"
-        android:fontFamily="@font/nunitobold"
-        android:text="@string/fab_income"
-        android:textColor="@color/white"
-        android:visibility="invisible"
-        app:backgroundTint="@color/md_theme_primary"
-        app:icon="@drawable/banknote_arrow_up"
-        app:iconTint="@color/white"
-        app:layout_constraintBottom_toTopOf="@+id/tvFabAddSuggestion"
-        app:layout_constraintEnd_toEndOf="@+id/tvFabAddSuggestion" />
-
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/tvFabAddSuggestion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -482,7 +389,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/spacing_large"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="120dp"
         android:contentDescription="Abrir menú"
         app:backgroundTint="@color/md_theme_primary"
         app:elevation="6dp"

@@ -18,23 +18,37 @@
         app:layout_constraintTop_toTopOf="parent"
         app:menu="@menu/bottom_nav_menu" />
 
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/nav_view"
-        android:layout_width="match_parent"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/card_nav_view"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:background="@color/md_theme_surface"
-        android:elevation="16dp"
-        app:itemGravity="center"
-        app:itemIconTint="@color/selector_tab_background"
-        app:itemPaddingBottom="12dp"
-        app:itemPaddingTop="12dp"
-        app:itemTextAppearanceActiveBoldEnabled="true"
-        app:itemTextColor="@color/selector_bottom_nav"
-        app:labelVisibilityMode="labeled"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="36dp"
+        app:cardElevation="10dp"
+        android:paddingHorizontal="@dimen/txt_dimen_xl"
+        app:cardBackgroundColor="#B3FFFFFF"
+        app:strokeWidth="2dp"
+        app:strokeColor="@color/md_theme_primary"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:menu="@menu/bottom_nav_menu" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/nav_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textColor="@color/md_theme_onSurface"
+            app:elevation="0dp"
+            app:itemActiveIndicatorStyle="@style/FloatingNavIndicator"
+            app:itemIconTint="@color/selector_floating_nav"
+            app:itemTextAppearanceActive="@style/PremiumTabTextAppearance"
+            app:itemTextAppearanceInactive="@style/PremiumTabTextAppearance"
+            app:itemIconSize="@dimen/icon_medium"
+            app:itemTextColor="@color/selector_floating_nav"
+            app:menu="@menu/bottom_nav_menu" />
+
+    </com.google.android.material.card.MaterialCardView>
 
     <fragment
         android:id="@+id/nav_host_fragment_activity_main"
@@ -42,7 +56,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         app:defaultNavHost="true"
-        app:layout_constraintBottom_toTopOf="@id/nav_view"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/nav_rail"
         app:layout_constraintTop_toTopOf="parent"

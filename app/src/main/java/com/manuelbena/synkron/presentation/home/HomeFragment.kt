@@ -276,21 +276,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
                 // 3. Productividad Semanal
                 tvProdValue.text = "${state.weeklyProductivity}%"
 
-                // 4. Balance Mensual
-                val balanceFormatted = java.text.NumberFormat.getCurrencyInstance(java.util.Locale("es", "ES")).format(state.monthlyBalance)
-                tvBalanceValue.text = balanceFormatted
-
-                val comparisonSign = if (state.balanceComparisonPercent >= 0) "+" else ""
-                val arrow = if (state.balanceComparisonPercent >= 0) "↗" else "↘"
-                tvBalanceIndicator.text = "$comparisonSign${String.format(java.util.Locale.getDefault(), "%.1f", state.balanceComparisonPercent)}% $arrow"
-
-                val indicatorColor = if (state.balanceComparisonPercent >= 0) {
-                    androidx.core.content.ContextCompat.getColor(requireContext(), R.color.priority_low) // Verde
-                } else {
-                    androidx.core.content.ContextCompat.getColor(requireContext(), R.color.md_theme_error) // Rojo
-                }
-                tvBalanceIndicator.setTextColor(indicatorColor)
-
                 // Mostramos el RV solo si hay super tareas para este día
                 rvSuperTasks.isVisible = state.superTasks.isNotEmpty()
 
@@ -317,7 +302,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
 
 
     private fun setupButtomFloating() {
-        val options = listOf(binding.tvFabAddTask, binding.tvFabAddSuggestion, binding.tvFabAddIng, binding.tvFabAddGasto)
+        val options = listOf(binding.tvFabAddTask, binding.tvFabAddSuggestion)
         options.forEach { it.visibility = View.GONE; it.alpha = 0f; it.translationY = 50f }
 
         binding.fabMain.setOnClickListener { if (isFabMenuOpen) closeFabMenu() else openFabMenu() }
@@ -363,8 +348,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             fabMain.setOnClickListener { if (isFabMenuOpen) closeFabMenu() else openFabMenu() }
             tvFabAddTask.setOnClickListener { closeFabMenu(); showTaskBottomSheet(null) }
             tvFabAddSuggestion.setOnClickListener { closeFabMenu(); showAiButton() }
-            tvFabAddGasto.setOnClickListener { closeFabMenu() }
-            tvFabAddIng.setOnClickListener { closeFabMenu(); showAiButton() }
             btnToday.setOnClickListener { weekManager.scrollToToday() }
         }
     }
@@ -386,8 +369,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         binding.fabMain.animate().rotation(45f).setDuration(200).start()
         showFab(binding.tvFabAddTask, 1)
         showFab(binding.tvFabAddSuggestion, 2)
-        showFab(binding.tvFabAddGasto, 3)
-        showFab(binding.tvFabAddIng, 4)
     }
 
     private fun closeFabMenu() {
@@ -395,8 +376,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
         binding.fabMain.animate().rotation(0f).setDuration(200).start()
         hideFab(binding.tvFabAddTask)
         hideFab(binding.tvFabAddSuggestion)
-        hideFab(binding.tvFabAddGasto)
-        hideFab(binding.tvFabAddIng)
     }
 
     private fun showFab(fab: View, position: Int) {

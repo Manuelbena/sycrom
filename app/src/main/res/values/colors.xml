@@ -2,10 +2,10 @@
 <resources>
 
 
-    <color name="md_theme_primary">#8B5CF6</color>
+    <color name="md_theme_primary">#0062A1</color>
     <color name="md_theme_onPrimary">#FAFAF9</color>
-    <color name="md_theme_primaryContainer">#8B5CF6</color>
-    <color name="md_theme_onPrimaryContainer">#8B5CF6</color>
+    <color name="md_theme_primaryContainer">#0062A1</color>
+    <color name="md_theme_onPrimaryContainer">#0062A1</color>
 
     <color name="md_theme_secondary">#232625</color>
     <color name="md_theme_onSecondary">#8B5CF6</color>
@@ -38,10 +38,11 @@
     <color name="red_500">#EF4444</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+    <color name="whiteFF">#B3FFFFFF</color>
 
 
     <color name="color_card">@color/white</color>
-
+    <color name="color_card_menu">@color/whiteFF</color>
     <color name="color_primary">@color/violet_500</color>
 
     <color name="bg_home">@color/slate_50</color>

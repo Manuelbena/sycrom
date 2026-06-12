@@ -6,7 +6,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/color_body"
-    android:layout_marginBottom="@dimen/space_card_width"
+    android:clipToPadding="false"
+    android:paddingBottom="100dp"
+    android:requiresFadingEdge="vertical"
+    android:fadingEdgeLength="64dp"
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout

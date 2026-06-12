@@ -93,12 +93,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         val isTablet = resources.configuration.screenWidthDp >= 600
 
         if (isTablet) {
-            binding.navView.visibility = View.GONE
+            binding.cardNavView.visibility = View.GONE
             binding.navRail.visibility = View.VISIBLE
             binding.navRail.setupWithNavController(navController)
         } else {
             binding.navRail.visibility = View.GONE
-            binding.navView.visibility = View.VISIBLE
+            binding.cardNavView.visibility = View.VISIBLE
             binding.navView.setupWithNavController(navController)
         }
     }
@@ -111,11 +111,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 destinationId == R.id.navigation_note
 
         if (isTablet) {
-            binding.navView.visibility = View.GONE
+            binding.cardNavView.visibility = View.GONE
             binding.navRail.visibility = if (isMainDestination) View.VISIBLE else View.GONE
         } else {
             binding.navRail.visibility = View.GONE
-            binding.navView.visibility = if (isMainDestination) View.VISIBLE else View.GONE
+            binding.cardNavView.visibility = if (isMainDestination) View.VISIBLE else View.GONE
         }
     }
 
