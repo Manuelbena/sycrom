@@ -25,7 +25,7 @@
     </style>
 
     <style name="PremiumTabTextAppearance" parent="TextAppearance.Design.Tab">
-        <item name="android:textSize">10sp</item>
+        <item name="android:textSize">14sp</item>
         <item name="android:textAllCaps">false</item>
         <item name="fontFamily">@font/nunitobold</item>
     </style>
@@ -198,6 +198,23 @@
 
     <style name="CustomBottomSheetStyle" parent="Widget.Material3.BottomSheet.Modal">
         <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <style name="ElegantNavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">@color/color_body</item>
+        <item name="marginHorizontal">12dp</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.ElegantIndicator</item>
+    </style>
+
+    <style name="ShapeAppearance.ElegantIndicator" parent="ShapeAppearance.Material3.Corner.Full">
+        <item name="cornerSize">20dp</item>
+    </style>
+
+    <style name="ElegantNavTextAppearance" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">10sp</item>
+        <item name="android:fontFamily">@font/nunitobold</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:letterSpacing">0.05</item>
     </style>
 
     <style name="FloatingNavIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">

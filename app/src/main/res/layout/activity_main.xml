@@ -20,15 +20,15 @@
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/card_nav_view"
-        android:layout_width="300dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        app:cardCornerRadius="36dp"
+        android:layout_marginHorizontal="48dp"
+        android:layout_marginBottom="22dp"
+        app:cardCornerRadius="32dp"
         app:cardElevation="10dp"
-        android:paddingHorizontal="@dimen/txt_dimen_xl"
-        app:cardBackgroundColor="#B3FFFFFF"
-        app:strokeWidth="2dp"
-        app:strokeColor="@color/md_theme_primary"
+        app:cardBackgroundColor="#F2FFFFFF"
+        app:strokeWidth="0.5dp"
+        app:strokeColor="#1A000000"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -36,16 +36,16 @@
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/nav_view"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:textColor="@color/md_theme_onSurface"
+            android:layout_height="match_parent"
+            android:background="@color/color_card"
             app:elevation="0dp"
-            app:itemActiveIndicatorStyle="@style/FloatingNavIndicator"
-            app:itemIconTint="@color/selector_floating_nav"
-            app:itemTextAppearanceActive="@style/PremiumTabTextAppearance"
-            app:itemTextAppearanceInactive="@style/PremiumTabTextAppearance"
-            app:itemIconSize="@dimen/icon_medium"
-            app:itemTextColor="@color/selector_floating_nav"
+            app:itemIconSize="24dp"
+            app:itemActiveIndicatorStyle="@style/ElegantNavIndicator"
+            app:itemIconTint="@color/selector_elegant_nav"
+            app:itemTextColor="@color/selector_elegant_nav"
+            app:itemTextAppearanceActive="@style/ElegantNavTextAppearance"
+            app:itemTextAppearanceInactive="@style/ElegantNavTextAppearance"
+            app:labelVisibilityMode="labeled"
             app:menu="@menu/bottom_nav_menu" />
 
     </com.google.android.material.card.MaterialCardView>
