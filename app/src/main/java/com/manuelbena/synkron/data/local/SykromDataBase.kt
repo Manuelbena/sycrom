@@ -8,6 +8,8 @@ import com.manuelbena.synkron.data.local.converters.RecurrenceTypeConverter
 import com.manuelbena.synkron.data.local.converters.StringListConverter
 import com.manuelbena.synkron.data.local.converters.SubTaskConverter
 import com.manuelbena.synkron.data.local.converters.SuperTaskConverters // <--- IMPORTANTE: Asegúrate de tener este archivo creado
+import com.manuelbena.synkron.data.local.entities.AIAssistantInsightEntity
+import com.manuelbena.synkron.data.local.models.AIAssistantDao
 import com.manuelbena.synkron.data.local.models.SuperTaskDao
 import com.manuelbena.synkron.data.local.models.TaskDao
 import com.manuelbena.synkron.data.local.models.TaskEntity
@@ -26,9 +28,10 @@ import com.manuelbena.synkron.data.local.models.TransactionEntity
         BudgetEntity::class,
         TransactionEntity::class,
         GoalEntity::class,
-        GoalContributionEntity::class
+        GoalContributionEntity::class,
+        AIAssistantInsightEntity::class
     ],
-    version = 10,
+    version = 11,
     exportSchema = false
 )
 @TypeConverters(
@@ -43,4 +46,5 @@ abstract class SykromDataBase : RoomDatabase() {
     abstract fun superTaskDao(): SuperTaskDao
     abstract fun budgetDao(): BudgetDao
     abstract fun goalDao(): GoalDao
+    abstract fun aiAssistantDao(): AIAssistantDao
 }

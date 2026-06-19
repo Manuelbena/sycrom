@@ -38,6 +38,8 @@ import java.io.File
 import androidx.core.content.FileProvider
 import android.content.Intent
 import android.net.Uri
+import androidx.navigation.fragment.findNavController
+import com.manuelbena.synkron.R
 
 @AndroidEntryPoint
 class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
@@ -110,6 +112,10 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
         // --- Exportar Excel ---
         binding.viewBudgets.btnExportExcel.setOnClickListener {
             exportFinancialReport()
+        }
+
+        binding.btnSettings.setOnClickListener {
+            findNavController().navigate(R.id.navigation_settings)
         }
     }
 
@@ -238,6 +244,13 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
         val expense = viewModel.budgetState.value.totalSpent
         val balance = income - expense
         binding.viewGeneral.tvBalanceValue.text = String.format(Locale.getDefault(), "%.2f €", balance)
+
+        // Actualizamos el estado vacío también al cambiar el balance
+        val hasData = categoryOverviewAdapter.currentList.isNotEmpty() || income > 0
+        binding.viewGeneral.lyNoSavings.isVisible = !hasData
+        binding.viewGeneral.tvCategoriesTitle.isVisible = hasData
+        binding.viewGeneral.btnSeeAll.isVisible = hasData
+        binding.viewGeneral.rvCategories.isVisible = hasData
     }
 
     private fun renderBudgetState(state: BudgetSummaryState) {
@@ -276,6 +289,19 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
 
         // --- INSIGHT DE EXPERTO: CATEGORÍA TOP ---
         updateTopSpendingInsight(rankingBudgets, state.totalSpent)
+
+        // --- EMPTY STATE ---
+        val hasData = rankingBudgets.isNotEmpty() || viewModel.incomeTotal.value > 0
+        binding.viewGeneral.lyNoSavings.isVisible = !hasData
+        binding.viewGeneral.tvCategoriesTitle.isVisible = hasData
+        binding.viewGeneral.btnSeeAll.isVisible = hasData
+        binding.viewGeneral.rvCategories.isVisible = hasData
+
+        // NUEVO: Empty state para la pestaña de Categorías
+        val hasBudgets = rankingBudgets.isNotEmpty()
+        binding.viewBudgets.lyNoBudgets.isVisible = !hasBudgets
+        binding.viewBudgets.tvRankingLabel.isVisible = hasBudgets
+        binding.viewBudgets.rvBudgetCategories.isVisible = hasBudgets
     }
 
     private fun updateTopSpendingInsight(ranking: List<BudgetPresentationModel>, totalSpent: Double) {
@@ -300,6 +326,12 @@ class MoneyFragment : BaseFragment<FragmentMoneyBinding, MoneyViewModel>() {
             val statusColor = if (state.totalPercent >= 50) Color.parseColor("#10B981") else Color.parseColor("#F97316")
             lpiTotalMetas.setIndicatorColor(statusColor)
             tvTotalProgressPercent.setTextColor(statusColor)
+
+            // NUEVO: Empty state para Metas
+            val hasGoals = state.goals.isNotEmpty()
+            lyNoGoals.isVisible = !hasGoals
+            tvUpcomingObjectives.isVisible = hasGoals
+            rvUpcomingGoals.isVisible = hasGoals
         }
     }
 

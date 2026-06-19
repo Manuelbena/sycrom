@@ -51,6 +51,19 @@
 
 
     </fragment>
+
+    <fragment
+        android:id="@+id/navigation_assistant"
+        android:name="com.manuelbena.synkron.presentation.assistant.AssistantInsightFragment"
+        android:label="Asistente"
+        tools:layout="@layout/fragment_assistant_insight" />
+
+    <fragment
+        android:id="@+id/navigation_settings"
+        android:name="com.manuelbena.synkron.presentation.settings.SettingsFragment"
+        android:label="Ajustes"
+        tools:layout="@layout/fragment_settings" />
+
     <activity
         android:id="@+id/containerActivity"
         android:name="com.manuelbena.synkron.presentation.activitys.ContainerActivity"

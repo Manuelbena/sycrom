@@ -163,5 +163,34 @@
             app:layout_constraintTop_toBottomOf="@id/tv_upcoming_objectives"
             tools:listitem="@layout/item_meta" />
 
+        <LinearLayout
+            android:id="@+id/lyNoGoals"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/card_metas_summary"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="240dp"
+                android:layout_height="240dp"
+                android:src="@drawable/synkrom_sinahorros"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/nunitobold"
+                android:gravity="center"
+                android:paddingHorizontal="32dp"
+                android:text="Aún no tienes metas de ahorro. ¡Crea una para empezar a visualizar tus sueños!"
+                android:textColor="@color/secondary_text"
+                android:textSize="18sp" />
+        </LinearLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

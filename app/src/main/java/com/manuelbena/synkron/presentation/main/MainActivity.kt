@@ -108,7 +108,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         val isMainDestination = destinationId == R.id.navigation_home ||
                 destinationId == R.id.navigation_calendar ||
                 destinationId == R.id.navigation_money ||
-                destinationId == R.id.navigation_note
+                destinationId == R.id.navigation_note ||
+                destinationId == R.id.navigation_assistant
 
         if (isTablet) {
             binding.cardNavView.visibility = View.GONE

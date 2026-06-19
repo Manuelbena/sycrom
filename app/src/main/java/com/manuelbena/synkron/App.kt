@@ -62,6 +62,19 @@ class App : Application(), Configuration.Provider { // <--- 1. Implementa la int
         androidx.work.WorkManager.getInstance(this).cancelAllWork()
 
         setupPeriodicSync() // Y luego reprogramamos lo nuevo limpio
+        setupAIAuditor()
+    }
+
+    private fun setupAIAuditor() {
+        val auditorRequest = androidx.work.PeriodicWorkRequestBuilder<com.manuelbena.synkron.data.worker.WeeklyAuditorWorker>(
+            7, java.util.concurrent.TimeUnit.DAYS
+        ).build()
+
+        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "SynkronWeeklyAuditor",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            auditorRequest
+        )
     }
 
     private fun setupPeriodicSync() {

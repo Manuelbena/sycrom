@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -349,6 +350,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding, HomeViewModel>() {
             tvFabAddTask.setOnClickListener { closeFabMenu(); showTaskBottomSheet(null) }
             tvFabAddSuggestion.setOnClickListener { closeFabMenu(); showAiButton() }
             btnToday.setOnClickListener { weekManager.scrollToToday() }
+            btnSettings.setOnClickListener {
+                findNavController().navigate(R.id.navigation_settings)
+            }
         }
     }
 

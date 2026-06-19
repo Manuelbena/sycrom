@@ -18,5 +18,11 @@
         android:icon="@drawable/ic_money"
         android:title="@string/title_money" />
 
+    <item
+        android:id="@+id/navigation_assistant"
+        android:enabled="true"
+        android:icon="@drawable/sparkle"
+        android:title="Asistente" />
+
 
 </menu>

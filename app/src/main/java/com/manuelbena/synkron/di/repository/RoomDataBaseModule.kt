@@ -3,6 +3,7 @@ package com.manuelbena.synkron.di.repository
 import android.content.Context
 import androidx.room.Room
 import com.manuelbena.synkron.data.local.SykromDataBase
+import com.manuelbena.synkron.data.local.models.AIAssistantDao
 import com.manuelbena.synkron.data.local.models.BudgetDao
 import com.manuelbena.synkron.data.local.models.GoalDao
 import com.manuelbena.synkron.data.local.models.SuperTaskDao
@@ -53,5 +54,11 @@ object DatabaseModule {
     @Singleton
     fun provideGoalDao(database: SykromDataBase): GoalDao {
         return database.goalDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAIAssistantDao(database: SykromDataBase): AIAssistantDao {
+        return database.aiAssistantDao()
     }
 }

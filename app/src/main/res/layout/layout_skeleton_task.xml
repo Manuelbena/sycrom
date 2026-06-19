@@ -187,5 +187,34 @@
             tools:itemCount="3"
             tools:listitem="@layout/item_budget_category" />
 
+        <LinearLayout
+            android:id="@+id/lyNoBudgets"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/card_main_summary"
+            tools:visibility="visible">
+
+            <ImageView
+                android:layout_width="240dp"
+                android:layout_height="240dp"
+                android:src="@drawable/synkrom_sinahorros"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/nunitobold"
+                android:gravity="center"
+                android:paddingHorizontal="32dp"
+                android:text="No hay categorías de presupuesto. Crea una para organizar tus finanzas."
+                android:textColor="@color/secondary_text"
+                android:textSize="18sp" />
+        </LinearLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>
