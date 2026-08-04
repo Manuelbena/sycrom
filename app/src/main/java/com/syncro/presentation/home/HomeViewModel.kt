@@ -1,16 +1,18 @@
 package com.syncro.presentation.home
 
 import androidx.lifecycle.ViewModel
-import com.syncro.domain.usecase.GetTasksUseCase
-import com.syncro.domain.model.Priority
-import com.syncro.domain.model.Subtask
+import androidx.lifecycle.viewModelScope
 import com.syncro.domain.model.SyncroItem
-import com.syncro.presentation.theme.*
+import com.syncro.domain.usecase.GetTasksUseCase
+import com.syncro.domain.usecase.SaveTaskUseCase
+import com.syncro.domain.usecase.ToggleTaskCompletionUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
 data class HomeUiState(
@@ -21,92 +23,49 @@ data class HomeUiState(
     val timelineItems: List<SyncroItem> = emptyList()
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val getTasksUseCase: GetTasksUseCase
+    private val getTasksUseCase: GetTasksUseCase,
+    private val saveTaskUseCase: SaveTaskUseCase,
+    private val toggleTaskCompletionUseCase: ToggleTaskCompletionUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()
 
     init {
-        loadMockData()
-    }
-
-    private fun loadMockData() {
-        val items = listOf(
-            SyncroItem.Event(
-                id = "1",
-                title = "Reunión de Diseño",
-                description = "Revisar los nuevos mockups de la aplicación con el equipo de producto.",
-                startTime = "09:00",
-                endTime = "10:30",
-                categoryText = "Trabajo",
-                categoryColor = Indigo500,
-                priority = Priority.HIGH,
-                subtasks = listOf(
-                    Subtask("Revisar correos", true),
-                    Subtask("Preparar presentación", true),
-                    Subtask("Coordinar con diseño", false)
-                )
-            ),
-            SyncroItem.Task(
-                id = "2",
-                title = "Comprar café",
-                time = "11:00",
-                isCompleted = false
-            ),
-            SyncroItem.Event(
-                id = "3",
-                title = "Gimnasio",
-                description = "Entrenamiento de pierna y cardio suave.",
-                startTime = "18:00",
-                endTime = "19:30",
-                categoryText = "Personal",
-                categoryColor = Emerald500,
-                priority = Priority.MEDIUM
-            ),
-            SyncroItem.Task(
-                id = "4",
-                title = "Llamar a mamá",
-                time = "20:00",
-                isCompleted = true
-            )
-        )
-        _uiState.update { it.copy(timelineItems = items) }
+        // Observar tareas del día seleccionado
+        _uiState
+            .map { it.selectedDate }
+            .distinctUntilChanged()
+            .flatMapLatest { date ->
+                getTasksUseCase(date)
+            }
+            .onEach { tasks ->
+                _uiState.update { it.copy(timelineItems = tasks) }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun onDaySelected(date: LocalDate) {
         _uiState.update { it.copy(selectedDate = date) }
     }
 
+    fun saveQuickTask(title: String, description: String, date: LocalDate, time: LocalTime) {
+        viewModelScope.launch {
+            val timeString = time.format(DateTimeFormatter.ofPattern("HH:mm"))
+            saveTaskUseCase(title, description, date, timeString)
+        }
+    }
+
     fun toggleTaskCompletion(taskId: String) {
-        _uiState.update { state ->
-            state.copy(
-                timelineItems = state.timelineItems.map { item ->
-                    if (item is SyncroItem.Task && item.id == taskId) {
-                        item.copy(isCompleted = !item.isCompleted)
-                    } else item
-                }
-            )
+        viewModelScope.launch {
+            toggleTaskCompletionUseCase(taskId)
         }
     }
 
     fun toggleSubtaskCompletion(eventId: String, subtaskTitle: String) {
-        _uiState.update { state ->
-            state.copy(
-                timelineItems = state.timelineItems.map { item ->
-                    if (item is SyncroItem.Event && item.id == eventId) {
-                        item.copy(
-                            subtasks = item.subtasks.map { subtask ->
-                                if (subtask.title == subtaskTitle) {
-                                    subtask.copy(isCompleted = !subtask.isCompleted)
-                                } else subtask
-                            }
-                        )
-                    } else item
-                }
-            )
-        }
+        // TODO: Implementar cuando los eventos estén en Room
     }
 }

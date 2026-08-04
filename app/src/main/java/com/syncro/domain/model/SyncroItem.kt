@@ -29,6 +29,7 @@ sealed class SyncroItem {
     data class Task(
         val id: String,
         val title: String,
+        val description: String? = null,
         val time: String,
         val isCompleted: Boolean
     ) : SyncroItem()

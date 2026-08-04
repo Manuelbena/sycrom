@@ -1,10 +1,11 @@
 package com.syncro.domain.repository
 
-import com.syncro.domain.model.Task
+import com.syncro.domain.model.SyncroItem
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 interface TaskRepository {
-    fun getTasks(): Flow<List<Task>>
-    suspend fun addTask(task: Task)
-    suspend fun deleteTask(task: Task)
+    fun getTasksByDate(date: LocalDate): Flow<List<SyncroItem.Task>>
+    suspend fun insertTask(task: SyncroItem.Task, description: String, date: LocalDate)
+    suspend fun toggleTaskCompletion(taskId: String)
 }

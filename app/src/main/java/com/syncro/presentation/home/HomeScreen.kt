@@ -3,23 +3,19 @@ package com.syncro.presentation.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.syncro.presentation.home.components.AssistantCard
-import com.syncro.presentation.home.components.EventCard
-import com.syncro.presentation.home.components.HomeHeader
-import com.syncro.presentation.home.components.TaskRow
-import com.syncro.presentation.home.components.WeekCalendarStrip
+import com.syncro.presentation.home.components.*
 import com.syncro.domain.model.SyncroItem
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -33,6 +29,9 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val scrollState = rememberScrollState()
+    var showAddItemSheet by remember { mutableStateOf(false) }
+    var showQuickTaskSheet by remember { mutableStateOf(false) }
+    var selectedTaskForDetail by remember { mutableStateOf<SyncroItem.Task?>(null) }
     
     // Formatear la fecha actual para el header
     val formattedDate = uiState.selectedDate.dayOfWeek.getDisplayName(TextStyle.FULL, Locale("es", "ES"))
@@ -41,7 +40,25 @@ fun HomeScreen(
         uiState.selectedDate.month.getDisplayName(TextStyle.FULL, Locale("es", "ES"))
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = MaterialTheme.colorScheme.background,
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { showAddItemSheet = true },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier
+                    .padding(bottom = 110.dp) // Flota sobre el degradado
+                    .size(56.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Añadir",
+                    modifier = Modifier.size(32.dp)
+                )
+            }
+        },
+        floatingActionButtonPosition = FabPosition.End
     ) { padding ->
         Column(
             modifier = Modifier
@@ -96,7 +113,8 @@ fun HomeScreen(
                                 )
                                 is SyncroItem.Task -> TaskRow(
                                     task = item,
-                                    onToggle = { viewModel.toggleTaskCompletion(item.id) }
+                                    onToggle = { viewModel.toggleTaskCompletion(item.id) },
+                                    onClick = { selectedTaskForDetail = item }
                                 )
                             }
                         }
@@ -138,5 +156,34 @@ fun HomeScreen(
                 )
             }
         }
+    }
+
+    if (showAddItemSheet) {
+        AddItemBottomSheet(
+            onDismiss = { showAddItemSheet = false },
+            onQuickTaskClick = { 
+                showAddItemSheet = false
+                showQuickTaskSheet = true
+            },
+            onDetailedEventClick = { showAddItemSheet = false }
+        )
+    }
+
+    if (showQuickTaskSheet) {
+        QuickTaskSheet(
+            onDismiss = { showQuickTaskSheet = false },
+            onSave = { title, description, date, time ->
+                viewModel.saveQuickTask(title, description, date, time)
+                showQuickTaskSheet = false
+            }
+        )
+    }
+
+    selectedTaskForDetail?.let { task ->
+        TaskDetailDialog(
+            task = task,
+            onDismiss = { selectedTaskForDetail = null },
+            onComplete = { viewModel.toggleTaskCompletion(task.id) }
+        )
     }
 }
