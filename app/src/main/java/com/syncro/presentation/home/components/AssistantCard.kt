@@ -63,14 +63,14 @@ fun AssistantCard(
                 modifier = Modifier
                     .size(56.dp)
                     .clip(RoundedCornerShape(14.dp))
-                    .background(Color.White)
+                    .background(MaterialTheme.colorScheme.surface)
                     .padding(1.dp) // Grosor del borde
                     .background(
                         Brush.linearGradient(listOf(Cyan400, Blue500)),
                         shape = RoundedCornerShape(14.dp)
                     )
                     .padding(2.dp)
-                    .background(Color.White, shape = RoundedCornerShape(12.dp)),
+                    .background(MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(

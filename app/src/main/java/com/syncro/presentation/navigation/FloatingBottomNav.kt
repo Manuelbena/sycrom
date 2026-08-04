@@ -7,7 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -29,15 +28,16 @@ fun FloatingBottomNav(
 ) {
     Surface(
         modifier = modifier
-            .padding(horizontal = 40.dp, vertical = 42.dp)
+            .padding(horizontal = 32.dp, vertical = 40.dp)
             .fillMaxWidth(),
-        shape = CircleShape,
-        color = Color.White,
-        shadowElevation = 8.dp
+        shape = RoundedCornerShape(30.dp),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f),
+        shadowElevation = 8.dp,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
     ) {
         Row(
             modifier = Modifier
-                .padding(horizontal = 12.dp, vertical = 12.dp)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
@@ -62,19 +62,14 @@ private fun NavBarItem(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
 
-    // Colores del nuevo diseño expresivo
-    val colorAzulSeleccionado = Color(0xFF1976D2)
-    val colorGrisInactivo = Color(0xFF424242)
-    val colorFondoPildora = Color(0xFFE3F2FD)
-
     val backgroundColor by animateColorAsState(
-        targetValue = if (isSelected) colorFondoPildora else Color.Transparent,
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
         animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
         label = "BgAnimation"
     )
 
     val contentColor by animateColorAsState(
-        targetValue = if (isSelected) colorAzulSeleccionado else colorGrisInactivo,
+        targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
         animationSpec = tween(durationMillis = 300),
         label = "ContentAnimation"
     )
@@ -85,16 +80,14 @@ private fun NavBarItem(
                 interactionSource = interactionSource,
                 indication = null,
                 onClick = onClick
-            )
-            .padding(horizontal = 8.dp),
+            ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Contenedor del Icono con la forma de píldora ancha del nuevo diseño
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(16.dp))
                 .background(backgroundColor)
-                .padding(horizontal = 20.dp, vertical = 6.dp),
+                .padding(horizontal = 24.dp, vertical = 4.dp),
             contentAlignment = Alignment.Center
         ) {
             Icon(
@@ -106,7 +99,6 @@ private fun NavBarItem(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Texto inferior
         Text(
             text = screen.title,
             style = MaterialTheme.typography.labelSmall,

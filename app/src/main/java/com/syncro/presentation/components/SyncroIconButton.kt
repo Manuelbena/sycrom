@@ -24,7 +24,7 @@ fun SyncroIconButton(
     modifier: Modifier = Modifier,
     size: Dp = 44.dp,
     iconSize: Dp = 20.dp,
-    backgroundColor: Color = Color.White,
+    backgroundColor: Color = MaterialTheme.colorScheme.surface,
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     showBorder: Boolean = true
 ) {
@@ -34,7 +34,7 @@ fun SyncroIconButton(
             .clip(CircleShape)
             .background(backgroundColor)
             .then(
-                if (showBorder) Modifier.border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.5f), CircleShape)
+                if (showBorder) Modifier.border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), CircleShape)
                 else Modifier
             )
             .clickable(onClick = onClick),
