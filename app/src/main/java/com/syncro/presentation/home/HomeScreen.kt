@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.syncro.presentation.home.components.*
 import com.syncro.domain.model.SyncroItem
+import com.syncro.presentation.navigation.AppScreen
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.*
@@ -25,6 +26,7 @@ import java.util.*
 fun HomeScreen(
     isDarkTheme: Boolean,
     onThemeToggle: () -> Unit,
+    onNavigateToAddEvent: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -165,7 +167,10 @@ fun HomeScreen(
                 showAddItemSheet = false
                 showQuickTaskSheet = true
             },
-            onDetailedEventClick = { showAddItemSheet = false }
+            onDetailedEventClick = { 
+                showAddItemSheet = false
+                onNavigateToAddEvent()
+            }
         )
     }
 

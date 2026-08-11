@@ -44,13 +44,13 @@ private val LightColorScheme = lightColorScheme(
     onTertiary = Color.White,
     tertiaryContainer = Indigo50,
     onTertiaryContainer = Indigo900,
-    background = Slate50,
+    background = Color(0xFFF1F5F9), // Slate 100 - Un poco más oscuro para contraste
     onBackground = Slate900,
     surface = Color.White,
     onSurface = Slate900,
-    surfaceVariant = Slate100,
+    surfaceVariant = Color(0xFFE2E8F0), // Slate 200 - Para mayor contraste en campos
     onSurfaceVariant = Slate500,
-    outline = Slate200
+    outline = Color(0xFFCBD5E1) // Slate 300
 )
 
 @Composable

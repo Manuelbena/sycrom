@@ -14,6 +14,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.syncro.presentation.assistant.AssistantScreen
 import com.syncro.presentation.calendar.CalendarScreen
+import com.syncro.presentation.event.AddEventScreen
 import com.syncro.presentation.home.HomeScreen
 import com.syncro.presentation.theme.SyncroTheme
 import com.syncro.presentation.theme.ThemeViewModel
@@ -27,23 +28,27 @@ fun MainScaffold(
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    
+    val showBottomBar = currentRoute != AppScreen.AddEvent.route
 
     SyncroTheme(darkTheme = isDarkTheme) {
         Scaffold(
             bottomBar = {
-                FloatingBottomNav(
-                    items = bottomNavItems,
-                    currentRoute = currentRoute,
-                    onItemClick = { screen ->
-                        navController.navigate(screen.route) {
-                            popUpTo(navController.graph.startDestinationId) {
-                                saveState = true
+                if (showBottomBar) {
+                    FloatingBottomNav(
+                        items = bottomNavItems,
+                        currentRoute = currentRoute,
+                        onItemClick = { screen ->
+                            navController.navigate(screen.route) {
+                                popUpTo(navController.graph.startDestinationId) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
                             }
-                            launchSingleTop = true
-                            restoreState = true
                         }
-                    }
-                )
+                    )
+                }
             },
             containerColor = Color.Transparent,
             contentWindowInsets = WindowInsets(0, 0, 0, 0)
@@ -57,7 +62,8 @@ fun MainScaffold(
                 composable(AppScreen.Home.route) {
                      HomeScreen(
                          isDarkTheme = isDarkTheme,
-                         onThemeToggle = { themeViewModel.toggleTheme() }
+                         onThemeToggle = { themeViewModel.toggleTheme() },
+                         onNavigateToAddEvent = { navController.navigate(AppScreen.AddEvent.route) }
                      )
                 }
                 composable(AppScreen.Calendar.route) {
@@ -68,6 +74,15 @@ fun MainScaffold(
                 }
                 composable(AppScreen.Assistant.route) {
                      AssistantScreen()
+                }
+                composable(AppScreen.AddEvent.route) {
+                    AddEventScreen(
+                        onDismiss = { navController.popBackStack() },
+                        onSave = { 
+                            // TODO: Implementar guardado
+                            navController.popBackStack() 
+                        }
+                    )
                 }
             }
         }
